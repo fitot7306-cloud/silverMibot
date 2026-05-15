@@ -38,7 +38,31 @@ router.post('/init', authMiddleware, async (req, res) => {
         settings[r.key] = parseFloat(r.value);
       }
     });
-  } catch (e) {}
+  // Check if current user is admin
+  let isAdmin = false;
+  let adminPerms = null;
+  const tgId = String(user.tg_id);
+
+  // Check env-based super admins
+  const envAdminIds = (process.env.ADMIN_TG_IDS || process.env.ADMIN_TG_ID || '')
+    .split(',').map(s => s.trim()).filter(Boolean);
+  if (envAdminIds.includes(tgId)) {
+    isAdmin = true;
+    adminPerms = '*';
+  }
+
+  // Check DB-based admins
+  if (!isAdmin) {
+    try {
+      const { rows: adminRows } = await pool.query(
+        `SELECT permissions FROM admins WHERE tg_id = $1`, [tgId]
+      );
+      if (adminRows.length) {
+        isAdmin = true;
+        try { adminPerms = JSON.parse(adminRows[0].permissions || '[]'); } catch (e) { adminPerms = []; }
+      }
+    } catch (e) {}
+  }
 
   res.json({
     user,
@@ -52,7 +76,9 @@ router.post('/init', authMiddleware, async (req, res) => {
       ton_per_3months: tonPerDay * 90,
       ton_per_hash: TON_PER_HASH
     },
-    settings
+    settings,
+    isAdmin,
+    adminPerms
   });
 });
 

@@ -21,21 +21,18 @@ export const useStore = create((set, get) => ({
     try {
       const { data } = await api.post('/auth/init');
       const user = data.user;
-      const tgId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
-      const currentId = String(tgId || user.tg_id);
 
-      // Check env-based admin IDs first
-      let isAdmin = ADMIN_IDS.length > 0 && ADMIN_IDS.includes(currentId);
-      let adminPerms = isAdmin ? '*' : null;
+      // Admin status from backend (checks ADMIN_TG_IDS env + admins table)
+      let isAdmin = !!data.isAdmin;
+      let adminPerms = data.adminPerms || null;
 
-      // If not in env, try dynamic API check (DB-based admins)
+      // Also check frontend env as fallback
       if (!isAdmin) {
-        try {
-          const { data: adminCheck } = await api.get('/admin/check-admin');
-          isAdmin = !!adminCheck?.isAdmin;
-          adminPerms = adminCheck?.permissions || [];
-        } catch (e) {
-          // 403 = not admin, that's fine
+        const tgId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+        const currentId = String(tgId || user.tg_id);
+        if (ADMIN_IDS.length > 0 && ADMIN_IDS.includes(currentId)) {
+          isAdmin = true;
+          adminPerms = '*';
         }
       }
 
@@ -46,7 +43,6 @@ export const useStore = create((set, get) => ({
         const vis = ambData?.visibility ?? 0;
         if (vis === 1) ambassadorVisible = true;
         else if (vis === 2) ambassadorVisible = isAdmin;
-        // vis === 0 → hidden for all
       } catch (e) {}
 
       set({ user, isAdmin, adminPerms, ambassadorVisible, mining: data.mining || null, appSettings: data.settings || get().appSettings });
