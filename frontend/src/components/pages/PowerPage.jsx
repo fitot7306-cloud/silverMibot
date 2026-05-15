@@ -37,7 +37,7 @@ function Particles({ count = 20, active }) {
           width: p.size,
           height: p.size,
           borderRadius: '50%',
-          background: 'var(--gold)',
+          background: 'var(--ice)',
           opacity: p.opacity,
           animation: `particleRise ${p.duration}s ease-in-out ${p.delay}s infinite`,
         }} />
@@ -140,12 +140,12 @@ export default function PowerPage() {
       {/* ── Ambient background effects ── */}
       <div style={{
         position: 'absolute', top: 0, left: 0, right: 0, height: '100%',
-        background: 'radial-gradient(ellipse at 50% 0%, rgba(212,175,55,0.08) 0%, transparent 50%)',
+        background: 'radial-gradient(ellipse at 50% 0%, rgba(0,212,255,0.08) 0%, transparent 50%)',
         pointerEvents: 'none', zIndex: 0,
       }} />
       <div style={{
         position: 'absolute', top: '30%', left: '-20%', width: '140%', height: '60%',
-        background: 'radial-gradient(ellipse at 50% 50%, rgba(212,175,55,0.03) 0%, transparent 60%)',
+        background: 'radial-gradient(ellipse at 50% 50%, rgba(0,212,255,0.03) 0%, transparent 60%)',
         pointerEvents: 'none', zIndex: 0,
       }} />
 
@@ -157,14 +157,14 @@ export default function PowerPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
             width: 44, height: 44, borderRadius: 14,
-            background: 'linear-gradient(135deg, var(--gold-dark), var(--gold))',
+            background: 'linear-gradient(135deg, var(--ice-dark), var(--ice))',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 22, boxShadow: '0 4px 20px rgba(212,175,55,0.3)',
+            fontSize: 22, boxShadow: '0 4px 20px rgba(0,212,255,0.3)',
           }}>⚡</div>
           <div>
             <div style={{
               fontSize: 18, fontWeight: 900, letterSpacing: 2.5,
-              background: 'linear-gradient(135deg, var(--gold), var(--gold-light))',
+              background: 'linear-gradient(135deg, var(--ice), var(--ice-light))',
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
             }}>{t('power.brand')}</div>
             <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 1 }}>{t('power.subtitle')}</div>
@@ -186,16 +186,16 @@ export default function PowerPage() {
               <div style={{
                 position: 'absolute', top: '100%', right: 0, marginTop: 6,
                 background: 'rgba(18,18,26,0.98)', backdropFilter: 'blur(20px)',
-                border: '1px solid var(--border-gold)', borderRadius: 12,
+                border: '1px solid var(--border)', borderRadius: 12,
                 padding: 4, zIndex: 100, minWidth: 80,
                 animation: 'fadeIn 0.2s ease'
               }}>
                 {LANGS.map(l => (
                   <button key={l.code} onClick={() => changeLang(l.code)} style={{
                     display: 'block', width: '100%', padding: '8px 14px',
-                    background: i18n.language === l.code ? 'rgba(212,175,55,0.12)' : 'transparent',
+                    background: i18n.language === l.code ? 'rgba(0,212,255,0.12)' : 'transparent',
                     border: 'none', borderRadius: 8,
-                    color: i18n.language === l.code ? 'var(--gold)' : 'var(--text-muted)',
+                    color: i18n.language === l.code ? 'var(--ice)' : 'var(--text-muted)',
                     fontSize: 12, fontWeight: 600, cursor: 'pointer',
                     textAlign: 'left', transition: 'var(--transition)'
                   }}>{l.label}</button>
@@ -208,8 +208,8 @@ export default function PowerPage() {
 
       {/* ── Balance Card ── */}
       <div onClick={() => showAdThen(() => setTab('withdraw'))} style={{
-        background: 'linear-gradient(135deg, rgba(212,175,55,0.06), rgba(212,175,55,0.02))',
-        border: '1px solid rgba(212,175,55,0.12)',
+        background: 'linear-gradient(135deg, rgba(0,212,255,0.06), rgba(0,212,255,0.02))',
+        border: '1px solid rgba(0,212,255,0.12)',
         borderRadius: 16, padding: '14px 18px', marginBottom: 20,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         cursor: 'pointer', position: 'relative', zIndex: 1, overflow: 'hidden',
@@ -218,20 +218,20 @@ export default function PowerPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
             width: 36, height: 36, borderRadius: 12,
-            background: 'linear-gradient(135deg, rgba(212,175,55,0.15), rgba(212,175,55,0.05))',
+            background: 'linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,212,255,0.05))',
             display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18,
           }}>💎</div>
           <div>
             <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 1, textTransform: 'uppercase' }}>{t('power.balance')}</div>
             <div style={{
               fontSize: 20, fontWeight: 900,
-              background: 'linear-gradient(135deg, var(--gold-light), var(--gold))',
+              background: 'linear-gradient(135deg, var(--ice-light), var(--ice))',
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
             }}>{fmt(tonBalance, 4)} <span style={{ fontSize: 13, fontWeight: 700 }}>TON</span></div>
           </div>
         </div>
         <div style={{
-          fontSize: 18, color: 'var(--gold)', opacity: 0.5,
+          fontSize: 18, color: 'var(--ice)', opacity: 0.5,
         }}>›</div>
       </div>
 
@@ -269,13 +269,13 @@ export default function PowerPage() {
         {/* Multi-layer background glow */}
         <div style={{
           position: 'absolute', width: 280, height: 280, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(212,175,55,0.12) 0%, rgba(212,175,55,0.04) 40%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(0,212,255,0.12) 0%, rgba(0,212,255,0.04) 40%, transparent 70%)',
           filter: 'blur(40px)', top: -40,
           animation: 'glow 4s ease-in-out infinite',
         }} />
         <div style={{
           position: 'absolute', width: 200, height: 200, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 60%)',
+          background: 'radial-gradient(circle, rgba(0,212,255,0.18) 0%, transparent 60%)',
           filter: 'blur(25px)', top: 0,
         }} />
 
@@ -283,19 +283,19 @@ export default function PowerPage() {
         {power > 0 && (
           <div style={{
             position: 'absolute', width: 210, height: 210, borderRadius: '50%',
-            border: '1px solid rgba(212,175,55,0.06)',
+            border: '1px solid rgba(0,212,255,0.06)',
             animation: 'spin 25s linear infinite',
             top: -5,
           }}>
             <div style={{
               position: 'absolute', top: -3, left: '50%', transform: 'translateX(-50%)',
               width: 6, height: 6, borderRadius: '50%',
-              background: 'var(--gold)', boxShadow: '0 0 12px var(--gold)',
+              background: 'var(--ice)', boxShadow: '0 0 12px var(--ice)',
             }} />
             <div style={{
               position: 'absolute', bottom: -3, left: '50%', transform: 'translateX(-50%)',
               width: 4, height: 4, borderRadius: '50%',
-              background: 'var(--gold)', opacity: 0.5, boxShadow: '0 0 8px var(--gold)',
+              background: 'var(--ice)', opacity: 0.5, boxShadow: '0 0 8px var(--ice)',
             }} />
           </div>
         )}
@@ -304,7 +304,7 @@ export default function PowerPage() {
         {power > 0 && (
           <div style={{
             position: 'absolute', width: 230, height: 230, borderRadius: '50%',
-            border: '1px dashed rgba(212,175,55,0.04)',
+            border: '1px dashed rgba(0,212,255,0.04)',
             animation: 'spin 35s linear infinite reverse',
             top: -15,
           }} />
@@ -313,10 +313,10 @@ export default function PowerPage() {
         {/* Outer conic gradient ring */}
         <div style={{
           width: 185, height: 185, borderRadius: '50%',
-          background: `conic-gradient(var(--gold) ${powerPct}%, rgba(255,255,255,0.03) 0)`,
+          background: `conic-gradient(var(--ice) ${powerPct}%, rgba(255,255,255,0.03) 0)`,
           padding: 5, display: 'flex', alignItems: 'center', justifyContent: 'center',
           boxShadow: power > 0
-            ? '0 0 40px rgba(212,175,55,0.15), 0 0 80px rgba(212,175,55,0.05), inset 0 0 30px rgba(212,175,55,0.05)'
+            ? '0 0 40px rgba(0,212,255,0.15), 0 0 80px rgba(0,212,255,0.05), inset 0 0 30px rgba(0,212,255,0.05)'
             : 'none',
           position: 'relative',
           animation: orbPulse ? 'orbCollect 0.6s ease' : (power > 0 ? 'float 6s ease-in-out infinite' : 'none'),
@@ -335,12 +335,12 @@ export default function PowerPage() {
             {/* Inner subtle ring */}
             <div style={{
               position: 'absolute', inset: 6, borderRadius: '50%',
-              border: '1px solid rgba(212,175,55,0.06)',
+              border: '1px solid rgba(0,212,255,0.06)',
             }} />
             {/* Second inner ring */}
             <div style={{
               position: 'absolute', inset: 10, borderRadius: '50%',
-              border: '1px solid rgba(212,175,55,0.03)',
+              border: '1px solid rgba(0,212,255,0.03)',
             }} />
 
             <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 3, marginBottom: 6, fontWeight: 600 }}>
@@ -348,10 +348,10 @@ export default function PowerPage() {
             </div>
             <div style={{
               fontSize: 42, fontWeight: 900, lineHeight: 1,
-              background: 'linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%)',
+              background: 'linear-gradient(180deg, var(--ice-light) 0%, var(--ice) 100%)',
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
               animation: 'countUp 0.5s ease',
-              filter: 'drop-shadow(0 2px 10px rgba(212,175,55,0.35))',
+              filter: 'drop-shadow(0 2px 10px rgba(0,212,255,0.35))',
             }}>
               {fmtK(Math.floor(power))}
             </div>
@@ -388,14 +388,14 @@ export default function PowerPage() {
         ].map((item, i) => (
           <div key={item.label} style={{
             animation: `fadeIn 0.4s ease ${i * 0.1}s both`,
-            background: 'linear-gradient(145deg, rgba(212,175,55,0.05), rgba(0,0,0,0.25))',
-            border: '1px solid rgba(212,175,55,0.08)',
+            background: 'linear-gradient(145deg, rgba(0,212,255,0.05), rgba(0,0,0,0.25))',
+            border: '1px solid rgba(0,212,255,0.08)',
             borderRadius: 14, padding: '14px 8px', textAlign: 'center',
           }}>
             <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 6 }}>{item.label}</div>
             <div style={{
               fontSize: 15, fontWeight: 800,
-              background: 'linear-gradient(135deg, var(--gold-light), var(--gold))',
+              background: 'linear-gradient(135deg, var(--ice-light), var(--ice))',
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
             }}>{item.val}</div>
             <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>TON</div>
@@ -407,7 +407,7 @@ export default function PowerPage() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14, position: 'relative', zIndex: 1 }}>
         <button className="btn-gold" onClick={() => setTab('shop')} style={{
           padding: '14px 16px', fontSize: 13, borderRadius: 14,
-          boxShadow: '0 4px 20px rgba(212,175,55,0.2)',
+          boxShadow: '0 4px 20px rgba(0,212,255,0.2)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
         }}>
           <span>⚡</span> {t('power.buy_power')}
@@ -427,15 +427,15 @@ export default function PowerPage() {
       {/* ── Hashes Card ── */}
       <div style={{
         marginBottom: 16, position: 'relative', zIndex: 1, overflow: 'hidden',
-        background: 'linear-gradient(145deg, rgba(212,175,55,0.04), rgba(0,0,0,0.3))',
-        border: '1px solid rgba(212,175,55,0.1)',
+        background: 'linear-gradient(145deg, rgba(0,212,255,0.04), rgba(0,0,0,0.3))',
+        border: '1px solid rgba(0,212,255,0.1)',
         borderRadius: 20, padding: 20,
       }}>
         {/* Shimmer effect on card */}
         {power > 0 && (
           <div style={{
             position: 'absolute', inset: 0,
-            background: 'linear-gradient(90deg, transparent, rgba(212,175,55,0.03), transparent)',
+            background: 'linear-gradient(90deg, transparent, rgba(0,212,255,0.03), transparent)',
             backgroundSize: '200% 100%',
             animation: 'shimmer 3s ease-in-out infinite',
             pointerEvents: 'none',
@@ -446,7 +446,7 @@ export default function PowerPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{
               width: 34, height: 34, borderRadius: 11,
-              background: 'linear-gradient(135deg, rgba(212,175,55,0.15), rgba(212,175,55,0.05))',
+              background: 'linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,212,255,0.05))',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 16,
             }}>⛏️</div>
@@ -464,7 +464,7 @@ export default function PowerPage() {
 
         <div style={{
           fontSize: 32, fontWeight: 900,
-          background: 'linear-gradient(135deg, var(--gold-light), var(--gold))',
+          background: 'linear-gradient(135deg, var(--ice-light), var(--ice))',
           WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           fontFamily: "'Inter', monospace", letterSpacing: -0.5, marginBottom: 4,
           position: 'relative',
@@ -498,7 +498,7 @@ export default function PowerPage() {
           onClick={handleCollectAndWithdraw}
           disabled={collecting || (liveHashes <= 0 && tonBalance <= 0)}
           style={{
-            boxShadow: liveHashes > 0 ? '0 4px 24px rgba(212,175,55,0.25)' : 'none',
+            boxShadow: liveHashes > 0 ? '0 4px 24px rgba(0,212,255,0.25)' : 'none',
             position: 'relative', overflow: 'hidden', borderRadius: 14,
           }}
         >

@@ -66,13 +66,13 @@ export default function AdminPage() {
           <button key={t.id} onClick={() => setTab(t.id)} style={{
             padding: '14px 6px', borderRadius: 14, border: 'none',
             background: tab === t.id
-              ? 'linear-gradient(135deg, var(--gold-dark), var(--gold))'
+              ? 'linear-gradient(135deg, var(--ice-dark), var(--ice))'
               : 'var(--bg-card)',
             color: tab === t.id ? '#000' : 'var(--text-muted)',
             fontWeight: 700, fontSize: 10, cursor: 'pointer',
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
             transition: 'all 0.2s ease',
-            boxShadow: tab === t.id ? '0 4px 12px rgba(212,175,55,0.3)' : 'none',
+            boxShadow: tab === t.id ? '0 4px 12px rgba(0,212,255,0.3)' : 'none',
             border: tab === t.id ? 'none' : '1px solid var(--border)',
           }}>
             <span style={{ fontSize: 22 }}>{t.icon}</span>
@@ -155,10 +155,10 @@ function Dashboard() {
     { icon: '🆕', label: 'За 24ч', val: stats.new_users_24h, color: 'var(--green)' },
     { icon: '🟢', label: 'Онлайн (5м)', val: stats.online_5min || 0, color: '#22c55e' },
     { icon: '🔵', label: 'Онлайн (1ч)', val: stats.online_1h || 0, color: '#3b82f6' },
-    { icon: '⚡', label: 'Power (актив)', val: fmtK(stats.total_power), color: 'var(--gold-light)', field: 'power' },
+    { icon: '⚡', label: 'Power (актив)', val: fmtK(stats.total_power), color: 'var(--ice-light)', field: 'power' },
     { icon: '💰', label: 'TON баланс', val: fmt(stats.total_ton_balance, 2), color: 'var(--orange)', field: 'ton_balance' },
     { icon: '🛒', label: 'Покупок', val: stats.total_purchases, color: 'var(--green)', field: 'purchases' },
-    { icon: '💵', label: 'Выручка', val: `${fmt(stats.total_revenue, 2)} TON`, color: 'var(--gold)', field: 'revenue' },
+    { icon: '💵', label: 'Выручка', val: `${fmt(stats.total_revenue, 2)} TON`, color: 'var(--ice)', field: 'revenue' },
     { icon: '👥', label: 'Рефералы', val: stats.total_referrals || '▸', color: '#a855f7', field: 'referrals' },
     { icon: '🎥', label: 'Ads просмотры', val: stats.total_ads_watched || '▸', color: '#f59e0b', field: 'ads_watched' },
     { icon: '⏳', label: 'Выводы (ожид)', val: stats.pending_withdrawals, color: stats.pending_withdrawals > 0 ? 'var(--red)' : 'var(--text-muted)' },
@@ -208,7 +208,7 @@ function Dashboard() {
 
       {/* 🛒 Buyers vs Free */}
       {stats.buyers && (
-        <div className="card" style={{ padding: 14, marginBottom: 16, border: '1px solid rgba(212,175,55,0.15)', animation: 'fadeIn 0.3s ease' }}>
+        <div className="card" style={{ padding: 14, marginBottom: 16, border: '1px solid rgba(0,212,255,0.15)', animation: 'fadeIn 0.3s ease' }}>
           <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 10 }}>🛒 Покупатели vs Бесплатные</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
             {/* Buyers */}
@@ -219,7 +219,7 @@ function Dashboard() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <div style={{ fontSize: 10 }}>
                   <span style={{ color: 'var(--text-muted)' }}>⚡ Power: </span>
-                  <span style={{ color: 'var(--gold)', fontWeight: 700 }}>{fmtK(stats.buyers.buyers_power)}</span>
+                  <span style={{ color: 'var(--ice)', fontWeight: 700 }}>{fmtK(stats.buyers.buyers_power)}</span>
                 </div>
                 <div style={{ fontSize: 10 }}>
                   <span style={{ color: 'var(--text-muted)' }}>💰 Баланс: </span>
@@ -239,7 +239,7 @@ function Dashboard() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <div style={{ fontSize: 10 }}>
                   <span style={{ color: 'var(--text-muted)' }}>⚡ Power: </span>
-                  <span style={{ color: 'var(--gold)', fontWeight: 700 }}>{fmtK(stats.buyers.free_power)}</span>
+                  <span style={{ color: 'var(--ice)', fontWeight: 700 }}>{fmtK(stats.buyers.free_power)}</span>
                 </div>
                 <div style={{ fontSize: 10 }}>
                   <span style={{ color: 'var(--text-muted)' }}>💰 Баланс: </span>
@@ -260,10 +260,10 @@ function Dashboard() {
               <div style={{ marginTop: 10 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--text-muted)', marginBottom: 4 }}>
                   <span>Конверсия в покупку</span>
-                  <span style={{ color: 'var(--gold)', fontWeight: 700 }}>{pct}%</span>
+                  <span style={{ color: 'var(--ice)', fontWeight: 700 }}>{pct}%</span>
                 </div>
                 <div style={{ height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
-                  <div style={{ width: `${pct}%`, height: '100%', borderRadius: 3, background: 'linear-gradient(90deg, var(--gold-dark), var(--gold))', transition: 'width 0.5s' }} />
+                  <div style={{ width: `${pct}%`, height: '100%', borderRadius: 3, background: 'linear-gradient(90deg, var(--ice-dark), var(--ice))', transition: 'width 0.5s' }} />
                 </div>
               </div>
             );
@@ -294,9 +294,9 @@ function Dashboard() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div style={{
                       width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
-                      background: i < 3 ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)',
+                      background: i < 3 ? 'rgba(0,212,255,0.15)' : 'rgba(255,255,255,0.05)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 11, fontWeight: 800, color: i < 3 ? 'var(--gold)' : 'var(--text-muted)',
+                      fontSize: 11, fontWeight: 800, color: i < 3 ? 'var(--ice)' : 'var(--text-muted)',
                     }}>{i + 1}</div>
                     <div>
                       <div style={{ fontSize: 12, fontWeight: 700 }}>
@@ -309,7 +309,7 @@ function Dashboard() {
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--gold)' }}>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--ice)' }}>
                       {topField === 'ton_balance' && `${parseFloat(u.ton_balance).toFixed(4)} TON`}
                       {topField === 'power' && `${fmtK(u.power)} GH/s`}
                       {topField === 'purchases' && `${u.extra}`}
@@ -360,7 +360,7 @@ function Dashboard() {
 
       {/* 💰 Finance Analytics */}
       {stats.finance && (
-        <div className="card" style={{ padding: 16, marginBottom: 16, border: '1px solid rgba(212,175,55,0.2)', animation: 'fadeIn 0.3s ease' }}>
+        <div className="card" style={{ padding: 16, marginBottom: 16, border: '1px solid rgba(0,212,255,0.2)', animation: 'fadeIn 0.3s ease' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
             <span style={{ fontSize: 22 }}>💰</span>
             <div>
@@ -419,7 +419,7 @@ function Dashboard() {
               <div style={{ display: 'flex', gap: 12, marginTop: 8, padding: '8px 0', borderTop: '1px solid rgba(248,113,113,0.12)' }}>
                 <div style={{ fontSize: 10 }}>
                   <span style={{ color: 'var(--text-muted)' }}>⚡ Power: </span>
-                  <span style={{ color: 'var(--gold)', fontWeight: 700 }}>{fmtK(stats.finance.banned_power || 0)}</span>
+                  <span style={{ color: 'var(--ice)', fontWeight: 700 }}>{fmtK(stats.finance.banned_power || 0)}</span>
                 </div>
                 <div style={{ fontSize: 10 }}>
                   <span style={{ color: 'var(--text-muted)' }}>💰 Баланс: </span>
@@ -430,10 +430,10 @@ function Dashboard() {
           )}
 
           {/* ⚡ Mining Forecast */}
-          <div style={{ padding: 12, borderRadius: 10, background: 'rgba(212,175,55,0.04)', border: '1px solid rgba(212,175,55,0.15)', marginBottom: 12 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--gold)', marginBottom: 8 }}>⚡ Прогноз майнинга (по текущему Power)</div>
+          <div style={{ padding: 12, borderRadius: 10, background: 'rgba(0,212,255,0.04)', border: '1px solid rgba(0,212,255,0.15)', marginBottom: 12 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--ice)', marginBottom: 8 }}>⚡ Прогноз майнинга (по текущему Power)</div>
             <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 10 }}>
-              Активный Power: <span style={{ color: 'var(--gold)', fontWeight: 700 }}>{fmtK(stats.finance.active_power)} GH/s</span>
+              Активный Power: <span style={{ color: 'var(--ice)', fontWeight: 700 }}>{fmtK(stats.finance.active_power)} GH/s</span>
               {' '}(100K = 0.036 TON/день)
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, marginBottom: 10 }}>
@@ -660,11 +660,11 @@ function UsersPanel() {
   if (detail && detailData) {
     const u = detailData.user;
     const statCards = [
-      { icon: '⚡', label: 'POWER', val: fmtK(Math.floor(u.power)), color: 'var(--gold)' },
-      { icon: '💰', label: 'TON', val: fmt(u.ton_balance, 4), color: 'var(--gold-light)' },
+      { icon: '⚡', label: 'POWER', val: fmtK(Math.floor(u.power)), color: 'var(--ice)' },
+      { icon: '💰', label: 'TON', val: fmt(u.ton_balance, 4), color: 'var(--ice-light)' },
       { icon: '🛒', label: 'Покупок', val: detailData.purchases.length, color: 'var(--green)' },
       { icon: '💵', label: 'Потрачено', val: `${fmt(detailData.purchases_total, 2)}`, color: 'var(--orange)' },
-      { icon: '👥', label: 'Рефералов', val: detailData.referrals.length, color: 'var(--gold)' },
+      { icon: '👥', label: 'Рефералов', val: detailData.referrals.length, color: 'var(--ice)' },
       { icon: '💸', label: 'Выведено', val: `${fmt(detailData.withdrawals_total, 4)}`, color: 'var(--red)' },
     ];
     return (
@@ -677,7 +677,7 @@ function UsersPanel() {
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 16, fontWeight: 800 }}>
               {u.first_name || u.username || '—'}
-              {u.is_premium && <span style={{ color: 'var(--gold)', marginLeft: 4 }}>★</span>}
+              {u.is_premium && <span style={{ color: 'var(--ice)', marginLeft: 4 }}>★</span>}
               {u.is_blocked && <span style={{ color: 'var(--red)', marginLeft: 6, fontSize: 12 }}>🚫 BLOCKED</span>}
             </div>
             <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
@@ -711,8 +711,8 @@ function UsersPanel() {
         <div className="card" style={{ padding: '10px 14px', marginBottom: 10 }}>
           <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>🎁 РЕФЕРАЛЬНЫЙ ДОХОД</div>
           <div style={{ display: 'flex', gap: 16 }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--gold)' }}>⚡ {fmtK(detailData.referral_rewards?.total_power || 0)} POWER</span>
-            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--gold-light)' }}>💎 {fmt(detailData.referral_rewards?.total_ton || 0, 4)} TON</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--ice)' }}>⚡ {fmtK(detailData.referral_rewards?.total_power || 0)} POWER</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--ice-light)' }}>💎 {fmt(detailData.referral_rewards?.total_ton || 0, 4)} TON</span>
           </div>
         </div>
 
@@ -728,7 +728,7 @@ function UsersPanel() {
                     <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{new Date(p.created_at).toLocaleDateString()}</div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--gold)' }}>{fmt(p.ton_paid, 2)} TON</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--ice)' }}>{fmt(p.ton_paid, 2)} TON</div>
                     <div style={{ fontSize: 10, color: 'var(--green)' }}>+{fmtK(p.power_amount)} PW</div>
                   </div>
                 </div>
@@ -762,7 +762,7 @@ function UsersPanel() {
               {detailData.withdrawals.map(w => (
                 <div key={w.id} className="card" style={{ padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--gold-light)' }}>{fmt(w.ton_amount, 4)} TON</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--ice-light)' }}>{fmt(w.ton_amount, 4)} TON</div>
                     <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'monospace' }}>{w.wallet_address?.slice(0, 8)}...</div>
                   </div>
                   <div style={{ fontSize: 11, fontWeight: 600, color: w.status === 'completed' ? 'var(--green)' : w.status === 'rejected' ? 'var(--red)' : 'var(--orange)' }}>
@@ -836,7 +836,7 @@ function UsersPanel() {
               <div onClick={() => loadDetails(u.id)} style={{ cursor: 'pointer', flex: 1 }}>
                 <div style={{ fontSize: 14, fontWeight: 700 }}>
                   {u.first_name || u.username || '—'}
-                  {u.is_premium && <span style={{ color: 'var(--gold)', marginLeft: 4 }}>★</span>}
+                  {u.is_premium && <span style={{ color: 'var(--ice)', marginLeft: 4 }}>★</span>}
                   {u.is_blocked && <span style={{ color: 'var(--red)', marginLeft: 6, fontSize: 10 }}>🚫</span>}
                 </div>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
@@ -864,9 +864,9 @@ function UsersPanel() {
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, marginTop: 8 }}>
-              <MiniStat label="POWER" val={fmtK(Math.floor(u.power))} color="var(--gold)" />
+              <MiniStat label="POWER" val={fmtK(Math.floor(u.power))} color="var(--ice)" />
               <MiniStat label="HASHES" val={parseFloat(u.hashes).toFixed(2)} />
-              <MiniStat label="TON" val={fmt(u.ton_balance, 4)} color="var(--gold-light)" />
+              <MiniStat label="TON" val={fmt(u.ton_balance, 4)} color="var(--ice-light)" />
             </div>
 
             {editing === u.id && <AdjustForm user={u} onSave={handleAdjust} />}
@@ -1038,7 +1038,7 @@ function WithdrawalsPanel() {
   return (
     <div>
       {/* ═══ Withdraw Settings Card ═══ */}
-      <div className="card" style={{ padding: 16, marginBottom: 16, border: '1px solid rgba(212,175,55,0.2)' }}>
+      <div className="card" style={{ padding: 16, marginBottom: 16, border: '1px solid rgba(0,212,255,0.2)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
           <span style={{ fontSize: 22 }}>⚙️</span>
           <div>
@@ -1067,7 +1067,7 @@ function WithdrawalsPanel() {
               <button key={mode} onClick={() => setWs({...ws, withdraw_fee_mode: mode})} style={{
                 padding: '10px 8px', borderRadius: 10, border: 'none',
                 background: ws.withdraw_fee_mode === mode
-                  ? 'linear-gradient(135deg, var(--gold-dark), var(--gold))'
+                  ? 'linear-gradient(135deg, var(--ice-dark), var(--ice))'
                   : 'rgba(255,255,255,0.04)',
                 color: ws.withdraw_fee_mode === mode ? '#000' : 'var(--text-muted)',
                 fontWeight: 700, fontSize: 11, cursor: 'pointer',
@@ -1170,7 +1170,7 @@ function WithdrawalsPanel() {
                     padding: '6px 4px', borderRadius: 6, textAlign: 'center',
                     background: 'rgba(255,255,255,0.03)', fontSize: 10
                   }}>
-                    <div style={{ fontWeight: 700, color: 'var(--gold)' }}>{amount} TON</div>
+                    <div style={{ fontWeight: 700, color: 'var(--ice)' }}>{amount} TON</div>
                     <div style={{ color: 'var(--orange)', fontSize: 9 }}>−{fmt(fee, 4)}</div>
                     <div style={{ color: 'var(--green)', fontWeight: 700, fontSize: 9 }}>={fmt(amount - fee, 4)}</div>
                   </div>
@@ -1253,7 +1253,7 @@ function WithdrawalsPanel() {
         {['pending', 'completed', 'rejected'].map(s => (
           <button key={s} onClick={() => setFilter(s)} style={{
             padding: '6px 14px', borderRadius: 8, border: 'none',
-            background: filter === s ? 'var(--gold)' : 'var(--bg-card)',
+            background: filter === s ? 'var(--ice)' : 'var(--bg-card)',
             color: filter === s ? '#000' : 'var(--text-muted)',
             fontWeight: 700, fontSize: 12, cursor: 'pointer'
           }}>
@@ -1278,7 +1278,7 @@ function WithdrawalsPanel() {
           <div key={w.id} className="card" style={{ padding: '14px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
               <div>
-                <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--gold-light)' }}>
+                <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--ice-light)' }}>
                   {fmt(w.ton_amount, 4)} TON
                 </div>
                 {parseFloat(w.fee_amount || 0) > 0 && (
@@ -1426,7 +1426,7 @@ function TasksPanel() {
                   color: t.visibility === 'admin' ? 'var(--red)' : 'var(--green)',
                 }}>{t.visibility === 'admin' ? '🔒 СКРЫТ' : '🌍 ПУБЛ'}</span>
               </div>
-              <div style={{ fontSize: 11, color: 'var(--gold)' }}>+{fmtK(t.reward_power)} POWER</div>
+              <div style={{ fontSize: 11, color: 'var(--ice)' }}>+{fmtK(t.reward_power)} POWER</div>
             </div>
             <button onClick={() => toggleVisibility(t.id, t.visibility)} title="Видимость" style={{
               background: t.visibility === 'admin' ? 'rgba(248,113,113,0.1)' : 'rgba(52,211,153,0.1)',
@@ -1516,7 +1516,7 @@ function OrdersPanel() {
   };
 
   const typeLabels = { subscribe_channel: '📢 Подписка', start_bot: '🤖 Бот', link: '🔗 Ссылка' };
-  const statusColors = { pending: 'var(--orange)', active: 'var(--green)', completed: 'var(--gold)', rejected: 'var(--red)' };
+  const statusColors = { pending: 'var(--orange)', active: 'var(--green)', completed: 'var(--ice)', rejected: 'var(--red)' };
   const statusLabels = { pending: '⏳ Ожидает', active: '✅ Активен', completed: '🏁 Завершён', rejected: '❌ Отклонён' };
 
   const priceFields = [
@@ -1547,7 +1547,7 @@ function OrdersPanel() {
         </div>
         <button onClick={savePrices} disabled={savingPrices} style={{
           width: '100%', padding: 10, borderRadius: 10, border: 'none', fontWeight: 700, fontSize: 12, cursor: 'pointer',
-          marginTop: 10, background: 'linear-gradient(135deg, var(--gold-dark), var(--gold))', color: '#000',
+          marginTop: 10, background: 'linear-gradient(135deg, var(--ice-dark), var(--ice))', color: '#000',
         }}>
           {savingPrices ? '⏳...' : '💾 Сохранить цены'}
         </button>
@@ -1598,7 +1598,7 @@ function OrdersPanel() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, marginBottom: 8 }}>
               <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 8, padding: '6px 8px', textAlign: 'center' }}>
-                <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--gold)' }}>{fmt(o.total_paid, 4)}</div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--ice)' }}>{fmt(o.total_paid, 4)}</div>
                 <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>TON оплата</div>
               </div>
               <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 8, padding: '6px 8px', textAlign: 'center' }}>
@@ -1769,13 +1769,13 @@ function PackagesPanel() {
         {packages.map(p => (
           <div key={p.id} className="card" style={{
             padding: '12px 14px', opacity: p.is_active ? 1 : 0.5,
-            border: editingId === p.id ? '1px solid var(--gold)' : undefined,
+            border: editingId === p.id ? '1px solid var(--ice)' : undefined,
             transition: 'var(--transition)'
           }}>
             {/* Edit mode */}
             {editingId === p.id ? (
               <div>
-                <div style={{ fontSize: 11, color: 'var(--gold)', fontWeight: 700, marginBottom: 8, letterSpacing: 1 }}>
+                <div style={{ fontSize: 11, color: 'var(--ice)', fontWeight: 700, marginBottom: 8, letterSpacing: 1 }}>
                   ✏️ РЕДАКТИРОВАНИЕ
                 </div>
                 <input type="text" value={form.name} onChange={e => setForm({...form, name: e.target.value})}
@@ -1898,9 +1898,9 @@ function ReferralsPanel() {
       {stats && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 }}>
           {[
-            { icon: '🤝', label: 'Всего рефералов', val: stats.total_referrals, color: 'var(--gold)' },
+            { icon: '🤝', label: 'Всего рефералов', val: stats.total_referrals, color: 'var(--ice)' },
             { icon: '✅', label: 'Активных', val: stats.confirmed_referrals, color: 'var(--green)' },
-            { icon: '⚡', label: 'Power выдано', val: fmtK(stats.total_power_given), color: 'var(--gold-light)' },
+            { icon: '⚡', label: 'Power выдано', val: fmtK(stats.total_power_given), color: 'var(--ice-light)' },
             { icon: '💎', label: 'TON выдано', val: fmt(stats.total_ton_given, 4), color: 'var(--orange)' },
           ].map((c, i) => (
             <div key={c.label} className="card" style={{
@@ -1916,7 +1916,7 @@ function ReferralsPanel() {
 
       {/* Settings form */}
       <div className="card" style={{ marginBottom: 16 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12, color: 'var(--gold)', letterSpacing: 0.5 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12, color: 'var(--ice)', letterSpacing: 0.5 }}>
           ⚙️ НАСТРОЙКИ РЕФЕРАЛОВ
         </div>
         <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 14 }}>
@@ -1962,7 +1962,7 @@ function ReferralsPanel() {
               }}>
                 <div style={{
                   width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
-                  background: i < 3 ? 'linear-gradient(135deg, var(--gold-dark), var(--gold))' : 'var(--bg-card)',
+                  background: i < 3 ? 'linear-gradient(135deg, var(--ice-dark), var(--ice))' : 'var(--bg-card)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 12, fontWeight: 800, color: i < 3 ? '#000' : 'var(--text-muted)'
                 }}>{i + 1}</div>
@@ -1975,7 +1975,7 @@ function ReferralsPanel() {
                   </div>
                 </div>
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--gold)' }}>{r.ref_count}</div>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--ice)' }}>{r.ref_count}</div>
                   <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>рефер. ({r.confirmed_count} актив)</div>
                 </div>
               </div>
@@ -2303,10 +2303,10 @@ function MultiAccountPanel({ onGoToUser }) {
           <div>
             <div style={{ fontSize: 12, fontWeight: 700, fontFamily: 'monospace' }}>{g.ip}</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-              <span style={{ fontSize: 11, color: g.user_count >= 3 ? 'var(--red)' : 'var(--gold)', fontWeight: 700 }}>
+              <span style={{ fontSize: 11, color: g.user_count >= 3 ? 'var(--red)' : 'var(--ice)', fontWeight: 700 }}>
                 {g.user_count} акк.
               </span>
-              {g.has_admin && <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 4, background: 'rgba(212,175,55,0.15)', color: 'var(--gold)', fontWeight: 700 }}>👑 ADMIN</span>}
+              {g.has_admin && <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 4, background: 'rgba(0,212,255,0.15)', color: 'var(--ice)', fontWeight: 700 }}>👑 ADMIN</span>}
               {g.is_blacklisted && <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 4, background: 'var(--red-bg)', color: 'var(--red)', fontWeight: 700 }}>⛔ ЧС</span>}
               {g.is_ignored && <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 4, background: 'rgba(52,211,153,0.12)', color: 'var(--green)', fontWeight: 700 }}>✅ ИГНОР</span>}
             </div>
@@ -2351,28 +2351,28 @@ function MultiAccountPanel({ onGoToUser }) {
           {g.users.map(u => (
             <div key={u.id} style={{
               padding: 10, borderRadius: 10,
-              background: u.is_admin ? 'rgba(212,175,55,0.06)' : u.is_blocked ? 'rgba(248,113,113,0.08)' : 'rgba(255,255,255,0.03)',
-              border: u.is_admin ? '1px solid rgba(212,175,55,0.25)' : u.is_blocked ? '1px solid rgba(248,113,113,0.2)' : '1px solid var(--border)',
+              background: u.is_admin ? 'rgba(0,212,255,0.06)' : u.is_blocked ? 'rgba(248,113,113,0.08)' : 'rgba(255,255,255,0.03)',
+              border: u.is_admin ? '1px solid rgba(0,212,255,0.25)' : u.is_blocked ? '1px solid rgba(248,113,113,0.2)' : '1px solid var(--border)',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 700 }}>
                     {u.first_name || u.username || 'Noname'}
                     {u.is_premium && <span style={{ fontSize: 9, marginLeft: 4 }}>⭐</span>}
-                    {u.is_admin && <span style={{ fontSize: 8, marginLeft: 6, padding: '1px 5px', borderRadius: 4, background: 'rgba(212,175,55,0.15)', color: 'var(--gold)', fontWeight: 700 }}>👑</span>}
+                    {u.is_admin && <span style={{ fontSize: 8, marginLeft: 6, padding: '1px 5px', borderRadius: 4, background: 'rgba(0,212,255,0.15)', color: 'var(--ice)', fontWeight: 700 }}>👑</span>}
                     {u.is_blocked && <span style={{ fontSize: 8, marginLeft: 6, padding: '1px 5px', borderRadius: 4, background: 'var(--red-bg)', color: 'var(--red)', fontWeight: 700 }}>BAN</span>}
                   </div>
                   <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
                     ID:{u.id} • TG:{u.tg_id}{u.username ? ` • @${u.username}` : ''}
                   </div>
                   <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-                    <span style={{ fontSize: 10, color: 'var(--gold)' }}>⚡ {fmtK(u.power)}</span>
+                    <span style={{ fontSize: 10, color: 'var(--ice)' }}>⚡ {fmtK(u.power)}</span>
                     <span style={{ fontSize: 10, color: 'var(--green)' }}>💎 {parseFloat(u.ton_balance || 0).toFixed(4)}</span>
                   </div>
                   <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>Рег: {new Date(u.created_at).toLocaleDateString()}</div>
                   {u.ref_tg_id ? (
                     <div style={{ fontSize: 9, marginTop: 3, color: 'var(--text-muted)' }}>
-                      👤 <span style={{ color: 'var(--gold)', fontWeight: 700 }}>{u.ref_first_name || u.ref_username || 'Noname'}</span>
+                      👤 <span style={{ color: 'var(--ice)', fontWeight: 700 }}>{u.ref_first_name || u.ref_username || 'Noname'}</span>
                       <span style={{ fontFamily: 'monospace', marginLeft: 4 }}>TG:{u.ref_tg_id}</span>
                     </div>
                   ) : (
@@ -2382,8 +2382,8 @@ function MultiAccountPanel({ onGoToUser }) {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flexShrink: 0 }}>
                   {onGoToUser && (
                     <button onClick={() => onGoToUser(u.tg_id)} style={{
-                      background: 'rgba(212,175,55,0.1)', border: 'none', borderRadius: 8,
-                      padding: '6px 10px', color: 'var(--gold)', fontSize: 10, fontWeight: 700, cursor: 'pointer',
+                      background: 'rgba(0,212,255,0.1)', border: 'none', borderRadius: 8,
+                      padding: '6px 10px', color: 'var(--ice)', fontSize: 10, fontWeight: 700, cursor: 'pointer',
                     }}>👤</button>
                   )}
                   {!u.is_blocked && !u.is_admin && (
@@ -2443,8 +2443,8 @@ function MultiAccountPanel({ onGoToUser }) {
         ].map(t => (
           <button key={t.id} onClick={() => setSubTab(t.id)} style={{
             padding: '8px 4px', borderRadius: 10, border: 'none', fontSize: 9, fontWeight: 700, cursor: 'pointer',
-            background: subTab === t.id ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)',
-            color: subTab === t.id ? 'var(--gold)' : 'var(--text-muted)',
+            background: subTab === t.id ? 'rgba(0,212,255,0.15)' : 'rgba(255,255,255,0.04)',
+            color: subTab === t.id ? 'var(--ice)' : 'var(--text-muted)',
           }}>{t.label} ({t.count})</button>
         ))}
       </div>
@@ -2642,8 +2642,8 @@ function BroadcastPanel() {
         {['HTML', 'Markdown', 'Plain'].map(m => (
           <button key={m} onClick={() => setParseMode(m === 'Plain' ? '' : m)} style={{
             padding: '6px 14px', borderRadius: 8, border: 'none', fontSize: 11, fontWeight: 700, cursor: 'pointer',
-            background: (parseMode === m || (m === 'Plain' && !parseMode)) ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)',
-            color: (parseMode === m || (m === 'Plain' && !parseMode)) ? 'var(--gold)' : 'var(--text-muted)',
+            background: (parseMode === m || (m === 'Plain' && !parseMode)) ? 'rgba(0,212,255,0.15)' : 'rgba(255,255,255,0.04)',
+            color: (parseMode === m || (m === 'Plain' && !parseMode)) ? 'var(--ice)' : 'var(--text-muted)',
           }}>{m}</button>
         ))}
       </div>
@@ -2652,20 +2652,20 @@ function BroadcastPanel() {
       <label onClick={() => setIsRtl(!isRtl)} style={{
         display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10,
         padding: '8px 12px', borderRadius: 10, cursor: 'pointer',
-        background: isRtl ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.04)',
-        border: isRtl ? '1px solid rgba(212,175,55,0.3)' : '1px solid var(--border)',
+        background: isRtl ? 'rgba(0,212,255,0.12)' : 'rgba(255,255,255,0.04)',
+        border: isRtl ? '1px solid rgba(0,212,255,0.3)' : '1px solid var(--border)',
         transition: 'all 0.2s ease',
       }}>
         <div style={{
           width: 18, height: 18, borderRadius: 4, flexShrink: 0,
-          background: isRtl ? 'var(--gold)' : 'transparent',
+          background: isRtl ? 'var(--ice)' : 'transparent',
           border: isRtl ? 'none' : '2px solid var(--border)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 11, color: '#000', fontWeight: 800,
           transition: 'all 0.2s ease',
         }}>{isRtl ? '✓' : ''}</div>
         <div>
-          <div style={{ fontSize: 12, fontWeight: 700, color: isRtl ? 'var(--gold)' : 'var(--text-muted)' }}>🇸🇦 Арабский (RTL)</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: isRtl ? 'var(--ice)' : 'var(--text-muted)' }}>🇸🇦 Арабский (RTL)</div>
           <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>Текст справа налево — для арабского, иврита, фарси</div>
         </div>
       </label>
@@ -2726,16 +2726,16 @@ function BroadcastPanel() {
 
       {/* Live progress */}
       {sending && progress && progress.status === 'sending' && (
-        <div className="card" style={{ marginTop: 12, padding: 14, border: '1px solid rgba(212,175,55,0.3)', animation: 'fadeIn 0.3s ease' }}>
+        <div className="card" style={{ marginTop: 12, padding: 14, border: '1px solid rgba(0,212,255,0.3)', animation: 'fadeIn 0.3s ease' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--gold)' }}>📤 Отправка...</div>
-            <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--gold)' }}>{pct}%</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--ice)' }}>📤 Отправка...</div>
+            <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--ice)' }}>{pct}%</div>
           </div>
           {/* Progress bar */}
           <div style={{ height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.06)', marginBottom: 10, overflow: 'hidden' }}>
             <div style={{
               height: '100%', borderRadius: 3, transition: 'width 0.5s ease',
-              background: 'linear-gradient(90deg, var(--gold-dark), var(--gold))',
+              background: 'linear-gradient(90deg, var(--ice-dark), var(--ice))',
               width: `${pct}%`,
             }} />
           </div>
@@ -2753,7 +2753,7 @@ function BroadcastPanel() {
           marginTop: 12, padding: 14, border: '1px solid rgba(251,191,36,0.3)',
           textAlign: 'center', animation: 'fadeIn 0.2s ease'
         }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--gold)', marginBottom: 6 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--ice)', marginBottom: 6 }}>
             ⚠️ Подтвердите рассылку
           </div>
           <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 12 }}>
@@ -2793,8 +2793,8 @@ function BroadcastPanel() {
                 <MiniStat label="Ошибки" val={result.failed} color="var(--red)" />
               </div>
               {(result.blocked_auto > 0 || result.blocked_skipped > 0) && (
-                <div style={{ marginTop: 10, padding: 10, background: 'rgba(212,175,55,0.06)', borderRadius: 8 }}>
-                  <div style={{ fontSize: 10, color: 'var(--gold)', fontWeight: 700, marginBottom: 6 }}>🧹 Автоочистка</div>
+                <div style={{ marginTop: 10, padding: 10, background: 'rgba(0,212,255,0.06)', borderRadius: 8 }}>
+                  <div style={{ fontSize: 10, color: 'var(--ice)', fontWeight: 700, marginBottom: 6 }}>🧹 Автоочистка</div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
                     {result.blocked_auto > 0 && (
                       <div style={{ fontSize: 11 }}>
@@ -2951,7 +2951,7 @@ function AdminsPanel() {
 
       {showForm && (
         <div className="card" style={{ marginBottom: 14, animation: 'fadeIn 0.3s ease' }}>
-          <div style={{ fontSize: 11, color: 'var(--gold)', fontWeight: 700, marginBottom: 10, letterSpacing: 1 }}>
+          <div style={{ fontSize: 11, color: 'var(--ice)', fontWeight: 700, marginBottom: 10, letterSpacing: 1 }}>
             ➕ НОВЫЙ АДМИН
           </div>
           <input type="text" value={form.tg_id} onChange={e => setForm({...form, tg_id: e.target.value})}
@@ -2987,13 +2987,13 @@ function AdminsPanel() {
         {admins.map((a, i) => (
           <div key={a.tg_id} className="card" style={{
             padding: '14px', animation: `fadeIn 0.3s ease ${i * 0.04}s both`,
-            border: a.is_env ? '1px solid rgba(212,175,55,0.3)' : '1px solid var(--border)',
+            border: a.is_env ? '1px solid rgba(0,212,255,0.3)' : '1px solid var(--border)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1 }}>
                 <div style={{
                   width: 38, height: 38, borderRadius: '50%',
-                  background: a.is_env ? 'linear-gradient(135deg, var(--gold-dark), var(--gold))' : 'rgba(255,255,255,0.06)',
+                  background: a.is_env ? 'linear-gradient(135deg, var(--ice-dark), var(--ice))' : 'rgba(255,255,255,0.06)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 16, color: a.is_env ? '#000' : 'var(--text-muted)', flexShrink: 0,
                 }}>
@@ -3006,7 +3006,7 @@ function AdminsPanel() {
                     </span>
                     {a.is_env && (
                       <span style={{ fontSize: 8, padding: '2px 6px', borderRadius: 4, fontWeight: 800,
-                        background: 'linear-gradient(135deg, var(--gold-dark), var(--gold))', color: '#000'
+                        background: 'linear-gradient(135deg, var(--ice-dark), var(--ice))', color: '#000'
                       }}>SUPER</span>
                     )}
                   </div>
@@ -3016,7 +3016,7 @@ function AdminsPanel() {
                   {/* Permissions badges */}
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, marginTop: 4 }}>
                     {a.permissions === '*' ? (
-                      <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 4, background: 'rgba(212,175,55,0.15)', color: 'var(--gold)', fontWeight: 700 }}>
+                      <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 4, background: 'rgba(0,212,255,0.15)', color: 'var(--ice)', fontWeight: 700 }}>
                         ✦ Полный доступ
                       </span>
                     ) : Array.isArray(a.permissions) && a.permissions.length > 0 ? (
@@ -3041,9 +3041,9 @@ function AdminsPanel() {
                 {!a.is_env && (
                   <>
                     <button onClick={() => editPerms === a.tg_id ? setEditPerms(null) : startEditPerms(a)} style={{
-                      background: editPerms === a.tg_id ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)',
+                      background: editPerms === a.tg_id ? 'rgba(0,212,255,0.15)' : 'rgba(255,255,255,0.04)',
                       border: 'none', borderRadius: 8, padding: '6px 10px',
-                      color: editPerms === a.tg_id ? 'var(--gold)' : 'var(--text-muted)',
+                      color: editPerms === a.tg_id ? 'var(--ice)' : 'var(--text-muted)',
                       fontSize: 11, fontWeight: 700, cursor: 'pointer',
                     }}>🔐</button>
                     <button onClick={() => setConfirmRemove(a.tg_id)} style={{
@@ -3059,7 +3059,7 @@ function AdminsPanel() {
             {editPerms === a.tg_id && (
               <div style={{ marginTop: 10, padding: 12, background: 'rgba(255,255,255,0.03)', borderRadius: 12, animation: 'fadeIn 0.2s ease' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                  <div style={{ fontSize: 11, color: 'var(--gold)', fontWeight: 700, letterSpacing: 1 }}>🔐 ДОСТУП</div>
+                  <div style={{ fontSize: 11, color: 'var(--ice)', fontWeight: 700, letterSpacing: 1 }}>🔐 ДОСТУП</div>
                   <button onClick={toggleAllPerms} style={{
                     background: 'rgba(255,255,255,0.04)', border: 'none', borderRadius: 6,
                     padding: '3px 8px', color: 'var(--text-muted)', fontSize: 9, fontWeight: 700, cursor: 'pointer',
@@ -3175,8 +3175,8 @@ function AmbassadorAdminPanel() {
         {tabs.map(t => (
           <button key={t.id} onClick={() => setSubTab(t.id)} style={{
             flex: 1, padding: '10px 6px', borderRadius: 10, border: 'none', fontSize: 10, fontWeight: 700, cursor: 'pointer',
-            background: subTab === t.id ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)',
-            color: subTab === t.id ? 'var(--gold)' : 'var(--text-muted)',
+            background: subTab === t.id ? 'rgba(0,212,255,0.15)' : 'rgba(255,255,255,0.04)',
+            color: subTab === t.id ? 'var(--ice)' : 'var(--text-muted)',
           }}>{t.icon} {t.label}</button>
         ))}
       </div>
@@ -3216,10 +3216,10 @@ function AmbassadorSettings({ settings, onSave, showMsg }) {
       {settings?.stats && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 }}>
           {[
-            { icon: '📢', label: 'Каналов', val: settings.stats.total_channels, color: 'var(--gold)' },
+            { icon: '📢', label: 'Каналов', val: settings.stats.total_channels, color: 'var(--ice)' },
             { icon: '✅', label: 'Одобрено', val: settings.stats.approved_channels, color: 'var(--green)' },
             { icon: '⏳', label: 'Ожидают', val: settings.stats.pending_channels, color: 'var(--orange)' },
-            { icon: '📝', label: 'Постов', val: settings.stats.total_posts, color: 'var(--gold-light)' },
+            { icon: '📝', label: 'Постов', val: settings.stats.total_posts, color: 'var(--ice-light)' },
           ].map((c, i) => (
             <div key={c.label} className="card" style={{ padding: 14, animation: `fadeIn 0.3s ease ${i * 0.05}s both` }}>
               <div style={{ fontSize: 16, marginBottom: 4 }}>{c.icon}</div>
@@ -3245,9 +3245,9 @@ function AmbassadorSettings({ settings, onSave, showMsg }) {
             onChange={e => setCommission(parseFloat(e.target.value) || 0)}
             style={{ width: 80, textAlign: 'center', fontSize: 18, fontWeight: 800, padding: '10px 12px' }}
           />
-          <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--gold)' }}>%</span>
+          <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--ice)' }}>%</span>
           <div style={{ flex: 1, fontSize: 11, color: 'var(--text-muted)' }}>
-            Стандартная: {settings?.standard_commission_pct ?? '...'}%<br/>Амбассадор: <span style={{ color: 'var(--gold)', fontWeight: 700 }}>{commission}%</span>
+            Стандартная: {settings?.standard_commission_pct ?? '...'}%<br/>Амбассадор: <span style={{ color: 'var(--ice)', fontWeight: 700 }}>{commission}%</span>
           </div>
         </div>
       </div>
@@ -3268,7 +3268,7 @@ function AmbassadorSettings({ settings, onSave, showMsg }) {
             style={{ width: 110, textAlign: 'center', fontSize: 18, fontWeight: 800, padding: '10px 12px' }}
           />
           <div style={{ flex: 1, fontSize: 11, color: 'var(--text-muted)' }}>
-            Текущий порог: <span style={{ color: 'var(--gold)', fontWeight: 700 }}>{minSubs.toLocaleString()}</span> подписчиков
+            Текущий порог: <span style={{ color: 'var(--ice)', fontWeight: 700 }}>{minSubs.toLocaleString()}</span> подписчиков
           </div>
         </div>
       </div>
@@ -3483,7 +3483,7 @@ function AmbassadorPosts({ posts, channels, onUpdate, showMsg }) {
       <div className="card" style={{ padding: 12, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
         <span style={{ fontSize: 16 }}>📢</span>
         <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-          Одобренных каналов: <span style={{ color: 'var(--gold)', fontWeight: 700 }}>{approvedCount}</span>
+          Одобренных каналов: <span style={{ color: 'var(--ice)', fontWeight: 700 }}>{approvedCount}</span>
         </div>
       </div>
 
@@ -3493,7 +3493,7 @@ function AmbassadorPosts({ posts, channels, onUpdate, showMsg }) {
 
       {showForm && (
         <div className="card" style={{ marginBottom: 14, animation: 'fadeIn 0.3s ease' }}>
-          <div style={{ fontSize: 11, color: 'var(--gold)', fontWeight: 700, marginBottom: 10, letterSpacing: 1 }}>
+          <div style={{ fontSize: 11, color: 'var(--ice)', fontWeight: 700, marginBottom: 10, letterSpacing: 1 }}>
             📝 НОВЫЙ ПОСТ
           </div>
           <input type="text" value={title} onChange={e => setTitle(e.target.value)}
@@ -3508,14 +3508,14 @@ function AmbassadorPosts({ posts, channels, onUpdate, showMsg }) {
             }} />
           <div style={{
             padding: '8px 12px', marginBottom: 8, borderRadius: 8,
-            background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.12)',
+            background: 'rgba(0,212,255,0.06)', border: '1px solid rgba(0,212,255,0.12)',
           }}>
-            <div style={{ fontSize: 10, color: 'var(--gold)', fontWeight: 700, marginBottom: 4 }}>📌 СПЕЦ. СИМВОЛЫ:</div>
+            <div style={{ fontSize: 10, color: 'var(--ice)', fontWeight: 700, marginBottom: 4 }}>📌 СПЕЦ. СИМВОЛЫ:</div>
             <div style={{ fontSize: 10, color: 'var(--text-muted)', lineHeight: 1.6 }}>
               <code style={{ background: 'rgba(255,255,255,0.06)', padding: '1px 5px', borderRadius: 4, color: 'var(--green)' }}>{'{REF_LINK}'}</code> — ссылка партнёра (авто для каждого канала)<br/>
               <code style={{ background: 'rgba(255,255,255,0.06)', padding: '1px 5px', borderRadius: 4, color: 'var(--green)' }}>{'{REF_CODE}'}</code> — TG ID партнёра<br/>
               <code style={{ background: 'rgba(255,255,255,0.06)', padding: '1px 5px', borderRadius: 4, color: '#3b82f6' }}>{'{promo}'}</code> — 🎁 партнёрский промокод (уникальный для каждого канала)<br/>
-              <span style={{ color: 'var(--gold)' }}>🔘 Кнопка «Открыть»</span> — автоматически добавляется к каждому посту
+              <span style={{ color: 'var(--ice)' }}>🔘 Кнопка «Открыть»</span> — автоматически добавляется к каждому посту
             </div>
           </div>
 
@@ -3549,13 +3549,13 @@ function AmbassadorPosts({ posts, channels, onUpdate, showMsg }) {
           {/* Live Preview */}
           {(title || text || imagePreview) && (
             <div style={{ marginBottom: 12 }}>
-              <div style={{ fontSize: 10, color: 'var(--gold)', letterSpacing: 1, fontWeight: 700, marginBottom: 8 }}>
+              <div style={{ fontSize: 10, color: 'var(--ice)', letterSpacing: 1, fontWeight: 700, marginBottom: 8 }}>
                 👁 ПРЕДПРОСМОТР
               </div>
               <div style={{
                 padding: 14, borderRadius: 12,
-                background: 'linear-gradient(135deg, rgba(212,175,55,0.05), rgba(0,0,0,0.2))',
-                border: '1px solid rgba(212,175,55,0.15)',
+                background: 'linear-gradient(135deg, rgba(0,212,255,0.05), rgba(0,0,0,0.2))',
+                border: '1px solid rgba(0,212,255,0.15)',
               }}>
                 {imagePreview && (
                   <img src={imagePreview} alt="" style={{
@@ -3644,16 +3644,16 @@ function AmbassadorPosts({ posts, channels, onUpdate, showMsg }) {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                   <div style={{ fontSize: 14, fontWeight: 700, flex: 1 }}>{p.title}</div>
                   <button onClick={() => setPreviewId(previewId === p.id ? null : p.id)} style={{
-                    padding: '4px 10px', borderRadius: 8, border: '1px solid rgba(212,175,55,0.2)',
-                    background: previewId === p.id ? 'rgba(212,175,55,0.1)' : 'transparent',
-                    color: 'var(--gold)', fontSize: 10, fontWeight: 700, cursor: 'pointer',
+                    padding: '4px 10px', borderRadius: 8, border: '1px solid rgba(0,212,255,0.2)',
+                    background: previewId === p.id ? 'rgba(0,212,255,0.1)' : 'transparent',
+                    color: 'var(--ice)', fontSize: 10, fontWeight: 700, cursor: 'pointer',
                   }}>
                     {previewId === p.id ? '✕ Закрыть' : '👁 Просмотр'}
                   </button>
                 </div>
                 {previewId === p.id && (
-                  <div style={{ padding:14, borderRadius:12, marginBottom:10, background:'linear-gradient(135deg, rgba(212,175,55,0.05), rgba(0,0,0,0.2))', border:'1px solid rgba(212,175,55,0.15)', animation:'fadeIn 0.3s ease' }}>
-                    <div style={{ fontSize:9, color:'var(--gold)', letterSpacing:1, fontWeight:700, marginBottom:8 }}>👁 ПРЕДПРОСМОТР (как в Telegram)</div>
+                  <div style={{ padding:14, borderRadius:12, marginBottom:10, background:'linear-gradient(135deg, rgba(0,212,255,0.05), rgba(0,0,0,0.2))', border:'1px solid rgba(0,212,255,0.15)', animation:'fadeIn 0.3s ease' }}>
+                    <div style={{ fontSize:9, color:'var(--ice)', letterSpacing:1, fontWeight:700, marginBottom:8 }}>👁 ПРЕДПРОСМОТР (как в Telegram)</div>
                     {p.image_path && <img src={`${apiBase}${p.image_path}`} alt="" style={{ width:'100%', borderRadius:8, maxHeight:250, objectFit:'cover', marginBottom:10 }} />}
                     {p.title && <div style={{ fontSize:15, fontWeight:800, marginBottom:6 }}>{p.title}</div>}
                     {p.text && <div style={{ fontSize:13, color:'var(--text-secondary)', lineHeight:1.6, whiteSpace:'pre-wrap' }} dangerouslySetInnerHTML={{ __html: p.text }} />}
@@ -3669,7 +3669,7 @@ function AmbassadorPosts({ posts, channels, onUpdate, showMsg }) {
                 </div>
                 <div style={{ display:'flex', gap:6 }}>
                   <button onClick={() => publish(p.id)} disabled={publishing === p.id || approvedCount === 0}
-                    style={{ flex:1, padding:8, borderRadius:8, border:'none', fontWeight:700, fontSize:11, cursor:'pointer', background:'linear-gradient(135deg, var(--gold-dark), var(--gold))', color:'#000', opacity: approvedCount===0 ? 0.4 : 1 }}>
+                    style={{ flex:1, padding:8, borderRadius:8, border:'none', fontWeight:700, fontSize:11, cursor:'pointer', background:'linear-gradient(135deg, var(--ice-dark), var(--ice))', color:'#000', opacity: approvedCount===0 ? 0.4 : 1 }}>
                     {publishing === p.id ? '⏳ Публикация...' : `📤 Опубликовать (${approvedCount} каналов)`}
                   </button>
                   <button onClick={() => startEdit(p)} style={{ padding:'8px 12px', borderRadius:8, border:'1px solid rgba(59,130,246,0.2)', background:'transparent', color:'#3b82f6', fontSize:11, cursor:'pointer', fontWeight:700 }}>✏️</button>
@@ -3764,9 +3764,9 @@ function PromoCodesPanel() {
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 16 }}>
         {[
-          { icon: '🎟️', label: 'Всего', val: promos.length, color: 'var(--gold)' },
+          { icon: '🎟️', label: 'Всего', val: promos.length, color: 'var(--ice)' },
           { icon: '✅', label: 'Активных', val: promos.filter(p => p.is_active).length, color: 'var(--green)' },
-          { icon: '🔢', label: 'Исп-но', val: promos.reduce((a, p) => a + p.used_count, 0), color: 'var(--gold-light)' },
+          { icon: '🔢', label: 'Исп-но', val: promos.reduce((a, p) => a + p.used_count, 0), color: 'var(--ice-light)' },
         ].map(c => (
           <div key={c.label} className="card" style={{ padding: 12, textAlign: 'center' }}>
             <div style={{ fontSize: 14, marginBottom: 2 }}>{c.icon}</div>
@@ -3782,7 +3782,7 @@ function PromoCodesPanel() {
 
       {showForm && (
         <div className="card" style={{ marginBottom: 14, animation: 'fadeIn 0.3s ease' }}>
-          <div style={{ fontSize: 11, color: 'var(--gold)', fontWeight: 700, marginBottom: 12, letterSpacing: 1 }}>🎟️ НОВЫЙ ПРОМОКОД</div>
+          <div style={{ fontSize: 11, color: 'var(--ice)', fontWeight: 700, marginBottom: 12, letterSpacing: 1 }}>🎟️ НОВЫЙ ПРОМОКОД</div>
           <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
             <input type="text" value={code} onChange={e => setCode(e.target.value.toUpperCase())}
               placeholder="Код (например: WELCOME20)" style={{ flex: 1, fontSize: 14, fontWeight: 700, letterSpacing: 2 }} />
@@ -3792,8 +3792,8 @@ function PromoCodesPanel() {
               for (let i = 0; i < 8; i++) r += chars[Math.floor(Math.random() * chars.length)];
               setCode(r);
             }} style={{
-              padding: '10px 14px', borderRadius: 10, border: '1px solid rgba(212,175,55,0.2)',
-              background: 'rgba(212,175,55,0.08)', color: 'var(--gold)',
+              padding: '10px 14px', borderRadius: 10, border: '1px solid rgba(0,212,255,0.2)',
+              background: 'rgba(0,212,255,0.08)', color: 'var(--ice)',
               fontSize: 16, cursor: 'pointer', fontWeight: 700, whiteSpace: 'nowrap',
             }} title="Сгенерировать случайный код">🎲</button>
           </div>
@@ -3858,7 +3858,7 @@ function PromoCodesPanel() {
           return (
             <div key={p.id} className="card" style={{ padding: 14, animation: `fadeIn 0.3s ease ${i * 0.04}s both`, opacity: (!p.is_active || expired || exhausted) ? 0.5 : 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                <div style={{ fontSize: 16, fontWeight: 900, letterSpacing: 2, color: 'var(--gold)' }}>{p.code}</div>
+                <div style={{ fontSize: 16, fontWeight: 900, letterSpacing: 2, color: 'var(--ice)' }}>{p.code}</div>
                 <div style={{ fontSize: 16, fontWeight: 800, background: 'linear-gradient(135deg, #22c55e, #16a34a)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>-{p.discount_pct}%</div>
               </div>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
@@ -3870,7 +3870,7 @@ function PromoCodesPanel() {
                   background: p.is_active && !expired && !exhausted ? 'rgba(52,211,153,0.15)' : 'rgba(248,113,113,0.15)',
                   color: p.is_active && !expired && !exhausted ? 'var(--green)' : 'var(--red)',
                 }}>{!p.is_active ? '⏸ Неактивен' : expired ? '⏰ Истёк' : exhausted ? '🔢 Лимит' : '✅ Активен'}</span>
-                <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 6, background: 'rgba(212,175,55,0.1)', color: 'var(--gold)', fontWeight: 600 }}>
+                <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 6, background: 'rgba(0,212,255,0.1)', color: 'var(--ice)', fontWeight: 600 }}>
                   Исп: {p.used_count}{p.max_uses > 0 ? `/${p.max_uses}` : '/∞'}
                 </span>
                 {p.expires_at && <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 6, background: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)' }}>до {new Date(p.expires_at).toLocaleDateString()}</span>}
@@ -4008,7 +4008,7 @@ function DepositsPanel({ onGoToUser }) {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 14 }}>
           {[
             { label: 'Сегодня', count: s.today_count, ton: s.today_ton, color: 'var(--green)' },
-            { label: 'Неделя', count: s.week_count, ton: s.week_ton, color: 'var(--gold)' },
+            { label: 'Неделя', count: s.week_count, ton: s.week_ton, color: 'var(--ice)' },
             { label: 'Месяц', count: s.month_count, ton: s.month_ton, color: 'var(--orange)' },
           ].map(c => (
             <div key={c.label} className="card" style={{ padding: 10, textAlign: 'center' }}>
@@ -4042,8 +4042,8 @@ function DepositsPanel({ onGoToUser }) {
                     {d.original_price && parseFloat(d.ton_paid) < parseFloat(d.original_price) && (
                       <span style={{ fontSize: 9, color: 'var(--text-muted)', textDecoration: 'line-through' }}>{fmt(d.original_price, 4)}</span>
                     )}
-                    <span style={{ fontSize: 10, color: 'var(--gold)' }}>⚡ +{fmtK(d.power_amount)}</span>
-                    {d.package_name && <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 6, background: 'rgba(212,175,55,0.1)', color: 'var(--gold)', fontWeight: 600 }}>📦 {d.package_name}</span>}
+                    <span style={{ fontSize: 10, color: 'var(--ice)' }}>⚡ +{fmtK(d.power_amount)}</span>
+                    {d.package_name && <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 6, background: 'rgba(0,212,255,0.1)', color: 'var(--ice)', fontWeight: 600 }}>📦 {d.package_name}</span>}
                     {d.promo_code && (
                       <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 6, background: 'rgba(52,211,153,0.12)', color: 'var(--green)', fontWeight: 700 }}>
                         🎟️ {d.promo_code} -{d.promo_discount}%
@@ -4056,8 +4056,8 @@ function DepositsPanel({ onGoToUser }) {
                   </div>
                 </div>
                 {onGoToUser && <button onClick={() => onGoToUser(d.tg_id)} style={{
-                  background: 'rgba(212,175,55,0.1)', border: 'none', borderRadius: 8,
-                  padding: '6px 10px', color: 'var(--gold)', fontSize: 10, fontWeight: 700, cursor: 'pointer', flexShrink: 0, marginLeft: 8,
+                  background: 'rgba(0,212,255,0.1)', border: 'none', borderRadius: 8,
+                  padding: '6px 10px', color: 'var(--ice)', fontSize: 10, fontWeight: 700, cursor: 'pointer', flexShrink: 0, marginLeft: 8,
                 }}>👤</button>}
               </div>
             </div>
@@ -4120,7 +4120,7 @@ function DepositsPanel({ onGoToUser }) {
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                         <span style={{ fontSize: 13, fontWeight: 900, color: isCompleted ? 'var(--green)' : '#f59e0b' }}>{fmt(p.ton_amount, 4)} TON</span>
-                        {p.package_name && <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 6, background: 'rgba(212,175,55,0.1)', color: 'var(--gold)', fontWeight: 600 }}>📦 {p.package_name}</span>}
+                        {p.package_name && <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 6, background: 'rgba(0,212,255,0.1)', color: 'var(--ice)', fontWeight: 600 }}>📦 {p.package_name}</span>}
                         <span style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'monospace' }}>memo: {p.memo}</span>
                       </div>
                       <div style={{ display: 'flex', gap: 10, marginTop: 4, fontSize: 9, color: 'var(--text-muted)' }}>
@@ -4129,8 +4129,8 @@ function DepositsPanel({ onGoToUser }) {
                       </div>
                     </div>
                     {onGoToUser && <button onClick={() => onGoToUser(p.tg_id)} style={{
-                      background: 'rgba(212,175,55,0.1)', border: 'none', borderRadius: 8,
-                      padding: '6px 10px', color: 'var(--gold)', fontSize: 10, fontWeight: 700, cursor: 'pointer', flexShrink: 0, marginLeft: 8,
+                      background: 'rgba(0,212,255,0.1)', border: 'none', borderRadius: 8,
+                      padding: '6px 10px', color: 'var(--ice)', fontSize: 10, fontWeight: 700, cursor: 'pointer', flexShrink: 0, marginLeft: 8,
                     }}>👤</button>}
                   </div>
                 </div>
@@ -4231,7 +4231,7 @@ function AdminActivityPanel() {
         {logs.map((l, i) => (
           <div key={l.id} className="card" style={{
             padding: '8px 12px', animation: `fadeIn 0.15s ease ${i * 0.02}s both`,
-            borderLeft: l.action === 'view_tab' ? '3px solid rgba(212,175,55,0.3)' : '3px solid rgba(52,211,153,0.3)',
+            borderLeft: l.action === 'view_tab' ? '3px solid rgba(0,212,255,0.3)' : '3px solid rgba(52,211,153,0.3)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontSize: 14 }}>{actionIcon(l.action)}</span>

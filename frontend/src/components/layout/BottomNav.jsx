@@ -41,11 +41,11 @@ export default function BottomNav() {
               <div style={{
                 width: 54, height: 54, borderRadius: '50%',
                 background: active
-                  ? 'linear-gradient(135deg, var(--gold-dark), var(--gold), var(--gold-light))'
+                  ? 'linear-gradient(135deg, var(--ice-dark), var(--ice), var(--ice-light))'
                   : 'rgba(255,255,255,0.06)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 24, marginTop: -22,
-                boxShadow: active ? '0 4px 24px var(--gold-glow)' : 'none',
+                boxShadow: active ? '0 4px 24px var(--ice-glow)' : 'none',
                 transition: 'all 0.3s ease',
                 border: active ? 'none' : '1px solid var(--border)'
               }}>
@@ -60,14 +60,14 @@ export default function BottomNav() {
             )}
             <span style={{
               fontSize: 10, fontWeight: active ? 700 : 500,
-              color: active ? 'var(--gold)' : 'var(--text-muted)',
+              color: active ? 'var(--ice)' : 'var(--text-muted)',
               transition: 'color 0.2s'
             }}>{tab.label}</span>
             {active && !tab.main && (
               <div style={{
                 position: 'absolute', bottom: -6, width: 4, height: 4,
-                borderRadius: '50%', background: 'var(--gold)',
-                boxShadow: '0 0 8px var(--gold-glow)'
+                borderRadius: '50%', background: 'var(--ice)',
+                boxShadow: '0 0 8px var(--ice-glow)'
               }} />
             )}
           </button>

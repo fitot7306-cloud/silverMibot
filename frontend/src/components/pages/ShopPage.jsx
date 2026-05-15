@@ -57,7 +57,7 @@ export default function ShopPage() {
   return (
     <div className="page">
       <div style={{ marginBottom: 24 }}>
-        <div className="page-title" style={{ color: 'var(--gold)' }}>{t('shop.title')}</div>
+        <div className="page-title" style={{ color: 'var(--ice)' }}>{t('shop.title')}</div>
         <div className="page-subtitle">{t('shop.subtitle')}</div>
       </div>
 
@@ -69,14 +69,14 @@ export default function ShopPage() {
           return (
             <div key={pkg.id} className="card" style={{
               position: 'relative', overflow: 'hidden',
-              border: i >= 2 ? '1px solid var(--border-gold)' : '1px solid var(--border)',
+              border: i >= 2 ? '1px solid var(--border)' : '1px solid var(--border)',
               animation: `fadeIn 0.3s ease ${i * 0.08}s both`
             }}>
               {/* Badge */}
               {badge && (
                 <div style={{
                   position: 'absolute', top: 12, right: 12,
-                  background: 'linear-gradient(135deg, var(--gold-dark), var(--gold))',
+                  background: 'linear-gradient(135deg, var(--ice-dark), var(--ice))',
                   borderRadius: 8, padding: '3px 10px',
                   fontSize: 11, fontWeight: 700, color: '#000'
                 }}>{badge}</div>
@@ -85,13 +85,13 @@ export default function ShopPage() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
                 <div>
                   <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4, fontWeight: 500 }}>{pkg.name}</div>
-                  <div style={{ fontSize: 32, fontWeight: 900, color: 'var(--gold-light)', lineHeight: 1 }}>
+                  <div style={{ fontSize: 32, fontWeight: 900, color: 'var(--ice-light)', lineHeight: 1 }}>
                     {fmtK(pkg.power_amount)}
                   </div>
-                  <div style={{ fontSize: 11, color: 'var(--gold)', letterSpacing: 2, fontWeight: 600 }}>POWER</div>
+                  <div style={{ fontSize: 11, color: 'var(--ice)', letterSpacing: 2, fontWeight: 600 }}>POWER</div>
                 </div>
                 <div style={{
-                  background: 'linear-gradient(135deg, var(--gold-dark), var(--gold))',
+                  background: 'linear-gradient(135deg, var(--ice-dark), var(--ice))',
                   borderRadius: 12, padding: '8px 16px', marginTop: 4,
                   fontSize: 16, fontWeight: 800, color: '#000'
                 }}>
@@ -107,7 +107,7 @@ export default function ShopPage() {
                 ].map(item => (
                   <div key={item.label} className="stat-pill">
                     <div className="label">{item.label}</div>
-                    <div className="value" style={{ color: item.color || 'var(--gold-light)', fontSize: 13 }}>{item.val}</div>
+                    <div className="value" style={{ color: item.color || 'var(--ice-light)', fontSize: 13 }}>{item.val}</div>
                     {item.unit && <div className="sub">{item.unit}</div>}
                   </div>
                 ))}

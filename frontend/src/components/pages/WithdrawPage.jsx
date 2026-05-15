@@ -99,19 +99,19 @@ export default function WithdrawPage() {
           borderRadius: 12, color: '#fff', padding: '10px 14px', fontSize: 16, cursor: 'pointer'
         }}>←</button>
         <div>
-          <div className="page-title" style={{ color: 'var(--gold)', fontSize: 20 }}>{t('withdraw.title')}</div>
+          <div className="page-title" style={{ color: 'var(--ice)', fontSize: 20 }}>{t('withdraw.title')}</div>
           <div className="page-subtitle">{t('withdraw.subtitle')}</div>
         </div>
       </div>
 
       {/* Balance */}
       <div className="card" style={{
-        border: '1px solid var(--border-gold)', marginBottom: 16, textAlign: 'center',
-        background: 'linear-gradient(135deg, rgba(212,175,55,0.06), rgba(212,175,55,0.02))'
+        border: '1px solid var(--border)', marginBottom: 16, textAlign: 'center',
+        background: 'linear-gradient(135deg, rgba(0,212,255,0.06), rgba(0,212,255,0.02))'
       }}>
         <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 6 }}>{t('withdraw.available')}</div>
-        <div style={{ fontSize: 34, fontWeight: 900, color: 'var(--gold-light)' }}>
-          {fmt(balance, 4)} <span style={{ fontSize: 16, color: 'var(--gold)' }}>TON</span>
+        <div style={{ fontSize: 34, fontWeight: 900, color: 'var(--ice-light)' }}>
+          {fmt(balance, 4)} <span style={{ fontSize: 16, color: 'var(--ice)' }}>TON</span>
         </div>
       </div>
 
@@ -140,8 +140,8 @@ export default function WithdrawPage() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           <span style={{ fontSize: 13, fontWeight: 700 }}>{t('withdraw.amount')}</span>
           <button onClick={() => setAmount(String(fmt(balance, 8)))} style={{
-            background: 'rgba(212,175,55,0.1)', border: '1px solid var(--border-gold)',
-            borderRadius: 8, color: 'var(--gold)', padding: '4px 12px',
+            background: 'rgba(0,212,255,0.1)', border: '1px solid var(--border)',
+            borderRadius: 8, color: 'var(--ice)', padding: '4px 12px',
             fontSize: 11, fontWeight: 700, cursor: 'pointer'
           }}>MAX</button>
         </div>
@@ -193,7 +193,7 @@ export default function WithdrawPage() {
                   padding: '12px 16px', animation: `fadeIn 0.3s ease ${i * 0.05}s both`
                 }}>
                   <div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--gold-light)' }}>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--ice-light)' }}>
                       {fmt(w.ton_amount, 4)} TON
                     </div>
                     {wFee > 0 && (

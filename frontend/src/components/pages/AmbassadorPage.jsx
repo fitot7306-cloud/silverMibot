@@ -89,7 +89,7 @@ export default function AmbassadorPage() {
           color: '#fff', padding: '10px 14px', fontSize: 16, cursor: 'pointer'
         }}>←</button>
         <div>
-          <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--gold)' }}>
+          <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--ice)' }}>
             🤝 {t('ambassador.title', 'Амбассадор')}
           </div>
           <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
@@ -107,11 +107,11 @@ export default function AmbassadorPage() {
           <button key={tab.id} onClick={() => setSubTab(tab.id)} style={{
             flex: 1, padding: '10px 8px', borderRadius: 12, border: 'none',
             background: subTab === tab.id
-              ? 'linear-gradient(135deg, rgba(212,175,55,0.15), rgba(212,175,55,0.05))'
+              ? 'linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,212,255,0.05))'
               : 'var(--bg-card)',
-            color: subTab === tab.id ? 'var(--gold)' : 'var(--text-muted)',
+            color: subTab === tab.id ? 'var(--ice)' : 'var(--text-muted)',
             fontWeight: 700, fontSize: 12, cursor: 'pointer',
-            borderBottom: subTab === tab.id ? '2px solid var(--gold)' : '2px solid transparent',
+            borderBottom: subTab === tab.id ? '2px solid var(--ice)' : '2px solid transparent',
             transition: 'all 0.2s ease',
           }}>{tab.label}</button>
         ))}
@@ -175,12 +175,12 @@ export default function AmbassadorPage() {
                   {amb.promo_code && (
                     <div style={{
                       marginTop: 10, padding: '8px 12px', borderRadius: 10,
-                      background: 'rgba(212,175,55,0.06)',
-                      border: '1px dashed rgba(212,175,55,0.2)',
+                      background: 'rgba(0,212,255,0.06)',
+                      border: '1px dashed rgba(0,212,255,0.2)',
                       display: 'flex', alignItems: 'center', gap: 8,
                     }}>
                       <span style={{ fontSize: 16 }}>🎟</span>
-                      <div style={{ fontSize: 11, color: 'var(--gold)', fontWeight: 600 }}>
+                      <div style={{ fontSize: 11, color: 'var(--ice)', fontWeight: 600 }}>
                         Промокод на скидку <span style={{ fontWeight: 900 }}>-{amb.discount_pct}%</span> в канале 👇
                       </div>
                     </div>
@@ -212,7 +212,7 @@ export default function AmbassadorPage() {
           {/* Benefits */}
           <div className="card" style={{
             padding: 18, marginBottom: 16,
-            background: 'linear-gradient(135deg, rgba(52,211,153,0.08), rgba(212,175,55,0.04))',
+            background: 'linear-gradient(135deg, rgba(52,211,153,0.08), rgba(0,212,255,0.04))',
             border: '1px solid rgba(52,211,153,0.2)',
           }}>
             <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--green)', marginBottom: 12 }}>
@@ -242,10 +242,10 @@ export default function AmbassadorPage() {
           {/* How it works */}
           <div className="card" style={{
             padding: 18, marginBottom: 16,
-            background: 'linear-gradient(135deg, rgba(212,175,55,0.08), rgba(212,175,55,0.02))',
-            border: '1px solid rgba(212,175,55,0.2)',
+            background: 'linear-gradient(135deg, rgba(0,212,255,0.08), rgba(0,212,255,0.02))',
+            border: '1px solid rgba(0,212,255,0.2)',
           }}>
-            <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--gold)', marginBottom: 10 }}>
+            <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--ice)', marginBottom: 10 }}>
               ✨ {t('ambassador.how_title', 'Как это работает?')}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -259,7 +259,7 @@ export default function AmbassadorPage() {
                 <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                   <div style={{
                     width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
-                    background: 'rgba(212,175,55,0.12)',
+                    background: 'rgba(0,212,255,0.12)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16,
                   }}>{s.icon}</div>
                   <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, paddingTop: 6 }}>
@@ -294,7 +294,7 @@ export default function AmbassadorPage() {
                 width: '100%', padding: 14, borderRadius: 14, border: 'none',
                 background: showForm
                   ? 'rgba(248,113,113,0.1)'
-                  : 'linear-gradient(135deg, var(--gold-dark), var(--gold))',
+                  : 'linear-gradient(135deg, var(--ice-dark), var(--ice))',
                 color: showForm ? 'var(--red)' : '#000',
                 fontWeight: 800, fontSize: 14, cursor: 'pointer',
                 marginBottom: showForm ? 0 : 16,
@@ -305,7 +305,7 @@ export default function AmbassadorPage() {
 
               {showForm && (
                 <div className="card" style={{ marginTop: 12, marginBottom: 16, padding: 16, animation: 'fadeIn 0.3s ease' }}>
-                  <div style={{ fontSize: 12, color: 'var(--gold)', fontWeight: 700, marginBottom: 10, letterSpacing: 1 }}>
+                  <div style={{ fontSize: 12, color: 'var(--ice)', fontWeight: 700, marginBottom: 10, letterSpacing: 1 }}>
                     📢 {t('ambassador.apply_title', 'ЗАЯВКА НА ПАРТНЁРСТВО')}
                   </div>
                   <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 12, lineHeight: 1.5 }}>
@@ -330,7 +330,7 @@ export default function AmbassadorPage() {
                     disabled={applying || !channelInput.trim()}
                     style={{
                       width: '100%', padding: 12, borderRadius: 12, border: 'none',
-                      background: 'linear-gradient(135deg, var(--gold-dark), var(--gold))',
+                      background: 'linear-gradient(135deg, var(--ice-dark), var(--ice))',
                       color: '#000', fontWeight: 800, fontSize: 13, cursor: 'pointer',
                       opacity: applying || !channelInput.trim() ? 0.5 : 1,
                     }}

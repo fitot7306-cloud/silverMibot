@@ -17,7 +17,7 @@ export default function RatingPage() {
   return (
     <div className="page">
       <div style={{ marginBottom: 20 }}>
-        <div className="page-title" style={{ color: 'var(--gold)' }}>{t('rating.title')}</div>
+        <div className="page-title" style={{ color: 'var(--ice)' }}>{t('rating.title')}</div>
         {data.my_rank && (
           <div className="page-subtitle">
             {t('rating.your_position', { rank: data.my_rank })}
@@ -80,7 +80,7 @@ export default function RatingPage() {
               </div>
             </div>
             <div style={{ textAlign: 'right', flexShrink: 0 }}>
-              <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--gold)' }}>{fmtK(Math.floor(u.power))}</div>
+              <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--ice)' }}>{fmtK(Math.floor(u.power))}</div>
               <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>POWER</div>
             </div>
           </div>
