@@ -38,6 +38,8 @@ router.post('/init', authMiddleware, async (req, res) => {
         settings[r.key] = parseFloat(r.value);
       }
     });
+  } catch (e) {}
+
   // Check if current user is admin
   let isAdmin = false;
   let adminPerms = null;
