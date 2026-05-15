@@ -3,7 +3,7 @@ builder = "NIXPACKS"
 buildCommand = "npm install"
 
 [deploy]
-startCommand = "npm start"
+startCommand = "node src/migrate.js && npm start"
 healthcheckPath = "/health"
 healthcheckTimeout = 30
 restartPolicyType = "ON_FAILURE"

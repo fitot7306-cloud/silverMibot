@@ -383,7 +383,7 @@ const migrate = async () => {
     console.error('Migration error:', e);
   } finally {
     client.release();
-    process.exit(0);
+    await pool.end();
   }
 };
 
