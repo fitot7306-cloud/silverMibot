@@ -78,11 +78,11 @@ export default function App() {
         padding: 32, textAlign: 'center', gap: 16
       }}>
         <div style={{
-          fontSize: 56, filter: 'drop-shadow(0 0 20px rgba(0,212,255,0.4))',
+          fontSize: 56, filter: 'drop-shadow(0 0 20px rgba(52,211,153,0.4))',
           animation: 'pulse 3s ease-in-out infinite'
         }}>📱</div>
         <div style={{
-          fontSize: 16, fontWeight: 800, color: 'var(--ice)',
+          fontSize: 16, fontWeight: 800, color: 'var(--primary)',
           letterSpacing: 1.5
         }}>
           {t('block.mobileOnly', 'MOBILE ONLY')}

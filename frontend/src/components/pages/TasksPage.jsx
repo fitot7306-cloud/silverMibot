@@ -254,7 +254,7 @@ export default function TasksPage() {
   return (
     <div className="page">
       <div style={{ marginBottom: 24 }}>
-        <div className="page-title" style={{ color: 'var(--ice)' }}>{t('tasks.title')}</div>
+        <div className="page-title" style={{ color: 'var(--primary)' }}>{t('tasks.title')}</div>
         <div className="page-subtitle">{t('tasks.subtitle')}</div>
       </div>
 
@@ -265,24 +265,24 @@ export default function TasksPage() {
             🎬 {t('tasks.watch_earn')}
           </div>
           <div className="card" style={{
-            padding: '16px 18px', border: '1px solid rgba(0,212,255,0.3)',
-            background: 'linear-gradient(135deg, rgba(0,212,255,0.06), rgba(184,134,11,0.03))',
+            padding: '16px 18px', border: '1px solid rgba(52,211,153,0.3)',
+            background: 'linear-gradient(135deg, rgba(52,211,153,0.06), rgba(184,134,11,0.03))',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
               <div style={{
                 width: 52, height: 52, borderRadius: 16, flexShrink: 0,
-                background: 'linear-gradient(135deg, rgba(0,212,255,0.2), rgba(0,212,255,0.05))',
+                background: 'linear-gradient(135deg, rgba(52,211,153,0.2), rgba(52,211,153,0.05))',
                 border: '1px solid var(--border)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24
               }}>🎬</div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 3 }}>{t('tasks.watch_ad')}</div>
                 <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t('tasks.watch_desc')}</div>
-                <div style={{ fontSize: 13, color: 'var(--ice)', fontWeight: 700, marginTop: 4 }}>{t('tasks.watch_reward')}</div>
+                <div style={{ fontSize: 13, color: 'var(--primary)', fontWeight: 700, marginTop: 4 }}>{t('tasks.watch_reward')}</div>
               </div>
               <button onClick={watchAd} disabled={adWatching || adCooldown > 0} style={{
                 padding: '10px 18px', borderRadius: 12,
-                background: adCooldown > 0 ? 'rgba(255,255,255,0.05)' : 'linear-gradient(135deg, var(--ice-dark), var(--ice))',
+                background: adCooldown > 0 ? 'rgba(255,255,255,0.05)' : 'linear-gradient(135deg, var(--primary-dark), var(--primary))',
                 color: adCooldown > 0 ? 'var(--text-muted)' : '#000',
                 fontWeight: 700, fontSize: 12, border: 'none',
                 cursor: adCooldown > 0 ? 'default' : 'pointer', flexShrink: 0, minWidth: 70, textAlign: 'center'
@@ -380,7 +380,7 @@ export default function TasksPage() {
                 ? 'linear-gradient(135deg, #059669, #10b981)'
                 : style === 'go'
                   ? 'linear-gradient(135deg, #2563eb, #3b82f6)'
-                  : 'linear-gradient(135deg, var(--ice-dark), var(--ice))';
+                  : 'linear-gradient(135deg, var(--primary-dark), var(--primary))';
               const btnColor = style === 'go' || style === 'check' ? '#fff' : '#000';
 
               return (
@@ -391,7 +391,7 @@ export default function TasksPage() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                     <div style={{
                       width: 44, height: 44, borderRadius: 14, flexShrink: 0,
-                      background: 'linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,212,255,0.05))',
+                      background: 'linear-gradient(135deg, rgba(52,211,153,0.15), rgba(52,211,153,0.05))',
                       border: '1px solid var(--border)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20
                     }}>
@@ -402,7 +402,7 @@ export default function TasksPage() {
                       {task.description && (
                         <div style={{ fontSize: 12, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{task.description}</div>
                       )}
-                      <div style={{ fontSize: 12, color: 'var(--ice)', fontWeight: 700, marginTop: 4 }}>
+                      <div style={{ fontSize: 12, color: 'var(--primary)', fontWeight: 700, marginTop: 4 }}>
                         +{fmtK(task.reward_power)} POWER
                       </div>
                     </div>
@@ -552,7 +552,7 @@ export default function TasksPage() {
                   }}>
                     <div style={{ textAlign: 'center' }}>
                       <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 2 }}>{t('tasks.order_price_per')}</div>
-                      <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--ice)' }}>{selectedType.price_per_user} TON</div>
+                      <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--primary)' }}>{selectedType.price_per_user} TON</div>
                     </div>
                     <div style={{ textAlign: 'center' }}>
                       <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 2 }}>{t('tasks.order_total')}</div>
@@ -630,7 +630,7 @@ export default function TasksPage() {
                 borderRadius: 12, marginBottom: 10
               }}>
                 <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 2 }}>{t('tasks.order_total')}</div>
-                <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--ice)' }}>{orderPayment.amount} TON</div>
+                <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--primary)' }}>{orderPayment.amount} TON</div>
               </div>
 
               {/* Wallet */}
@@ -642,7 +642,7 @@ export default function TasksPage() {
                   border: '1px solid var(--border)'
                 }}>
                   {orderPayment.wallet}
-                  <span style={{ float: 'right', color: 'var(--ice)' }}>📋</span>
+                  <span style={{ float: 'right', color: 'var(--primary)' }}>📋</span>
                 </div>
               </div>
 
@@ -650,9 +650,9 @@ export default function TasksPage() {
               <div style={{ marginBottom: 12 }}>
                 <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>MEMO ({t('tasks.memo_important')})</div>
                 <div onClick={() => { navigator.clipboard.writeText(orderPayment.memo); }} style={{
-                  padding: '10px 12px', background: 'rgba(0,212,255,0.08)', borderRadius: 10,
+                  padding: '10px 12px', background: 'rgba(52,211,153,0.08)', borderRadius: 10,
                   fontSize: 16, fontWeight: 800, fontFamily: 'monospace', textAlign: 'center', cursor: 'pointer',
-                  border: '1px solid var(--border)', color: 'var(--ice)', letterSpacing: 2
+                  border: '1px solid var(--border)', color: 'var(--primary)', letterSpacing: 2
                 }}>
                   {orderPayment.memo}
                   <span style={{ float: 'right', fontSize: 12 }}>📋</span>
@@ -729,7 +729,7 @@ export default function TasksPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {myOrders.map(o => {
                   const statusMap = { pending: '⏳', active: '✅', completed: '🏁', rejected: '❌' };
-                  const colorMap = { pending: 'var(--orange)', active: 'var(--green)', completed: 'var(--ice)', rejected: 'var(--red)' };
+                  const colorMap = { pending: 'var(--orange)', active: 'var(--green)', completed: 'var(--primary)', rejected: 'var(--red)' };
                   return (
                     <div key={o.id} className="card" style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
                       <span style={{ fontSize: 18 }}>{statusMap[o.status] || '📋'}</span>

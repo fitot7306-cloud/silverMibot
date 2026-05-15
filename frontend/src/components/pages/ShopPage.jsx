@@ -57,7 +57,7 @@ export default function ShopPage() {
   return (
     <div className="page">
       <div style={{ marginBottom: 24 }}>
-        <div className="page-title" style={{ color: 'var(--ice)' }}>{t('shop.title')}</div>
+        <div className="page-title" style={{ color: 'var(--primary)' }}>{t('shop.title')}</div>
         <div className="page-subtitle">{t('shop.subtitle')}</div>
       </div>
 
@@ -76,7 +76,7 @@ export default function ShopPage() {
               {badge && (
                 <div style={{
                   position: 'absolute', top: 12, right: 12,
-                  background: 'linear-gradient(135deg, var(--ice-dark), var(--ice))',
+                  background: 'linear-gradient(135deg, var(--primary-dark), var(--primary))',
                   borderRadius: 8, padding: '3px 10px',
                   fontSize: 11, fontWeight: 700, color: '#000'
                 }}>{badge}</div>
@@ -85,13 +85,13 @@ export default function ShopPage() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
                 <div>
                   <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4, fontWeight: 500 }}>{pkg.name}</div>
-                  <div style={{ fontSize: 32, fontWeight: 900, color: 'var(--ice-light)', lineHeight: 1 }}>
+                  <div style={{ fontSize: 32, fontWeight: 900, color: 'var(--primary-light)', lineHeight: 1 }}>
                     {fmtK(pkg.power_amount)}
                   </div>
-                  <div style={{ fontSize: 11, color: 'var(--ice)', letterSpacing: 2, fontWeight: 600 }}>POWER</div>
+                  <div style={{ fontSize: 11, color: 'var(--primary)', letterSpacing: 2, fontWeight: 600 }}>POWER</div>
                 </div>
                 <div style={{
-                  background: 'linear-gradient(135deg, var(--ice-dark), var(--ice))',
+                  background: 'linear-gradient(135deg, var(--primary-dark), var(--primary))',
                   borderRadius: 12, padding: '8px 16px', marginTop: 4,
                   fontSize: 16, fontWeight: 800, color: '#000'
                 }}>
@@ -107,7 +107,7 @@ export default function ShopPage() {
                 ].map(item => (
                   <div key={item.label} className="stat-pill">
                     <div className="label">{item.label}</div>
-                    <div className="value" style={{ color: item.color || 'var(--ice-light)', fontSize: 13 }}>{item.val}</div>
+                    <div className="value" style={{ color: item.color || 'var(--primary-light)', fontSize: 13 }}>{item.val}</div>
                     {item.unit && <div className="sub">{item.unit}</div>}
                   </div>
                 ))}

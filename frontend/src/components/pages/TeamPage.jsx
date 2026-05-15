@@ -44,7 +44,7 @@ export default function TeamPage() {
   return (
     <div className="page">
       <div style={{ marginBottom: 24 }}>
-        <div className="page-title" style={{ color: 'var(--ice)' }}>{t('team.title')}</div>
+        <div className="page-title" style={{ color: 'var(--primary)' }}>{t('team.title')}</div>
         <div className="page-subtitle">{t('team.subtitle')}</div>
       </div>
 
@@ -52,7 +52,7 @@ export default function TeamPage() {
       {isAmbassador && (
         <div className="card" style={{
           marginBottom: 16, padding: '14px 16px',
-          background: 'linear-gradient(135deg, rgba(52,211,153,0.08), rgba(0,212,255,0.08))',
+          background: 'linear-gradient(135deg, rgba(52,211,153,0.08), rgba(52,211,153,0.08))',
           border: '1px solid rgba(52,211,153,0.25)',
           animation: 'fadeIn 0.4s ease',
         }}>
@@ -85,8 +85,8 @@ export default function TeamPage() {
             animation: `fadeIn 0.3s ease ${i * 0.1}s both`
           }}>
             <div style={{ fontSize: 22, marginBottom: 6 }}>{item.icon}</div>
-            <div style={{ fontSize: 18, fontWeight: 900, color: 'var(--ice-light)' }}>{item.val}</div>
-            <div style={{ fontSize: 10, color: 'var(--ice)', letterSpacing: 1 }}>{item.sub}</div>
+            <div style={{ fontSize: 18, fontWeight: 900, color: 'var(--primary-light)' }}>{item.val}</div>
+            <div style={{ fontSize: 10, color: 'var(--primary)', letterSpacing: 1 }}>{item.sub}</div>
             <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>{item.label}</div>
           </div>
         ))}
@@ -101,16 +101,16 @@ export default function TeamPage() {
           { val: fmt(data.rewards.total_ton, 4), label: 'TON', gold: true },
         ].map(item => (
           <div key={item.label} className="stat-pill">
-            <div className="value" style={{ color: item.gold ? 'var(--ice)' : 'var(--text)', fontSize: 18 }}>{item.val}</div>
+            <div className="value" style={{ color: item.gold ? 'var(--primary)' : 'var(--text)', fontSize: 18 }}>{item.val}</div>
             <div className="label" style={{ marginTop: 2, marginBottom: 0 }}>{item.label}</div>
           </div>
         ))}
       </div>
 
       {/* How it works hint */}
-      <div className="card" style={{ marginBottom: 16, padding: '12px 14px', border: '1px solid rgba(0,212,255,0.15)' }}>
+      <div className="card" style={{ marginBottom: 16, padding: '12px 14px', border: '1px solid rgba(52,211,153,0.15)' }}>
         <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5 }}>
-          💡 <span style={{ color: 'var(--ice)', fontWeight: 600 }}>{t('team.how_it_works')}</span>{' '}
+          💡 <span style={{ color: 'var(--primary)', fontWeight: 600 }}>{t('team.how_it_works')}</span>{' '}
           {t('team.how_it_works_text', { power: (powerNormal / 1000).toFixed(0), pct: commissionPct })}
         </div>
       </div>
@@ -133,7 +133,7 @@ export default function TeamPage() {
               }}>
                 <div style={{
                   width: 38, height: 38, borderRadius: '50%', flexShrink: 0,
-                  background: 'linear-gradient(135deg, var(--ice-dark), var(--ice))',
+                  background: 'linear-gradient(135deg, var(--primary-dark), var(--primary))',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 14, fontWeight: 700, color: '#000'
                 }}>
@@ -142,14 +142,14 @@ export default function TeamPage() {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 14, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {member.first_name || member.username || 'User'}
-                    {member.is_premium && <span style={{ color: 'var(--ice)', marginLeft: 6, fontSize: 12 }}>★</span>}
+                    {member.is_premium && <span style={{ color: 'var(--primary)', marginLeft: 6, fontSize: 12 }}>★</span>}
                   </div>
                   <div style={{ fontSize: 11, color: member.is_confirmed ? 'var(--green)' : 'var(--text-muted)' }}>
                     {member.is_confirmed ? t('team.active_status') : t('team.pending_status')}
                   </div>
                 </div>
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <div style={{ fontSize: 13, color: 'var(--ice)', fontWeight: 700 }}>
+                  <div style={{ fontSize: 13, color: 'var(--primary)', fontWeight: 700 }}>
                     {(parseFloat(member.power) / 1000).toFixed(1)}K
                   </div>
                   <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>POWER</div>

@@ -154,7 +154,7 @@ export default function PaymentPage({ order, pkg, wallet, expiresAt, onCancel, o
           color: '#fff', padding: '10px 14px', fontSize: 16, cursor: 'pointer'
         }}>←</button>
         <div>
-          <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--ice)' }}>{t('payment.title')}</div>
+          <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--primary)' }}>{t('payment.title')}</div>
           <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t('payment.subtitle')}</div>
         </div>
       </div>
@@ -162,13 +162,13 @@ export default function PaymentPage({ order, pkg, wallet, expiresAt, onCancel, o
       {/* Package info */}
       <div className="card" style={{
         border: '1px solid var(--border)', marginBottom: 14, textAlign: 'center',
-        background: 'linear-gradient(135deg, rgba(0,212,255,0.08), rgba(0,212,255,0.02))'
+        background: 'linear-gradient(135deg, rgba(52,211,153,0.08), rgba(52,211,153,0.02))'
       }}>
         <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>{pkg.name}</div>
-        <div style={{ fontSize: 40, fontWeight: 900, color: 'var(--ice-light)', lineHeight: 1 }}>
+        <div style={{ fontSize: 40, fontWeight: 900, color: 'var(--primary-light)', lineHeight: 1 }}>
           {fmtK(pkg.power_amount)}
         </div>
-        <div style={{ fontSize: 12, color: 'var(--ice)', letterSpacing: 2, marginBottom: 10 }}>POWER</div>
+        <div style={{ fontSize: 12, color: 'var(--primary)', letterSpacing: 2, marginBottom: 10 }}>POWER</div>
         <div style={{ fontSize: 26, fontWeight: 900 }}>
           {pkg.price_ton} <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>TON</span>
         </div>
@@ -180,7 +180,7 @@ export default function PaymentPage({ order, pkg, wallet, expiresAt, onCancel, o
         border: '1px solid rgba(251,191,36,0.3)',
         background: 'linear-gradient(135deg, rgba(251,191,36,0.08), rgba(251,191,36,0.02))'
       }}>
-        <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--ice)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--primary)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 18 }}>⚠️</span> {t('payment.important_rules')}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -226,7 +226,7 @@ export default function PaymentPage({ order, pkg, wallet, expiresAt, onCancel, o
           <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t('payment.time_to_pay')}</span>
           <span style={{
             fontSize: 20, fontWeight: 800, fontFamily: "'Inter', monospace",
-            color: timeLeft < 300 ? 'var(--red)' : timeLeft < 600 ? 'var(--orange)' : 'var(--ice)'
+            color: timeLeft < 300 ? 'var(--red)' : timeLeft < 600 ? 'var(--orange)' : 'var(--primary)'
           }}>
             {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
           </span>
@@ -234,7 +234,7 @@ export default function PaymentPage({ order, pkg, wallet, expiresAt, onCancel, o
         <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 6, height: 4, overflow: 'hidden' }}>
           <div style={{
             height: '100%', borderRadius: 6, width: `${progress * 100}%`,
-            background: timeLeft < 300 ? 'var(--red)' : 'linear-gradient(90deg, var(--ice-dark), var(--ice))',
+            background: timeLeft < 300 ? 'var(--red)' : 'linear-gradient(90deg, var(--primary-dark), var(--primary))',
             transition: 'width 1s linear'
           }} />
         </div>
@@ -253,7 +253,7 @@ export default function PaymentPage({ order, pkg, wallet, expiresAt, onCancel, o
             border: '1px solid var(--border)'
           }}>
             <div>
-              <span style={{ fontSize: 24, fontWeight: 900, color: 'var(--ice-light)' }}>{pkg.price_ton}</span>
+              <span style={{ fontSize: 24, fontWeight: 900, color: 'var(--primary-light)' }}>{pkg.price_ton}</span>
               <span style={{ fontSize: 14, color: 'var(--text-muted)', marginLeft: 6 }}>TON</span>
             </div>
             <CopyBtn value={String(pkg.price_ton)} id="amount" label={t('payment.copy')} />
@@ -282,11 +282,11 @@ export default function PaymentPage({ order, pkg, wallet, expiresAt, onCancel, o
         <div>
           <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8 }}>{t('payment.step3')}</div>
           <div style={{
-            background: 'linear-gradient(135deg, rgba(0,212,255,0.08), rgba(0,212,255,0.03))',
-            borderRadius: 14, padding: '16px', border: '2px solid var(--ice)'
+            background: 'linear-gradient(135deg, rgba(52,211,153,0.08), rgba(52,211,153,0.03))',
+            borderRadius: 14, padding: '16px', border: '2px solid var(--primary)'
           }}>
             <div style={{
-              fontSize: 26, fontWeight: 900, color: 'var(--ice-light)',
+              fontSize: 26, fontWeight: 900, color: 'var(--primary-light)',
               letterSpacing: 4, textAlign: 'center', marginBottom: 12,
               fontFamily: "'Inter', monospace"
             }}>{order.memo}</div>
@@ -319,12 +319,12 @@ export default function PaymentPage({ order, pkg, wallet, expiresAt, onCancel, o
         style={{
           width: '100%', padding: 14, borderRadius: 14, marginBottom: 10,
           background: checking
-            ? 'rgba(0,212,255,0.15)'
+            ? 'rgba(52,211,153,0.15)'
             : cooldown > 0
               ? 'rgba(255,255,255,0.04)'
-              : 'linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,212,255,0.08))',
+              : 'linear-gradient(135deg, rgba(52,211,153,0.15), rgba(52,211,153,0.08))',
           border: `1px solid ${cooldown > 0 ? 'var(--border)' : 'var(--border)'}`,
-          color: cooldown > 0 ? 'var(--text-muted)' : 'var(--ice)',
+          color: cooldown > 0 ? 'var(--text-muted)' : 'var(--primary)',
           fontSize: 14, fontWeight: 700, cursor: checking || cooldown > 0 ? 'not-allowed' : 'pointer',
           transition: 'var(--transition)', display: 'flex', alignItems: 'center',
           justifyContent: 'center', gap: 8
