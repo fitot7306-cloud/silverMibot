@@ -27,7 +27,11 @@ const getAllAdminIds = async () => {
 // Admin auth: either x-admin-key header OR Telegram user with matching tg_id (env + DB)
 const adminMiddleware = async (req, res, next) => {
   const key = req.headers['x-admin-key'];
-  if (key && key === process.env.ADMIN_KEY) return next();
+  if (key && key === process.env.ADMIN_KEY) {
+    req.adminTgId = 'API_KEY';
+    req.adminName = 'API';
+    return next();
+  }
 
   // TG-based admin auth
   const initData = req.headers['x-init-data'];
@@ -38,7 +42,11 @@ const adminMiddleware = async (req, res, next) => {
       if (userParam) {
         const tgUser = JSON.parse(userParam);
         const adminIds = await getAllAdminIds();
-        if (adminIds.includes(String(tgUser.id))) return next();
+        if (adminIds.includes(String(tgUser.id))) {
+          req.adminTgId = String(tgUser.id);
+          req.adminName = tgUser.first_name || tgUser.username || String(tgUser.id);
+          return next();
+        }
       }
     } catch (e) {}
   }
@@ -46,43 +54,122 @@ const adminMiddleware = async (req, res, next) => {
   return res.status(403).json({ error: 'Forbidden' });
 };
 
+// Helper: log admin activity
+const logAdminAction = async (req, action, details) => {
+  try {
+    const ip = req.headers['x-forwarded-for'] || req.connection?.remoteAddress || '';
+    await pool.query(
+      `INSERT INTO admin_activity_log (admin_tg_id, admin_name, action, details, ip) VALUES ($1, $2, $3, $4, $5)`,
+      [req.adminTgId || 'unknown', req.adminName || 'unknown', action, details || null, ip.substring(0, 50)]
+    );
+  } catch (e) {}
+};
+
 router.use(adminMiddleware);
+
+// ── Admin Activity Logging ──
+router.post('/log-action', async (req, res) => {
+  const { action, details } = req.body;
+  if (!action) return res.json({ ok: true });
+  await logAdminAction(req, action, details);
+  res.json({ ok: true });
+});
+
+router.get('/activity', async (req, res) => {
+  try {
+    const { rows } = await pool.query(`
+      SELECT * FROM admin_activity_log
+      ORDER BY created_at DESC
+      LIMIT 200
+    `);
+    res.json(rows);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 
 // ── Dashboard Stats ──
 router.get('/stats', async (req, res) => {
-  const [users, power, ton, pending, completed, revenue] = await Promise.all([
+  // Main metrics — ACTIVE users only (exclude banned)
+  const [users, activeUsers, power, ton, pending, completed, revenue] = await Promise.all([
     pool.query(`SELECT COUNT(*) as total FROM users`),
-    pool.query(`SELECT COALESCE(SUM(power), 0) as total FROM users`),
-    pool.query(`SELECT COALESCE(SUM(ton_balance), 0) as total FROM users`),
+    pool.query(`SELECT COUNT(*) as total FROM users WHERE is_blocked = false`),
+    pool.query(`SELECT COALESCE(SUM(power), 0) as total FROM users WHERE is_blocked = false`),
+    pool.query(`SELECT COALESCE(SUM(ton_balance), 0) as total FROM users WHERE is_blocked = false`),
     pool.query(`SELECT COUNT(*) as total FROM withdrawals WHERE status = 'pending'`),
     pool.query(`SELECT COUNT(*) as total, COALESCE(SUM(ton_paid), 0) as sum FROM purchases`),
-    pool.query(`SELECT COUNT(*) as total FROM users WHERE created_at > NOW() - INTERVAL '24 hours'`),
+    pool.query(`SELECT COUNT(*) as total FROM users WHERE created_at > NOW() - INTERVAL '24 hours' AND is_blocked = false`),
   ]);
 
-  // Online counts (graceful if column doesn't exist)
+  // Online counts
   let online5 = 0, online60 = 0;
   try {
     const [r5, r60] = await Promise.all([
-      pool.query(`SELECT COUNT(*) as c FROM users WHERE last_seen_at > NOW() - INTERVAL '5 minutes'`),
-      pool.query(`SELECT COUNT(*) as c FROM users WHERE last_seen_at > NOW() - INTERVAL '1 hour'`),
+      pool.query(`SELECT COUNT(*) as c FROM users WHERE last_seen_at > NOW() - INTERVAL '5 minutes' AND is_blocked = false`),
+      pool.query(`SELECT COUNT(*) as c FROM users WHERE last_seen_at > NOW() - INTERVAL '1 hour' AND is_blocked = false`),
     ]);
     online5 = parseInt(r5.rows[0].c);
     online60 = parseInt(r60.rows[0].c);
   } catch (e) {}
 
-  // Referral & ads totals (graceful)
+  // Referral & ads totals
   let totalRefs = 0, totalAds = 0;
   try {
     const [refs, ads] = await Promise.all([
       pool.query(`SELECT COUNT(*) as c FROM referrals`),
-      pool.query(`SELECT COALESCE(SUM(COALESCE(ads_watched, 0)), 0) as c FROM users`),
+      pool.query(`SELECT COALESCE(SUM(COALESCE(ads_watched, 0)), 0) as c FROM users WHERE is_blocked = false`),
     ]);
     totalRefs = parseInt(refs.rows[0].c);
     totalAds = parseInt(ads.rows[0].c);
   } catch (e) {}
 
-  res.json({
+  // Buyers vs Non-buyers (active only)
+  let buyers = null;
+  try {
+    const [buyerStats, buyerSpent, nonBuyerStats] = await Promise.all([
+      // Buyer user stats (no JOIN — avoids duplication)
+      pool.query(`
+        SELECT COUNT(*) as count,
+               COALESCE(SUM(power), 0) as power,
+               COALESCE(SUM(ton_balance), 0) as balance
+        FROM users
+        WHERE is_blocked = false
+          AND id IN (SELECT DISTINCT user_id FROM purchases)
+      `),
+      // Total spent (separate query)
+      pool.query(`
+        SELECT COALESCE(SUM(p.ton_paid), 0) as spent
+        FROM purchases p
+        JOIN users u ON p.user_id = u.id
+        WHERE u.is_blocked = false
+      `),
+      // Non-buyers
+      pool.query(`
+        SELECT COUNT(*) as count,
+               COALESCE(SUM(power), 0) as power,
+               COALESCE(SUM(ton_balance), 0) as balance
+        FROM users
+        WHERE is_blocked = false
+          AND id NOT IN (SELECT DISTINCT user_id FROM purchases)
+      `),
+    ]);
+    buyers = {
+      buyers_count: parseInt(buyerStats.rows[0].count),
+      buyers_power: parseFloat(buyerStats.rows[0].power),
+      buyers_balance: parseFloat(buyerStats.rows[0].balance),
+      buyers_spent: parseFloat(buyerSpent.rows[0].spent),
+      free_count: parseInt(nonBuyerStats.rows[0].count),
+      free_power: parseFloat(nonBuyerStats.rows[0].power),
+      free_balance: parseFloat(nonBuyerStats.rows[0].balance),
+    };
+  } catch (e) {}
+
+  const blockedCount = parseInt(users.rows[0].total) - parseInt(activeUsers.rows[0].total);
+
+  const stats = {
     total_users: parseInt(users.rows[0].total),
+    active_users: parseInt(activeUsers.rows[0].total),
+    blocked_users: blockedCount,
     total_power: parseFloat(power.rows[0].total),
     total_ton_balance: parseFloat(ton.rows[0].total),
     pending_withdrawals: parseInt(pending.rows[0].total),
@@ -93,7 +180,69 @@ router.get('/stats', async (req, res) => {
     online_1h: online60,
     total_referrals: totalRefs,
     total_ads_watched: totalAds,
-  });
+    buyers,
+  };
+
+  // Finance analytics — banned purchases + project liability
+  try {
+    const [
+      bannedPurchases,    // purchases made by currently blocked users
+      totalBalances,      // all ton_balance across ALL users (potential liability)
+      activeBalances,     // ton_balance of active (non-blocked) users only
+      approvedWithdrawals,// already paid out
+      pendingWithdrawals, // queued to be paid
+      blockedCount,       // total blocked users
+      bannedStats,        // power + balance of blocked users
+    ] = await Promise.all([
+      pool.query(`
+        SELECT COUNT(p.id) as count, COALESCE(SUM(p.ton_paid), 0) as sum
+        FROM purchases p JOIN users u ON p.user_id = u.id WHERE u.is_blocked = true
+      `),
+      pool.query(`SELECT COALESCE(SUM(ton_balance), 0) as total FROM users`),
+      pool.query(`SELECT COALESCE(SUM(ton_balance), 0) as total FROM users WHERE is_blocked = false`),
+      pool.query(`SELECT COALESCE(SUM(ton_amount), 0) as total FROM withdrawals WHERE status = 'approved'`),
+      pool.query(`SELECT COALESCE(SUM(ton_amount), 0) as total FROM withdrawals WHERE status = 'pending'`),
+      pool.query(`SELECT COUNT(*) as c FROM users WHERE is_blocked = true`),
+      pool.query(`SELECT COALESCE(SUM(power), 0) as p, COALESCE(SUM(ton_balance), 0) as b FROM users WHERE is_blocked = true`),
+    ]);
+
+    // Power forecast — how much TON will be mined
+    // Formula: 100K power = 2500 hashes/day = 0.036 TON/day
+    const TON_PER_DAY_PER_100K = 0.036;
+    const activePowerRes = await pool.query(`SELECT COALESCE(SUM(power), 0) as total FROM users WHERE is_blocked = false`);
+    const totalPowerRes = await pool.query(`SELECT COALESCE(SUM(power), 0) as total FROM users`);
+    const activePower = parseFloat(activePowerRes.rows[0].total);
+    const totalPower = parseFloat(totalPowerRes.rows[0].total);
+    const tonPerDay = (activePower / 100000) * TON_PER_DAY_PER_100K;
+
+    stats.finance = {
+      banned_users: parseInt(blockedCount.rows[0].c),
+      banned_purchases_count: parseInt(bannedPurchases.rows[0].count),
+      banned_purchases_ton: parseFloat(bannedPurchases.rows[0].sum),
+      banned_power: parseFloat(bannedStats.rows[0].p),
+      banned_balance: parseFloat(bannedStats.rows[0].b),
+      total_liability: parseFloat(totalBalances.rows[0].total),
+      active_liability: parseFloat(activeBalances.rows[0].total),
+      total_withdrawn: parseFloat(approvedWithdrawals.rows[0].total),
+      pending_withdrawals_ton: parseFloat(pendingWithdrawals.rows[0].total),
+      net_position: parseFloat(completed.rows[0].sum) - parseFloat(approvedWithdrawals.rows[0].total) - parseFloat(pendingWithdrawals.rows[0].total),
+      // Power forecast
+      active_power: activePower,
+      total_power: totalPower,
+      mining_ton_per_day: tonPerDay,
+      mining_ton_per_week: tonPerDay * 7,
+      mining_ton_per_month: tonPerDay * 30,
+      // Future liability = current balances + future mining
+      liability_7d: parseFloat(activeBalances.rows[0].total) + (tonPerDay * 7),
+      liability_30d: parseFloat(activeBalances.rows[0].total) + (tonPerDay * 30),
+      liability_90d: parseFloat(activeBalances.rows[0].total) + (tonPerDay * 90),
+    };
+  } catch (e) {
+    console.error('[Stats] Finance error:', e.message);
+    stats.finance = null;
+  }
+
+  res.json(stats);
 });
 
 // ── Charts: hourly data for 24h ──
@@ -137,16 +286,19 @@ router.get('/stats/charts', async (req, res) => {
       });
     } catch (e) {}
 
-    // Online per hour snapshot (users seen in that hour window)
+    // Online per hour snapshot (single query instead of 24 individual ones)
     let onlineUsers = new Array(24).fill(0);
     try {
-      for (let i = 0; i < 24; i++) {
-        const { rows } = await pool.query(
-          `SELECT COUNT(*) as c FROM users WHERE last_seen_at >= $1 AND last_seen_at < $2`,
-          [hours[i].start, hours[i].end]
-        );
-        onlineUsers[i] = parseInt(rows[0].c);
-      }
+      const { rows } = await pool.query(`
+        SELECT DATE_TRUNC('hour', last_seen_at) as h, COUNT(*) as c
+        FROM users WHERE last_seen_at > NOW() - INTERVAL '24 hours'
+        GROUP BY h ORDER BY h
+      `);
+      rows.forEach(r => {
+        const rh = new Date(r.h).getHours();
+        const idx = hours.findIndex(h => h.hour === rh);
+        if (idx >= 0) onlineUsers[idx] = parseInt(r.c);
+      });
     } catch (e) {}
 
     // Purchases per hour
@@ -339,7 +491,40 @@ router.get('/users/:id/details', async (req, res) => {
 // ── Block / Unblock User ──
 router.post('/users/:id/block', async (req, res) => {
   const { blocked } = req.body;
-  await pool.query(`UPDATE users SET is_blocked = $1 WHERE id = $2`, [!!blocked, req.params.id]);
+  const userId = req.params.id;
+  await pool.query(`UPDATE users SET is_blocked = $1 WHERE id = $2`, [!!blocked, userId]);
+
+  // Auto-manage IP blacklist
+  try {
+    // Collect all IPs for this user
+    const ips = new Set();
+    const { rows: r1 } = await pool.query(`SELECT last_ip FROM users WHERE id = $1 AND last_ip IS NOT NULL AND last_ip != ''`, [userId]);
+    if (r1.length && r1[0].last_ip) ips.add(r1[0].last_ip);
+    const { rows: r2 } = await pool.query(`SELECT DISTINCT ip FROM user_ips WHERE user_id = $1`, [userId]);
+    r2.forEach(r => ips.add(r.ip));
+
+    if (blocked) {
+      // Add all user IPs to blacklist
+      for (const ip of ips) {
+        await pool.query(
+          `INSERT INTO ip_blacklist (ip, reason) VALUES ($1, $2) ON CONFLICT (ip) DO NOTHING`,
+          [ip, `User #${userId} blocked`]
+        );
+      }
+    } else {
+      // Remove user IPs from blacklist (only if no other blocked users share the IP)
+      for (const ip of ips) {
+        const { rows: others } = await pool.query(
+          `SELECT COUNT(*) as c FROM users WHERE is_blocked = true AND id != $1 AND (last_ip = $2 OR id IN (SELECT user_id FROM user_ips WHERE ip = $2))`,
+          [userId, ip]
+        );
+        if (parseInt(others[0].c) === 0) {
+          await pool.query(`DELETE FROM ip_blacklist WHERE ip = $1`, [ip]);
+        }
+      }
+    }
+  } catch (e) { console.error('[Block] IP blacklist error:', e.message); }
+
   res.json({ success: true, is_blocked: !!blocked });
 });
 
@@ -404,6 +589,100 @@ router.post('/withdrawals/:id/reject', async (req, res) => {
     await client.query('ROLLBACK');
     res.status(500).json({ error: 'Failed' });
   } finally { client.release(); }
+});
+
+// ── Withdraw Settings ──
+const WS_KEYS = [
+  'min_withdraw_ton', 'withdraw_fee_mode', 'withdraw_fee_fixed',
+  'withdraw_fee_percent', 'withdraw_fee_hybrid_threshold',
+  'withdraw_processing_hours', 'withdraw_require_deposit',
+  'withdraw_check_bot', 'withdraw_check_multi'
+];
+
+router.get('/withdraw-settings', async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT key, value FROM app_settings WHERE key = ANY($1)`, [WS_KEYS]
+    );
+    const map = {};
+    rows.forEach(r => { map[r.key] = r.value; });
+    res.json({
+      min_withdraw_ton: parseFloat(map.min_withdraw_ton || '0.1'),
+      withdraw_fee_mode: map.withdraw_fee_mode || 'none',
+      withdraw_fee_fixed: parseFloat(map.withdraw_fee_fixed || '0.01'),
+      withdraw_fee_percent: parseFloat(map.withdraw_fee_percent || '5'),
+      withdraw_fee_hybrid_threshold: parseFloat(map.withdraw_fee_hybrid_threshold || '1'),
+      withdraw_processing_hours: map.withdraw_processing_hours || '1-24',
+      withdraw_require_deposit: map.withdraw_require_deposit || '0',
+      withdraw_check_bot: map.withdraw_check_bot || '0',
+      withdraw_check_multi: map.withdraw_check_multi || '0',
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+router.put('/withdraw-settings', async (req, res) => {
+  const {
+    min_withdraw_ton, withdraw_fee_mode, withdraw_fee_fixed,
+    withdraw_fee_percent, withdraw_fee_hybrid_threshold,
+    withdraw_processing_hours, withdraw_require_deposit,
+    withdraw_check_bot, withdraw_check_multi,
+  } = req.body;
+
+  const updates = [];
+
+  // Fee & min settings
+  if (min_withdraw_ton !== undefined) {
+    if (isNaN(parseFloat(min_withdraw_ton)) || parseFloat(min_withdraw_ton) < 0) return res.status(400).json({ error: 'Invalid min_withdraw_ton' });
+    updates.push({ key: 'min_withdraw_ton', value: String(min_withdraw_ton), label: 'Минимальная сумма вывода (TON)' });
+  }
+  if (withdraw_fee_mode !== undefined) {
+    if (!['none', 'fixed', 'percent', 'hybrid'].includes(withdraw_fee_mode)) return res.status(400).json({ error: 'Invalid fee mode' });
+    updates.push({ key: 'withdraw_fee_mode', value: withdraw_fee_mode, label: 'Режим комиссии (none/fixed/percent/hybrid)' });
+  }
+  if (withdraw_fee_fixed !== undefined) {
+    if (isNaN(parseFloat(withdraw_fee_fixed)) || parseFloat(withdraw_fee_fixed) < 0) return res.status(400).json({ error: 'Invalid fee fixed' });
+    updates.push({ key: 'withdraw_fee_fixed', value: String(withdraw_fee_fixed), label: 'Фиксированная комиссия (TON)' });
+  }
+  if (withdraw_fee_percent !== undefined) {
+    if (isNaN(parseFloat(withdraw_fee_percent)) || parseFloat(withdraw_fee_percent) < 0 || parseFloat(withdraw_fee_percent) > 100) return res.status(400).json({ error: 'Invalid fee percent' });
+    updates.push({ key: 'withdraw_fee_percent', value: String(withdraw_fee_percent), label: 'Процентная комиссия (%)' });
+  }
+  if (withdraw_fee_hybrid_threshold !== undefined) {
+    if (isNaN(parseFloat(withdraw_fee_hybrid_threshold)) || parseFloat(withdraw_fee_hybrid_threshold) < 0) return res.status(400).json({ error: 'Invalid hybrid threshold' });
+    updates.push({ key: 'withdraw_fee_hybrid_threshold', value: String(withdraw_fee_hybrid_threshold), label: 'Порог гибрида (TON)' });
+  }
+
+  // Processing time & protection settings
+  if (withdraw_processing_hours !== undefined) {
+    updates.push({ key: 'withdraw_processing_hours', value: String(withdraw_processing_hours), label: 'Время обработки вывода (текст)' });
+  }
+  if (withdraw_require_deposit !== undefined) {
+    updates.push({ key: 'withdraw_require_deposit', value: String(withdraw_require_deposit), label: 'Требовать покупку пакета для вывода (0/1)' });
+  }
+  if (withdraw_check_bot !== undefined) {
+    updates.push({ key: 'withdraw_check_bot', value: String(withdraw_check_bot), label: 'Блокировать вывод для ботов (0/1)' });
+  }
+  if (withdraw_check_multi !== undefined) {
+    updates.push({ key: 'withdraw_check_multi', value: String(withdraw_check_multi), label: 'Блокировать вывод для мультиаккаунтов (0/1)' });
+  }
+
+  if (!updates.length) return res.status(400).json({ error: 'Nothing to update' });
+
+  try {
+    for (const u of updates) {
+      await pool.query(
+        `INSERT INTO app_settings (key, value, label) VALUES ($1, $2, $3) ON CONFLICT (key) DO UPDATE SET value = $2`,
+        [u.key, u.value, u.label]
+      );
+    }
+    const details = updates.map(u => `${u.key}=${u.value}`).join(', ');
+    await logAdminAction(req, 'update_withdraw_settings', details);
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // ── Tasks CRUD ──
@@ -597,6 +876,93 @@ router.delete('/packages/:id', async (req, res) => {
   res.json({ success: true });
 });
 
+// ── Deposits (Recent Purchases) ──
+router.get('/deposits', async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = 50;
+    const offset = (page - 1) * limit;
+
+    // Recent purchases with user + package + promo info
+    const { rows: deposits } = await pool.query(`
+      SELECT p.id, p.user_id, p.power_amount, p.ton_paid, p.tx_hash, p.created_at,
+             u.tg_id, u.username, u.first_name, u.power, u.ton_balance, u.is_blocked, u.is_premium,
+             pp.name as package_name, pp.price_ton as original_price,
+             pc.code as promo_code, pc.discount_pct as promo_discount
+      FROM purchases p
+      JOIN users u ON p.user_id = u.id
+      LEFT JOIN power_packages pp ON p.package_id = pp.id
+      LEFT JOIN promo_code_uses pcu ON pcu.user_id = p.user_id
+      LEFT JOIN promo_codes pc ON pc.id = pcu.promo_id
+        AND p.ton_paid < pp.price_ton
+      ORDER BY p.created_at DESC
+      LIMIT $1 OFFSET $2
+    `, [limit, offset]);
+
+    // Total count
+    const { rows: countRows } = await pool.query(`SELECT COUNT(*) as c FROM purchases`);
+
+    // Summary stats
+    const [today, week, month] = await Promise.all([
+      pool.query(`SELECT COUNT(*) as c, COALESCE(SUM(ton_paid), 0) as s FROM purchases WHERE created_at > NOW() - INTERVAL '24 hours'`),
+      pool.query(`SELECT COUNT(*) as c, COALESCE(SUM(ton_paid), 0) as s FROM purchases WHERE created_at > NOW() - INTERVAL '7 days'`),
+      pool.query(`SELECT COUNT(*) as c, COALESCE(SUM(ton_paid), 0) as s FROM purchases WHERE created_at > NOW() - INTERVAL '30 days'`),
+    ]);
+
+    res.json({
+      deposits,
+      total: parseInt(countRows[0].c),
+      page,
+      summary: {
+        today_count: parseInt(today.rows[0].c),
+        today_ton: parseFloat(today.rows[0].s),
+        week_count: parseInt(week.rows[0].c),
+        week_ton: parseFloat(week.rows[0].s),
+        month_count: parseInt(month.rows[0].c),
+        month_ton: parseFloat(month.rows[0].s),
+      }
+    });
+  } catch (e) {
+    console.error('[Deposits] Error:', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── Pending Deposits (started but not completed) ──
+router.get('/deposits/pending', async (req, res) => {
+  try {
+    const { rows } = await pool.query(`
+      SELECT pp.id, pp.user_id, pp.memo, pp.ton_amount, pp.status, pp.expires_at, pp.created_at,
+             u.tg_id, u.username, u.first_name, u.power, u.ton_balance, u.is_blocked, u.is_premium,
+             pk.name as package_name
+      FROM pending_purchases pp
+      JOIN users u ON pp.user_id = u.id
+      LEFT JOIN power_packages pk ON pp.package_id = pk.id
+      ORDER BY pp.created_at DESC
+      LIMIT 100
+    `);
+
+    // Stats
+    const [pending, expired, completed] = await Promise.all([
+      pool.query(`SELECT COUNT(*) as c FROM pending_purchases WHERE status = 'pending' AND expires_at > NOW()`),
+      pool.query(`SELECT COUNT(*) as c FROM pending_purchases WHERE status = 'pending' AND expires_at <= NOW()`),
+      pool.query(`SELECT COUNT(*) as c FROM pending_purchases WHERE status = 'completed'`),
+    ]);
+
+    res.json({
+      items: rows,
+      stats: {
+        active: parseInt(pending.rows[0].c),
+        expired: parseInt(expired.rows[0].c),
+        completed: parseInt(completed.rows[0].c),
+      }
+    });
+  } catch (e) {
+    console.error('[PendingDeposits] Error:', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ── Ad Settings ──
 router.get('/ad-settings', async (req, res) => {
   const { rows } = await pool.query(
@@ -686,38 +1052,159 @@ router.get('/ref-stats', async (req, res) => {
   });
 });
 
-// ── Broadcast to Users ──
+// ── Broadcast to Users (async — returns immediately, sends in background) ──
+let broadcastState = { status: 'idle', total: 0, sent: 0, failed: 0, blocked_auto: 0, errors: [], startedAt: null };
+
 router.post('/broadcast', async (req, res) => {
-  const { message, parse_mode } = req.body;
+  const { message, parse_mode, photo_url } = req.body;
   if (!message || !message.trim()) return res.status(400).json({ error: 'Message required' });
   if (!tgApi) return res.status(500).json({ error: 'BOT_TOKEN not configured' });
+  if (broadcastState.status === 'sending') {
+    return res.status(409).json({ error: `Рассылка уже идёт (${broadcastState.sent}/${broadcastState.total})` });
+  }
 
   try {
-    // Get all non-blocked user tg_ids
-    const { rows } = await pool.query(`SELECT tg_id FROM users WHERE is_blocked = false`);
-    const tgIds = rows.map(r => String(r.tg_id));
+    // Exclude admin-blocked AND bot-blocked users
+    const { rows } = await pool.query(`SELECT id, tg_id FROM users WHERE is_blocked = false AND COALESCE(bot_blocked, false) = false`);
+    const users = rows.map(r => ({ id: r.id, tgId: String(r.tg_id) }));
 
-    let sent = 0, failed = 0;
+    // Count how many were skipped due to bot_blocked
+    const { rows: blockedRows } = await pool.query(`SELECT COUNT(*) as c FROM users WHERE bot_blocked = true`);
+    const blockedSkipped = parseInt(blockedRows[0].c);
 
-    for (let i = 0; i < tgIds.length; i++) {
-      try {
-        await tgApi.sendMessage(tgIds[i], message.trim(), {
-          parse_mode: parse_mode || 'HTML',
-          disable_web_page_preview: true,
-        });
-        sent++;
-      } catch (e) {
-        failed++;
-      }
-      // Telegram rate limit: max ~30 msgs/sec
-      if ((i + 1) % 25 === 0) await new Promise(r => setTimeout(r, 1000));
+    if (!users.length) return res.json({ success: true, total: 0, sent: 0, failed: 0, blocked_skipped: blockedSkipped });
+
+    // Reset state & respond immediately
+    broadcastState = { status: 'sending', total: users.length, sent: 0, failed: 0, blocked_auto: 0, blocked_skipped: blockedSkipped, errors: [], startedAt: Date.now() };
+    res.json({ success: true, status: 'started', total: users.length, blocked_skipped: blockedSkipped });
+
+    // Build message options
+    const msgOpts = {};
+    if (parse_mode && parse_mode.trim()) {
+      msgOpts.parse_mode = parse_mode.trim();
     }
 
-    res.json({ success: true, total: tgIds.length, sent, failed });
+    const hasPhoto = photo_url && photo_url.trim();
+    const hasPromoPlaceholder = message.includes('{promo}');
+
+    // Preload available partner promo codes if placeholder is used
+    let partnerPromos = [];
+    if (hasPromoPlaceholder) {
+      const { rows: promos } = await pool.query(
+        `SELECT id, code, discount_pct, max_uses, used_count FROM promo_codes 
+         WHERE is_partner = TRUE AND is_active = TRUE 
+         AND (max_uses = 0 OR used_count < max_uses)
+         AND (expires_at IS NULL OR expires_at > NOW())
+         ORDER BY id ASC`
+      );
+      partnerPromos = promos;
+      console.log(`[Broadcast] Found ${partnerPromos.length} partner promo codes for {promo} placeholder`);
+    }
+    let promoIndex = 0;
+
+    // Send in background (fire-and-forget)
+    (async () => {
+      for (let i = 0; i < users.length; i++) {
+        try {
+          let userMessage = message.trim();
+
+          // Replace {promo} with an unused partner promo code
+          if (hasPromoPlaceholder && partnerPromos.length > 0) {
+            // Find a promo code not used by this user
+            let assignedPromo = null;
+            for (let p = 0; p < partnerPromos.length; p++) {
+              const idx = (promoIndex + p) % partnerPromos.length;
+              const promo = partnerPromos[idx];
+              // Check if user already used this promo
+              const { rows: used } = await pool.query(
+                `SELECT id FROM promo_code_uses WHERE promo_id = $1 AND user_id = $2`,
+                [promo.id, users[i].id]
+              );
+              if (!used.length && (promo.max_uses === 0 || promo.used_count < promo.max_uses)) {
+                assignedPromo = promo;
+                promoIndex = (idx + 1) % partnerPromos.length;
+                break;
+              }
+            }
+
+            if (assignedPromo) {
+              const promoText = `🎁 Промокод на покупку -${assignedPromo.discount_pct}%: <b>${assignedPromo.code}</b>`;
+              userMessage = userMessage.replace('{promo}', promoText);
+              // Record distribution (not actual usage — doesn't count toward max_uses)
+              try {
+                await pool.query(
+                  `INSERT INTO promo_code_uses (promo_id, user_id, source) VALUES ($1, $2, 'broadcast') ON CONFLICT DO NOTHING`,
+                  [assignedPromo.id, users[i].id]
+                );
+              } catch (dbErr) {}
+            } else {
+              // No promo available — remove placeholder
+              userMessage = userMessage.replace('{promo}', '');
+            }
+          }
+
+          if (hasPhoto) {
+            await tgApi.sendPhoto(users[i].tgId, photo_url.trim(), {
+              caption: userMessage,
+              ...msgOpts,
+            });
+          } else {
+            await tgApi.sendMessage(users[i].tgId, userMessage, {
+              disable_web_page_preview: true,
+              ...msgOpts,
+            });
+          }
+          broadcastState.sent++;
+        } catch (e) {
+          broadcastState.failed++;
+          const errMsg = (e.message || '').toLowerCase();
+          // Auto-detect blocked/deactivated users → mark as bot_blocked
+          if (errMsg.includes('forbidden') || errMsg.includes('deactivated') || errMsg.includes('blocked') || errMsg.includes('chat not found')) {
+            try {
+              await pool.query(`UPDATE users SET bot_blocked = true WHERE id = $1`, [users[i].id]);
+              broadcastState.blocked_auto++;
+            } catch (dbErr) {}
+          }
+          if (broadcastState.errors.length < 5) broadcastState.errors.push(`TG:${users[i].tgId} → ${e.message}`);
+        }
+        if ((i + 1) % 25 === 0) await new Promise(r => setTimeout(r, 1000));
+      }
+      broadcastState.status = 'done';
+      console.log(`[Broadcast] Done: ${broadcastState.sent}/${broadcastState.total} sent, ${broadcastState.failed} failed, ${broadcastState.blocked_auto} auto-blocked`);
+    })().catch(e => {
+      broadcastState.status = 'error';
+      broadcastState.errors.push('Fatal: ' + e.message);
+      console.error('[Broadcast] Fatal error:', e.message);
+    });
+
   } catch (e) {
     console.error('[Admin] Broadcast error:', e.message);
-    res.status(500).json({ error: 'Broadcast failed' });
+    res.status(500).json({ error: 'Broadcast failed: ' + e.message });
   }
+});
+
+// Poll broadcast progress
+router.get('/broadcast/status', async (req, res) => {
+  res.json(broadcastState);
+});
+
+// View bot_blocked stats
+router.get('/broadcast/blocked', async (req, res) => {
+  try {
+    const { rows } = await pool.query(`
+      SELECT id, tg_id, username, first_name, bot_blocked, created_at
+      FROM users WHERE bot_blocked = true ORDER BY created_at DESC LIMIT 100
+    `);
+    res.json({ total: rows.length, users: rows });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// Reset bot_blocked for all users (re-enable for next broadcast)
+router.post('/broadcast/reset-blocked', async (req, res) => {
+  try {
+    const { rowCount } = await pool.query(`UPDATE users SET bot_blocked = false WHERE bot_blocked = true`);
+    res.json({ success: true, reset: rowCount });
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // ── Multi-Account Detection ──
@@ -743,7 +1230,7 @@ router.get('/multi-accounts', async (req, res) => {
       });
     } catch (e) {}
 
-    // Source 2: users.last_ip (real-time, works even if user_ips is empty)
+    // Source 2: users.last_ip (real-time)
     try {
       const { rows } = await pool.query(`
         SELECT last_ip, ARRAY_AGG(id) as user_ids
@@ -767,13 +1254,15 @@ router.get('/multi-accounts', async (req, res) => {
       .sort((a, b) => b[1].size - a[1].size)
       .slice(0, 50);
 
-    if (!filtered.length) return res.json([]);
+    if (!filtered.length) return res.json({ active: [], blocked: [] });
 
-    // Fetch all user details
+    // Fetch all user details + referrer info
     const allUserIds = [...new Set(filtered.flatMap(([, ids]) => [...ids]))];
     const { rows: users } = await pool.query(
-      `SELECT id, tg_id, username, first_name, power, ton_balance, is_premium, is_blocked, created_at
-       FROM users WHERE id = ANY($1::INT[])`,
+      `SELECT u.id, u.tg_id, u.username, u.first_name, u.power, u.ton_balance, u.is_premium, u.is_blocked, u.created_at, u.ref_id,
+              r.tg_id AS ref_tg_id, r.username AS ref_username, r.first_name AS ref_first_name
+       FROM users u LEFT JOIN users r ON u.ref_id = r.id
+       WHERE u.id = ANY($1::INT[])`,
       [allUserIds]
     );
     const usersMap = {};
@@ -782,17 +1271,159 @@ router.get('/multi-accounts', async (req, res) => {
       usersMap[u.id] = u;
     });
 
-    const groups = filtered.map(([ip, ids]) => {
+    // Get blacklisted IPs
+    let blacklistedIps = new Set();
+    try {
+      const { rows: blRows } = await pool.query(`SELECT ip FROM ip_blacklist`);
+      blRows.forEach(r => blacklistedIps.add(r.ip));
+    } catch (e) {}
+
+    // Get ignored IPs (whitelisted for multi-account withdrawals)
+    let ignoredIps = new Set();
+    try {
+      const { rows: igRows } = await pool.query(`SELECT ip FROM multi_ignore`);
+      igRows.forEach(r => ignoredIps.add(r.ip));
+    } catch (e) {}
+
+    const active = [];
+    const blocked = [];
+
+    filtered.forEach(([ip, ids]) => {
       const groupUsers = [...ids].map(id => usersMap[id]).filter(Boolean);
       const hasAdmin = groupUsers.some(u => u.is_admin);
-      return { ip, user_count: groupUsers.length, has_admin: hasAdmin, users: groupUsers };
+      const allBlocked = groupUsers.every(u => u.is_blocked);
+      const isBlacklisted = blacklistedIps.has(ip);
+      const isIgnored = ignoredIps.has(ip);
+      const group = { ip, user_count: groupUsers.length, has_admin: hasAdmin, is_blacklisted: isBlacklisted, is_ignored: isIgnored, users: groupUsers };
+
+      if (allBlocked || isBlacklisted) {
+        blocked.push(group);
+      } else {
+        active.push(group);
+      }
     });
 
-    res.json(groups);
+    res.json({ active, blocked });
   } catch (e) {
     console.error('[Admin] Multi-account check error:', e.message);
     res.status(500).json({ error: 'Failed to check multi-accounts' });
   }
+});
+
+// Block entire IP group (all non-admin users + blacklist IP)
+router.post('/multi-accounts/block-group', async (req, res) => {
+  const { ip } = req.body;
+  if (!ip) return res.status(400).json({ error: 'IP required' });
+
+  try {
+    const adminIds = await getAllAdminIds();
+
+    // Find all users from this IP
+    const { rows: ipUsers } = await pool.query(
+      `SELECT DISTINCT u.id, u.tg_id FROM users u
+       LEFT JOIN user_ips ui ON u.id = ui.user_id
+       WHERE u.last_ip = $1 OR ui.ip = $1`, [ip]
+    );
+
+    let blockedCount = 0;
+    for (const u of ipUsers) {
+      if (!adminIds.includes(String(u.tg_id))) {
+        await pool.query(`UPDATE users SET is_blocked = true WHERE id = $1`, [u.id]);
+        blockedCount++;
+      }
+    }
+
+    // Add IP to blacklist
+    await pool.query(
+      `INSERT INTO ip_blacklist (ip, reason) VALUES ($1, $2) ON CONFLICT (ip) DO NOTHING`,
+      [ip, `Multi-account group block (${blockedCount} users)`]
+    );
+
+    res.json({ success: true, blocked_users: blockedCount, ip });
+  } catch (e) {
+    console.error('[Admin] Block group error:', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Unblock IP group (unblock users + remove from blacklist)
+router.post('/multi-accounts/unblock-group', async (req, res) => {
+  const { ip } = req.body;
+  if (!ip) return res.status(400).json({ error: 'IP required' });
+
+  try {
+    // Unblock users with this IP
+    const { rowCount } = await pool.query(
+      `UPDATE users SET is_blocked = false WHERE id IN (
+        SELECT DISTINCT u.id FROM users u
+        LEFT JOIN user_ips ui ON u.id = ui.user_id
+        WHERE u.last_ip = $1 OR ui.ip = $1
+      )`, [ip]
+    );
+
+    // Remove from blacklist
+    await pool.query(`DELETE FROM ip_blacklist WHERE ip = $1`, [ip]);
+
+    res.json({ success: true, unblocked_users: rowCount });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── Multi-Account Ignore List ──
+router.get('/multi-ignore', async (req, res) => {
+  try {
+    const { rows } = await pool.query(`SELECT * FROM multi_ignore ORDER BY created_at DESC`);
+    res.json(rows);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+router.post('/multi-ignore', async (req, res) => {
+  const { ip, reason } = req.body;
+  if (!ip) return res.status(400).json({ error: 'IP required' });
+  try {
+    await pool.query(
+      `INSERT INTO multi_ignore (ip, reason) VALUES ($1, $2) ON CONFLICT (ip) DO NOTHING`,
+      [ip.trim(), reason || 'Admin ignore']
+    );
+    await logAdminAction(req, 'multi_ignore_add', `IP: ${ip}`);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+router.delete('/multi-ignore/:id', async (req, res) => {
+  try {
+    const { rows } = await pool.query(`DELETE FROM multi_ignore WHERE id = $1 RETURNING ip`, [req.params.id]);
+    if (rows.length) await logAdminAction(req, 'multi_ignore_remove', `IP: ${rows[0].ip}`);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── IP Blacklist ──
+router.get('/ip-blacklist', async (req, res) => {
+  try {
+    const { rows } = await pool.query(`SELECT * FROM ip_blacklist ORDER BY created_at DESC`);
+    res.json(rows);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+router.post('/ip-blacklist', async (req, res) => {
+  const { ip, reason } = req.body;
+  if (!ip) return res.status(400).json({ error: 'IP required' });
+  try {
+    await pool.query(
+      `INSERT INTO ip_blacklist (ip, reason) VALUES ($1, $2) ON CONFLICT (ip) DO NOTHING`,
+      [ip.trim(), reason || 'Manual']
+    );
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+router.delete('/ip-blacklist/:id', async (req, res) => {
+  try {
+    await pool.query(`DELETE FROM ip_blacklist WHERE id = $1`, [req.params.id]);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // ── Admin Management ──
@@ -969,6 +1600,70 @@ router.get('/check-admin', async (req, res) => {
   }
 
   res.json({ isAdmin: true, permissions: [] });
+});
+
+// ══════════════════════════════════════════════════
+// PROMO CODES MANAGEMENT
+// ══════════════════════════════════════════════════
+
+// List all promo codes
+router.get('/promo-codes', async (req, res) => {
+  try {
+    const { rows } = await pool.query(`SELECT * FROM promo_codes ORDER BY created_at DESC`);
+    res.json(rows);
+  } catch (e) { res.status(500).json({ error: 'Failed' }); }
+});
+
+// Create promo code
+router.post('/promo-codes', async (req, res) => {
+  const { code, discount_pct, max_uses, expires_at, is_partner } = req.body;
+  if (!code || !discount_pct) return res.status(400).json({ error: 'code and discount_pct required' });
+
+  try {
+    const { rows } = await pool.query(
+      `INSERT INTO promo_codes (code, discount_pct, max_uses, expires_at, is_partner)
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [code.trim().toUpperCase(), discount_pct, max_uses || 0, expires_at || null, is_partner || false]
+    );
+    res.json(rows[0]);
+  } catch (e) {
+    if (e.code === '23505') return res.status(400).json({ error: 'Промокод уже существует' });
+    res.status(500).json({ error: 'Failed' });
+  }
+});
+
+// Toggle active
+router.post('/promo-codes/:id/toggle', async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      `UPDATE promo_codes SET is_active = NOT is_active WHERE id = $1 RETURNING *`,
+      [req.params.id]
+    );
+    res.json(rows[0]);
+  } catch (e) { res.status(500).json({ error: 'Failed' }); }
+});
+
+// Delete promo
+router.delete('/promo-codes/:id', async (req, res) => {
+  try {
+    await pool.query(`DELETE FROM promo_codes WHERE id = $1`, [req.params.id]);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: 'Failed' }); }
+});
+
+// Get promo code uses (who used it)
+router.get('/promo-codes/:id/uses', async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT pcu.id, pcu.source, pcu.used_at, u.tg_id, u.username, u.first_name
+       FROM promo_code_uses pcu
+       JOIN users u ON u.id = pcu.user_id
+       WHERE pcu.promo_id = $1
+       ORDER BY pcu.used_at DESC`,
+      [req.params.id]
+    );
+    res.json(rows);
+  } catch (e) { res.status(500).json({ error: 'Failed' }); }
 });
 
 export { getAllAdminIds };
