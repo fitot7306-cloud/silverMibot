@@ -251,7 +251,7 @@ export default function AmbassadorPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {[
                 { icon: '📢', text: t('ambassador.step1', { min: minSubs.toLocaleString() }) },
-                { icon: '🤖', text: t('ambassador.step2', 'Добавьте бота @SilverMiBot в админы канала') },
+                { icon: '🤖', text: t('ambassador.step2', 'Добавьте бота @SilverMi_Bot в админы канала') },
                 { icon: '✍️', text: t('ambassador.step3', 'Дайте боту разрешение на публикации') },
                 { icon: '📝', text: t('ambassador.step4', 'Подайте заявку — мы проверим и одобрим') },
                 { icon: '💰', text: t('ambassador.step5', { pct: commPct }) },

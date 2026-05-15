@@ -95,7 +95,7 @@ export default function App() {
         <div style={{
           fontSize: 11, color: 'rgba(255,255,255,0.2)', marginTop: 8
         }}>
-          {t('block.openBot', 'Open @SilverMibot on your phone')}
+          {t('block.openBot', 'Open @SilverMi_Bot on your phone')}
         </div>
       </div>
     );

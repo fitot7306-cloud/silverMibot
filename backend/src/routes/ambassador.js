@@ -422,7 +422,7 @@ router.post('/admin/posts/:id/publish', ambassadorAdminMiddleware, async (req, r
           if (ownerRows.length) ownerTgId = ownerRows[0].tg_id;
         } catch (e) {}
 
-        const botUser = process.env.BOT_USERNAME || 'SilverMiBot';
+        const botUser = process.env.BOT_USERNAME || 'SilverMi_Bot';
         const webApp = process.env.WEBAPP_SHORT_NAME || 'app';
         const refLink = ownerTgId
           ? `https://t.me/${botUser}/${webApp}?startapp=${ownerTgId}`
