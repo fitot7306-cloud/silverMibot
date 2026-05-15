@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#08080C" />
+  <meta name="description" content="SilverMibot — облачный майнинг TON в Telegram" />
+  <title>SilverMibot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #08080C; }
+  </style>
+</head>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+  <!-- Adsgram SDK -->
+  <script src="https://sad.adsgram.ai/js/sad.min.js" async></script>
+  <!-- Publishers/RichAds SDK -->
+  <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js" async></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof TelegramAdsController !== 'undefined') {
+        window.TelegramAdsController = new TelegramAdsController();
+        window.TelegramAdsController.initialize({
+          pubId: "1007971",
+          appId: "7369",
+        });
+      }
+    });
+  </script>
+</body>
+</html>
+
