@@ -107,7 +107,7 @@ export default function WithdrawPage() {
       {/* Balance */}
       <div className="card" style={{
         border: '1px solid var(--border)', marginBottom: 16, textAlign: 'center',
-        background: 'linear-gradient(135deg, rgba(52,211,153,0.06), rgba(52,211,153,0.02))'
+        background: 'linear-gradient(135deg, rgba(192,38,211,0.06), rgba(192,38,211,0.02))'
       }}>
         <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 6 }}>{t('withdraw.available')}</div>
         <div style={{ fontSize: 34, fontWeight: 900, color: 'var(--primary-light)' }}>
@@ -118,7 +118,7 @@ export default function WithdrawPage() {
       {/* Alerts */}
       {success !== null && (
         <div style={{
-          background: 'var(--green-bg)', border: '1px solid rgba(52,211,153,0.3)',
+          background: 'var(--green-bg)', border: '1px solid rgba(192,38,211,0.3)',
           borderRadius: 14, padding: '14px', marginBottom: 14, textAlign: 'center',
           color: 'var(--green)', fontWeight: 600, animation: 'fadeIn 0.3s ease'
         }}>{t('withdraw.request_created', { amount: fmt(success, 4) })}</div>
@@ -140,7 +140,7 @@ export default function WithdrawPage() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           <span style={{ fontSize: 13, fontWeight: 700 }}>{t('withdraw.amount')}</span>
           <button onClick={() => setAmount(String(fmt(balance, 8)))} style={{
-            background: 'rgba(52,211,153,0.1)', border: '1px solid var(--border)',
+            background: 'rgba(192,38,211,0.1)', border: '1px solid var(--border)',
             borderRadius: 8, color: 'var(--primary)', padding: '4px 12px',
             fontSize: 11, fontWeight: 700, cursor: 'pointer'
           }}>MAX</button>

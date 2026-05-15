@@ -162,7 +162,7 @@ export default function PaymentPage({ order, pkg, wallet, expiresAt, onCancel, o
       {/* Package info */}
       <div className="card" style={{
         border: '1px solid var(--border)', marginBottom: 14, textAlign: 'center',
-        background: 'linear-gradient(135deg, rgba(52,211,153,0.08), rgba(52,211,153,0.02))'
+        background: 'linear-gradient(135deg, rgba(192,38,211,0.08), rgba(192,38,211,0.02))'
       }}>
         <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>{pkg.name}</div>
         <div style={{ fontSize: 40, fontWeight: 900, color: 'var(--primary-light)', lineHeight: 1 }}>
@@ -282,7 +282,7 @@ export default function PaymentPage({ order, pkg, wallet, expiresAt, onCancel, o
         <div>
           <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8 }}>{t('payment.step3')}</div>
           <div style={{
-            background: 'linear-gradient(135deg, rgba(52,211,153,0.08), rgba(52,211,153,0.03))',
+            background: 'linear-gradient(135deg, rgba(192,38,211,0.08), rgba(192,38,211,0.03))',
             borderRadius: 14, padding: '16px', border: '2px solid var(--primary)'
           }}>
             <div style={{
@@ -301,7 +301,7 @@ export default function PaymentPage({ order, pkg, wallet, expiresAt, onCancel, o
       {/* Status indicator */}
       <div className="card" style={{
         marginBottom: 14, display: 'flex', alignItems: 'center', gap: 12,
-        background: 'var(--green-bg)', border: '1px solid rgba(52,211,153,0.15)'
+        background: 'var(--green-bg)', border: '1px solid rgba(192,38,211,0.15)'
       }}>
         <div style={{
           width: 8, height: 8, borderRadius: '50%', background: 'var(--green)',
@@ -319,10 +319,10 @@ export default function PaymentPage({ order, pkg, wallet, expiresAt, onCancel, o
         style={{
           width: '100%', padding: 14, borderRadius: 14, marginBottom: 10,
           background: checking
-            ? 'rgba(52,211,153,0.15)'
+            ? 'rgba(192,38,211,0.15)'
             : cooldown > 0
               ? 'rgba(255,255,255,0.04)'
-              : 'linear-gradient(135deg, rgba(52,211,153,0.15), rgba(52,211,153,0.08))',
+              : 'linear-gradient(135deg, rgba(192,38,211,0.15), rgba(192,38,211,0.08))',
           border: `1px solid ${cooldown > 0 ? 'var(--border)' : 'var(--border)'}`,
           color: cooldown > 0 ? 'var(--text-muted)' : 'var(--primary)',
           fontSize: 14, fontWeight: 700, cursor: checking || cooldown > 0 ? 'not-allowed' : 'pointer',
@@ -355,7 +355,7 @@ export default function PaymentPage({ order, pkg, wallet, expiresAt, onCancel, o
       )}
       {checkResult === 'completed' && (
         <div style={{
-          background: 'var(--green-bg)', border: '1px solid rgba(52,211,153,0.3)',
+          background: 'var(--green-bg)', border: '1px solid rgba(192,38,211,0.3)',
           borderRadius: 12, padding: '12px 16px', marginBottom: 10,
           fontSize: 13, color: 'var(--green)', fontWeight: 700, textAlign: 'center',
           animation: 'fadeIn 0.3s ease'

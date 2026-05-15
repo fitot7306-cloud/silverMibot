@@ -265,13 +265,13 @@ export default function TasksPage() {
             🎬 {t('tasks.watch_earn')}
           </div>
           <div className="card" style={{
-            padding: '16px 18px', border: '1px solid rgba(52,211,153,0.3)',
-            background: 'linear-gradient(135deg, rgba(52,211,153,0.06), rgba(184,134,11,0.03))',
+            padding: '16px 18px', border: '1px solid rgba(192,38,211,0.3)',
+            background: 'linear-gradient(135deg, rgba(192,38,211,0.06), rgba(184,134,11,0.03))',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
               <div style={{
                 width: 52, height: 52, borderRadius: 16, flexShrink: 0,
-                background: 'linear-gradient(135deg, rgba(52,211,153,0.2), rgba(52,211,153,0.05))',
+                background: 'linear-gradient(135deg, rgba(192,38,211,0.2), rgba(192,38,211,0.05))',
                 border: '1px solid var(--border)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24
               }}>🎬</div>
@@ -293,7 +293,7 @@ export default function TasksPage() {
             {adMsg && (
               <div style={{
                 marginTop: 10, padding: '8px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600, textAlign: 'center',
-                background: adMsg.startsWith('✅') ? 'rgba(52,211,153,0.1)' : 'rgba(251,191,36,0.1)',
+                background: adMsg.startsWith('✅') ? 'rgba(192,38,211,0.1)' : 'rgba(251,191,36,0.1)',
                 color: adMsg.startsWith('✅') ? 'var(--green)' : 'var(--orange)', animation: 'fadeIn 0.2s ease'
               }}>{adMsg}</div>
             )}
@@ -336,7 +336,7 @@ export default function TasksPage() {
             {monetagMsg && (
               <div style={{
                 marginTop: 10, padding: '8px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600, textAlign: 'center',
-                background: monetagMsg.startsWith('✅') ? 'rgba(52,211,153,0.1)' : 'rgba(251,191,36,0.1)',
+                background: monetagMsg.startsWith('✅') ? 'rgba(192,38,211,0.1)' : 'rgba(251,191,36,0.1)',
                 color: monetagMsg.startsWith('✅') ? 'var(--green)' : 'var(--orange)', animation: 'fadeIn 0.2s ease'
               }}>{monetagMsg}</div>
             )}
@@ -391,7 +391,7 @@ export default function TasksPage() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                     <div style={{
                       width: 44, height: 44, borderRadius: 14, flexShrink: 0,
-                      background: 'linear-gradient(135deg, rgba(52,211,153,0.15), rgba(52,211,153,0.05))',
+                      background: 'linear-gradient(135deg, rgba(192,38,211,0.15), rgba(192,38,211,0.05))',
                       border: '1px solid var(--border)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20
                     }}>
@@ -563,7 +563,7 @@ export default function TasksPage() {
                   {orderMsg && (
                     <div style={{
                       marginBottom: 10, padding: '8px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600, textAlign: 'center',
-                      background: orderMsg.startsWith('✅') ? 'rgba(52,211,153,0.1)' : 'rgba(248,113,113,0.1)',
+                      background: orderMsg.startsWith('✅') ? 'rgba(192,38,211,0.1)' : 'rgba(248,113,113,0.1)',
                       color: orderMsg.startsWith('✅') ? 'var(--green)' : 'var(--red)',
                       animation: 'fadeIn 0.2s ease'
                     }}>{orderMsg}</div>
@@ -604,8 +604,8 @@ export default function TasksPage() {
           {orderPayment && (
             <div className="card" style={{
               padding: '16px 18px', marginTop: 12,
-              border: '1px solid rgba(52,211,153,0.4)',
-              background: 'linear-gradient(135deg, rgba(52,211,153,0.08), rgba(16,185,129,0.03))',
+              border: '1px solid rgba(192,38,211,0.4)',
+              background: 'linear-gradient(135deg, rgba(192,38,211,0.08), rgba(16,185,129,0.03))',
               animation: 'fadeIn 0.3s ease'
             }}>
               <div style={{ textAlign: 'center', marginBottom: 12 }}>
@@ -650,7 +650,7 @@ export default function TasksPage() {
               <div style={{ marginBottom: 12 }}>
                 <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>MEMO ({t('tasks.memo_important')})</div>
                 <div onClick={() => { navigator.clipboard.writeText(orderPayment.memo); }} style={{
-                  padding: '10px 12px', background: 'rgba(52,211,153,0.08)', borderRadius: 10,
+                  padding: '10px 12px', background: 'rgba(192,38,211,0.08)', borderRadius: 10,
                   fontSize: 16, fontWeight: 800, fontFamily: 'monospace', textAlign: 'center', cursor: 'pointer',
                   border: '1px solid var(--border)', color: 'var(--primary)', letterSpacing: 2
                 }}>
@@ -667,7 +667,7 @@ export default function TasksPage() {
               {payStatus && (
                 <div style={{
                   marginBottom: 10, padding: '8px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600, textAlign: 'center',
-                  background: payStatus === 'completed' ? 'rgba(52,211,153,0.1)' : 'rgba(248,113,113,0.1)',
+                  background: payStatus === 'completed' ? 'rgba(192,38,211,0.1)' : 'rgba(248,113,113,0.1)',
                   color: payStatus === 'completed' ? 'var(--green)' : 'var(--red)',
                 }}>
                   {payStatus === 'completed' ? `✅ ${t('tasks.payment_found')}` : `⏳ ${t('tasks.payment_not_found')}`}

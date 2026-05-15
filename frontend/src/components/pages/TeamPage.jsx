@@ -52,8 +52,8 @@ export default function TeamPage() {
       {isAmbassador && (
         <div className="card" style={{
           marginBottom: 16, padding: '14px 16px',
-          background: 'linear-gradient(135deg, rgba(52,211,153,0.08), rgba(52,211,153,0.08))',
-          border: '1px solid rgba(52,211,153,0.25)',
+          background: 'linear-gradient(135deg, rgba(192,38,211,0.08), rgba(192,38,211,0.08))',
+          border: '1px solid rgba(192,38,211,0.25)',
           animation: 'fadeIn 0.4s ease',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -108,7 +108,7 @@ export default function TeamPage() {
       </div>
 
       {/* How it works hint */}
-      <div className="card" style={{ marginBottom: 16, padding: '12px 14px', border: '1px solid rgba(52,211,153,0.15)' }}>
+      <div className="card" style={{ marginBottom: 16, padding: '12px 14px', border: '1px solid rgba(192,38,211,0.15)' }}>
         <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5 }}>
           💡 <span style={{ color: 'var(--primary)', fontWeight: 600 }}>{t('team.how_it_works')}</span>{' '}
           {t('team.how_it_works_text', { power: (powerNormal / 1000).toFixed(0), pct: commissionPct })}
