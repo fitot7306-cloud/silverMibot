@@ -12,34 +12,35 @@ const LANGS = [
   { code: 'ar', label: 'AR' },
 ];
 
-// Floating particle component
-function Particles({ count = 20, active }) {
+// Floating hexagon particles
+function HexParticles({ count = 15, active }) {
   const particles = useMemo(() => {
     return Array.from({ length: count }, (_, i) => ({
       id: i,
-      left: Math.random() * 100,
-      delay: Math.random() * 5,
-      duration: 3 + Math.random() * 4,
-      size: 2 + Math.random() * 3,
-      opacity: 0.15 + Math.random() * 0.35,
+      left: 10 + Math.random() * 80,
+      delay: Math.random() * 6,
+      duration: 4 + Math.random() * 5,
+      size: 3 + Math.random() * 4,
+      opacity: 0.1 + Math.random() * 0.25,
     }));
   }, [count]);
 
   if (!active) return null;
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', borderRadius: '50%' }}>
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
       {particles.map(p => (
         <div key={p.id} style={{
           position: 'absolute',
           left: `${p.left}%`,
-          bottom: '-10%',
+          bottom: '-5%',
           width: p.size,
           height: p.size,
-          borderRadius: '50%',
-          background: 'var(--ice)',
-          opacity: p.opacity,
+          borderRadius: '2px',
+          background: `rgba(0, 212, 255, ${p.opacity})`,
+          transform: 'rotate(45deg)',
           animation: `particleRise ${p.duration}s ease-in-out ${p.delay}s infinite`,
+          boxShadow: `0 0 ${p.size * 2}px rgba(0, 212, 255, ${p.opacity * 0.5})`,
         }} />
       ))}
     </div>
@@ -63,8 +64,7 @@ export default function PowerPage() {
         if (window.Adsgram) {
           try {
             adsgramIntRef.current = window.Adsgram.init({ blockId });
-            console.log('[Adsgram] Interstitial init OK, blockId:', blockId);
-          } catch (e) { console.error('[Adsgram] Interstitial init error:', e); }
+          } catch (e) {}
           return true;
         }
         return false;
@@ -78,12 +78,7 @@ export default function PowerPage() {
 
   const showAdThen = useCallback(async (callback) => {
     if (adsgramIntRef.current) {
-      try {
-        await adsgramIntRef.current.show();
-        console.log('[Adsgram] Interstitial shown');
-      } catch (e) {
-        console.log('[Adsgram] Interstitial skipped:', e);
-      }
+      try { await adsgramIntRef.current.show(); } catch (e) {}
     }
     callback();
   }, []);
@@ -132,50 +127,37 @@ export default function PowerPage() {
   const power = parseFloat(user?.power || 0);
   const tonBalance = parseFloat(user?.ton_balance || 0);
   const hashesPerDay = mining?.hashes_per_day || 0;
-  const powerPct = Math.min(power / 10000, 100);
 
   return (
     <div className="page" style={{ position: 'relative' }}>
 
-      {/* ── Ambient background effects ── */}
-      <div style={{
-        position: 'absolute', top: 0, left: 0, right: 0, height: '100%',
-        background: 'radial-gradient(ellipse at 50% 0%, rgba(0,212,255,0.08) 0%, transparent 50%)',
-        pointerEvents: 'none', zIndex: 0,
-      }} />
-      <div style={{
-        position: 'absolute', top: '30%', left: '-20%', width: '140%', height: '60%',
-        background: 'radial-gradient(ellipse at 50% 50%, rgba(0,212,255,0.03) 0%, transparent 60%)',
-        pointerEvents: 'none', zIndex: 0,
-      }} />
-
-      {/* ── Header ── */}
+      {/* ── Top Bar ── */}
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        marginBottom: 20, position: 'relative', zIndex: 10,
+        marginBottom: 24, position: 'relative', zIndex: 10,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{
-            width: 44, height: 44, borderRadius: 14,
-            background: 'linear-gradient(135deg, var(--ice-dark), var(--ice))',
+            width: 42, height: 42, borderRadius: '50%',
+            background: 'linear-gradient(135deg, rgba(0,212,255,0.15), rgba(99,102,241,0.15))',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 22, boxShadow: '0 4px 20px rgba(0,212,255,0.3)',
-          }}>⚡</div>
+            fontSize: 20, border: '1px solid rgba(0,212,255,0.2)',
+          }}>💠</div>
           <div>
             <div style={{
-              fontSize: 18, fontWeight: 900, letterSpacing: 2.5,
-              background: 'linear-gradient(135deg, var(--ice), var(--ice-light))',
+              fontSize: 17, fontWeight: 800, letterSpacing: 1.5,
+              background: 'linear-gradient(135deg, var(--ice-light), var(--accent-light))',
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
             }}>{t('power.brand')}</div>
-            <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 1 }}>{t('power.subtitle')}</div>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 0.5 }}>{t('power.subtitle')}</div>
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           {isAdmin && (
             <button onClick={() => setTab('admin')} style={{
-              background: 'var(--red-bg)', border: '1px solid rgba(248,113,113,0.3)',
-              borderRadius: 12, padding: '8px 12px', cursor: 'pointer',
-              fontSize: 16, lineHeight: 1
+              background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.25)',
+              borderRadius: '50%', width: 36, height: 36, cursor: 'pointer',
+              fontSize: 16, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>🛡️</button>
           )}
           <div style={{ position: 'relative' }}>
@@ -185,7 +167,7 @@ export default function PowerPage() {
             {showLang && (
               <div style={{
                 position: 'absolute', top: '100%', right: 0, marginTop: 6,
-                background: 'rgba(18,18,26,0.98)', backdropFilter: 'blur(20px)',
+                background: 'rgba(10,16,30,0.95)', backdropFilter: 'blur(20px)',
                 border: '1px solid var(--border)', borderRadius: 12,
                 padding: 4, zIndex: 100, minWidth: 80,
                 animation: 'fadeIn 0.2s ease'
@@ -193,7 +175,7 @@ export default function PowerPage() {
                 {LANGS.map(l => (
                   <button key={l.code} onClick={() => changeLang(l.code)} style={{
                     display: 'block', width: '100%', padding: '8px 14px',
-                    background: i18n.language === l.code ? 'rgba(0,212,255,0.12)' : 'transparent',
+                    background: i18n.language === l.code ? 'rgba(0,212,255,0.1)' : 'transparent',
                     border: 'none', borderRadius: 8,
                     color: i18n.language === l.code ? 'var(--ice)' : 'var(--text-muted)',
                     fontSize: 12, fontWeight: 600, cursor: 'pointer',
@@ -206,267 +188,113 @@ export default function PowerPage() {
         </div>
       </div>
 
-      {/* ── Balance Card ── */}
-      <div onClick={() => showAdThen(() => setTab('withdraw'))} style={{
-        background: 'linear-gradient(135deg, rgba(0,212,255,0.06), rgba(0,212,255,0.02))',
-        border: '1px solid rgba(0,212,255,0.12)',
-        borderRadius: 16, padding: '14px 18px', marginBottom: 20,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        cursor: 'pointer', position: 'relative', zIndex: 1, overflow: 'hidden',
-        backdropFilter: 'blur(10px)',
+      {/* ── Stats Strip (horizontal) ── */}
+      <div style={{
+        display: 'flex', gap: 8, marginBottom: 20, position: 'relative', zIndex: 1,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div onClick={() => showAdThen(() => setTab('withdraw'))} style={{
+          flex: 1, padding: '16px 14px',
+          background: 'linear-gradient(160deg, rgba(0,212,255,0.06), rgba(99,102,241,0.04))',
+          border: '1px solid rgba(0,212,255,0.12)', borderRadius: 16,
+          cursor: 'pointer', backdropFilter: 'blur(10px)',
+        }}>
+          <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 1.5, marginBottom: 6, textTransform: 'uppercase' }}>{t('power.balance')}</div>
           <div style={{
-            width: 36, height: 36, borderRadius: 12,
-            background: 'linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,212,255,0.05))',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18,
-          }}>💎</div>
-          <div>
-            <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 1, textTransform: 'uppercase' }}>{t('power.balance')}</div>
-            <div style={{
-              fontSize: 20, fontWeight: 900,
-              background: 'linear-gradient(135deg, var(--ice-light), var(--ice))',
-              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-            }}>{fmt(tonBalance, 4)} <span style={{ fontSize: 13, fontWeight: 700 }}>TON</span></div>
-          </div>
+            fontSize: 22, fontWeight: 900,
+            background: 'linear-gradient(135deg, var(--ice-light), var(--ice))',
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+          }}>{fmt(tonBalance, 4)}</div>
+          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>TON</div>
         </div>
         <div style={{
-          fontSize: 18, color: 'var(--ice)', opacity: 0.5,
-        }}>›</div>
+          flex: 1, padding: '16px 14px',
+          background: 'linear-gradient(160deg, rgba(99,102,241,0.06), rgba(0,212,255,0.04))',
+          border: '1px solid rgba(99,102,241,0.12)', borderRadius: 16,
+          backdropFilter: 'blur(10px)',
+        }}>
+          <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 1.5, marginBottom: 6, textTransform: 'uppercase' }}>POWER</div>
+          <div style={{
+            fontSize: 22, fontWeight: 900,
+            background: 'linear-gradient(135deg, var(--accent-light), var(--accent))',
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+          }}>{fmtK(Math.floor(power))}</div>
+          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>GH/s</div>
+        </div>
       </div>
 
       {/* ── Ambassador Button ── */}
       {ambassadorVisible && (
       <button onClick={() => setTab('ambassador')} style={{
         width: '100%', padding: '12px 18px', marginBottom: 20,
-        borderRadius: 14, border: '1px solid rgba(59,130,246,0.2)',
-        background: 'linear-gradient(135deg, rgba(59,130,246,0.08), rgba(139,92,246,0.06))',
+        borderRadius: 14, border: '1px solid rgba(99,102,241,0.15)',
+        background: 'linear-gradient(135deg, rgba(99,102,241,0.06), rgba(0,212,255,0.04))',
         backdropFilter: 'blur(10px)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         cursor: 'pointer', position: 'relative', zIndex: 1, overflow: 'hidden',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
-            width: 36, height: 36, borderRadius: 12,
-            background: 'linear-gradient(135deg, rgba(59,130,246,0.2), rgba(139,92,246,0.15))',
+            width: 36, height: 36, borderRadius: '50%',
+            background: 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(0,212,255,0.15))',
             display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18,
           }}>🤝</div>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 800, color: '#3b82f6' }}>{t('power.ambassador', 'Амбассадор')}</div>
+            <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--accent-light)' }}>{t('power.ambassador', 'Амбассадор')}</div>
             <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 0.5 }}>{t('power.ambassador_desc', 'Стань партнёром — зарабатывай больше')}</div>
           </div>
         </div>
-        <div style={{ fontSize: 18, color: '#3b82f6', opacity: 0.5 }}>›</div>
+        <div style={{ fontSize: 18, color: 'var(--accent-light)', opacity: 0.5 }}>›</div>
       </button>
       )}
 
-      {/* ── Mining Orb ── */}
+      {/* ── Mining Visualization (Horizontal Bar style instead of orb) ── */}
       <div style={{
-        display: 'flex', flexDirection: 'column', alignItems: 'center',
-        marginBottom: 24, position: 'relative', zIndex: 1,
-        padding: '10px 0',
+        marginBottom: 20, position: 'relative', zIndex: 1, overflow: 'hidden',
+        background: 'linear-gradient(160deg, rgba(6,11,24,0.9), rgba(15,23,42,0.7))',
+        border: '1px solid rgba(0,212,255,0.08)',
+        borderRadius: 20, padding: '24px 20px',
+        backdropFilter: 'blur(10px)',
       }}>
-        {/* Multi-layer background glow */}
-        <div style={{
-          position: 'absolute', width: 280, height: 280, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(0,212,255,0.12) 0%, rgba(0,212,255,0.04) 40%, transparent 70%)',
-          filter: 'blur(40px)', top: -40,
-          animation: 'glow 4s ease-in-out infinite',
-        }} />
-        <div style={{
-          position: 'absolute', width: 200, height: 200, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(0,212,255,0.18) 0%, transparent 60%)',
-          filter: 'blur(25px)', top: 0,
-        }} />
+        <HexParticles count={12} active={power > 0} />
 
-        {/* Rotating ring — outer */}
-        {power > 0 && (
-          <div style={{
-            position: 'absolute', width: 210, height: 210, borderRadius: '50%',
-            border: '1px solid rgba(0,212,255,0.06)',
-            animation: 'spin 25s linear infinite',
-            top: -5,
-          }}>
+        {/* Mining status indicator */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, position: 'relative' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{
-              position: 'absolute', top: -3, left: '50%', transform: 'translateX(-50%)',
-              width: 6, height: 6, borderRadius: '50%',
-              background: 'var(--ice)', boxShadow: '0 0 12px var(--ice)',
-            }} />
-            <div style={{
-              position: 'absolute', bottom: -3, left: '50%', transform: 'translateX(-50%)',
-              width: 4, height: 4, borderRadius: '50%',
-              background: 'var(--ice)', opacity: 0.5, boxShadow: '0 0 8px var(--ice)',
-            }} />
-          </div>
-        )}
-
-        {/* Rotating ring — inner dashed */}
-        {power > 0 && (
-          <div style={{
-            position: 'absolute', width: 230, height: 230, borderRadius: '50%',
-            border: '1px dashed rgba(0,212,255,0.04)',
-            animation: 'spin 35s linear infinite reverse',
-            top: -15,
-          }} />
-        )}
-
-        {/* Outer conic gradient ring */}
-        <div style={{
-          width: 185, height: 185, borderRadius: '50%',
-          background: `conic-gradient(var(--ice) ${powerPct}%, rgba(255,255,255,0.03) 0)`,
-          padding: 5, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: power > 0
-            ? '0 0 40px rgba(0,212,255,0.15), 0 0 80px rgba(0,212,255,0.05), inset 0 0 30px rgba(0,212,255,0.05)'
-            : 'none',
-          position: 'relative',
-          animation: orbPulse ? 'orbCollect 0.6s ease' : (power > 0 ? 'float 6s ease-in-out infinite' : 'none'),
-          transition: 'box-shadow 0.5s ease',
-        }}>
-          {/* Particles */}
-          <Particles count={18} active={power > 0} />
-
-          {/* Inner circle */}
-          <div style={{
-            width: '100%', height: '100%', borderRadius: '50%',
-            background: 'linear-gradient(145deg, #0a0a12, #12121c)',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-            position: 'relative', zIndex: 1,
-          }}>
-            {/* Inner subtle ring */}
-            <div style={{
-              position: 'absolute', inset: 6, borderRadius: '50%',
-              border: '1px solid rgba(0,212,255,0.06)',
-            }} />
-            {/* Second inner ring */}
-            <div style={{
-              position: 'absolute', inset: 10, borderRadius: '50%',
-              border: '1px solid rgba(0,212,255,0.03)',
-            }} />
-
-            <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 3, marginBottom: 6, fontWeight: 600 }}>
-              POWER
-            </div>
-            <div style={{
-              fontSize: 42, fontWeight: 900, lineHeight: 1,
-              background: 'linear-gradient(180deg, var(--ice-light) 0%, var(--ice) 100%)',
-              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-              animation: 'countUp 0.5s ease',
-              filter: 'drop-shadow(0 2px 10px rgba(0,212,255,0.35))',
-            }}>
-              {fmtK(Math.floor(power))}
-            </div>
-            {power > 0 && (
-              <div style={{
-                fontSize: 9, color: 'var(--green)', marginTop: 10,
-                display: 'flex', alignItems: 'center', gap: 4,
-                padding: '3px 12px', borderRadius: 20,
-                background: 'rgba(52,211,153,0.08)',
-                border: '1px solid rgba(52,211,153,0.1)',
-              }}>
-                <span style={{
-                  width: 5, height: 5, borderRadius: '50%',
-                  background: 'var(--green)',
-                  animation: 'blink 2s infinite',
-                  boxShadow: '0 0 6px var(--green)',
-                }} />
-                {t('power.mining_active')}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* ── Earnings Grid ── */}
-      <div style={{
-        display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8,
-        marginBottom: 14, position: 'relative', zIndex: 1,
-      }}>
-        {[
-          { label: t('power.day'), val: fmt(mining?.ton_per_day, 5), icon: '📅' },
-          { label: t('power.month'), val: fmt(mining?.ton_per_month, 4), icon: '📆' },
-          { label: t('power.three_months'), val: fmt(mining?.ton_per_3months, 3), icon: '🗓️' },
-        ].map((item, i) => (
-          <div key={item.label} style={{
-            animation: `fadeIn 0.4s ease ${i * 0.1}s both`,
-            background: 'linear-gradient(145deg, rgba(0,212,255,0.05), rgba(0,0,0,0.25))',
-            border: '1px solid rgba(0,212,255,0.08)',
-            borderRadius: 14, padding: '14px 8px', textAlign: 'center',
-          }}>
-            <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 6 }}>{item.label}</div>
-            <div style={{
-              fontSize: 15, fontWeight: 800,
-              background: 'linear-gradient(135deg, var(--ice-light), var(--ice))',
-              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-            }}>{item.val}</div>
-            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>TON</div>
-          </div>
-        ))}
-      </div>
-
-      {/* ── Quick Actions ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14, position: 'relative', zIndex: 1 }}>
-        <button className="btn-gold" onClick={() => setTab('shop')} style={{
-          padding: '14px 16px', fontSize: 13, borderRadius: 14,
-          boxShadow: '0 4px 20px rgba(0,212,255,0.2)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-        }}>
-          <span>⚡</span> {t('power.buy_power')}
-          <span style={{ fontSize: 14, marginLeft: 2, opacity: 0.6 }}>›</span>
-        </button>
-        <button className="btn-outline" onClick={() => setTab('tasks')} style={{
-          padding: '14px 16px', fontSize: 13, borderRadius: 14,
-          background: 'linear-gradient(135deg, rgba(52,211,153,0.06), rgba(52,211,153,0.02))',
-          borderColor: 'rgba(52,211,153,0.2)', color: 'var(--green)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-        }}>
-          <span>🎁</span> {t('power.free_power')}
-          <span style={{ fontSize: 14, marginLeft: 2, opacity: 0.6 }}>›</span>
-        </button>
-      </div>
-
-      {/* ── Hashes Card ── */}
-      <div style={{
-        marginBottom: 16, position: 'relative', zIndex: 1, overflow: 'hidden',
-        background: 'linear-gradient(145deg, rgba(0,212,255,0.04), rgba(0,0,0,0.3))',
-        border: '1px solid rgba(0,212,255,0.1)',
-        borderRadius: 20, padding: 20,
-      }}>
-        {/* Shimmer effect on card */}
-        {power > 0 && (
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: 'linear-gradient(90deg, transparent, rgba(0,212,255,0.03), transparent)',
-            backgroundSize: '200% 100%',
-            animation: 'shimmer 3s ease-in-out infinite',
-            pointerEvents: 'none',
-          }} />
-        )}
-
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, position: 'relative' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{
-              width: 34, height: 34, borderRadius: 11,
-              background: 'linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,212,255,0.05))',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 16,
+              width: 48, height: 48, borderRadius: 14,
+              background: power > 0
+                ? 'linear-gradient(135deg, rgba(0,212,255,0.15), rgba(99,102,241,0.1))'
+                : 'rgba(255,255,255,0.03)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22,
+              border: `1px solid ${power > 0 ? 'rgba(0,212,255,0.2)' : 'rgba(255,255,255,0.05)'}`,
+              animation: power > 0 ? 'pulse 3s ease-in-out infinite' : 'none',
             }}>⛏️</div>
-            <span style={{ fontSize: 13, color: 'var(--text-secondary)', letterSpacing: 1, fontWeight: 700 }}>{t('power.mined')}</span>
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text-primary)' }}>{t('power.mined')}</div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{hashesPerDay.toFixed(1)} {t('power.h_per_day')}</div>
+            </div>
           </div>
-          <div style={{
-            fontSize: 11, color: 'var(--text-muted)',
-            padding: '4px 12px', borderRadius: 20,
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(255,255,255,0.06)',
-          }}>
-            {hashesPerDay.toFixed(1)} {t('power.h_per_day')}
-          </div>
+          {power > 0 && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 5,
+              padding: '5px 12px', borderRadius: 20,
+              background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.15)',
+            }}>
+              <span style={{
+                width: 6, height: 6, borderRadius: '50%', background: 'var(--green)',
+                animation: 'blink 2s infinite', boxShadow: '0 0 8px var(--green)',
+              }} />
+              <span style={{ fontSize: 10, color: 'var(--green)', fontWeight: 600 }}>{t('power.mining_active')}</span>
+            </div>
+          )}
         </div>
 
+        {/* Hash counter — big number */}
         <div style={{
-          fontSize: 32, fontWeight: 900,
+          fontSize: 34, fontWeight: 900,
           background: 'linear-gradient(135deg, var(--ice-light), var(--ice))',
           WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-          fontFamily: "'Inter', monospace", letterSpacing: -0.5, marginBottom: 4,
+          fontFamily: "'Space Grotesk', monospace", letterSpacing: -0.5, marginBottom: 4,
           position: 'relative',
         }}>
           {liveHashes.toFixed(8)}
@@ -475,38 +303,50 @@ export default function PowerPage() {
             WebkitTextFillColor: 'var(--text-muted)',
           }}>{t('power.hashes')}</span>
         </div>
-        <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 18 }}>
+        <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>
           ≈ {(liveHashes * (mining?.ton_per_hash || 0)).toFixed(8)} TON
         </div>
 
-        {/* Success toast */}
+        {/* Progress bar */}
+        <div style={{
+          height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.04)',
+          overflow: 'hidden', marginBottom: 16,
+        }}>
+          <div style={{
+            height: '100%', borderRadius: 2,
+            width: `${Math.min((liveHashes / Math.max(hashesPerDay || 1, 1)) * 100, 100)}%`,
+            background: 'linear-gradient(90deg, var(--ice-dark), var(--ice), var(--accent-light))',
+            transition: 'width 1s ease',
+            boxShadow: '0 0 8px rgba(0,212,255,0.3)',
+          }} />
+        </div>
+
+        {/* Collected toast */}
         {collected !== null && (
           <div style={{
-            background: 'linear-gradient(135deg, rgba(52,211,153,0.1), rgba(52,211,153,0.05))',
-            border: '1px solid rgba(52,211,153,0.25)',
-            borderRadius: 12, padding: '14px 16px', marginBottom: 14,
-            color: 'var(--green)', fontWeight: 700, textAlign: 'center',
-            fontSize: 14, animation: 'fadeIn 0.3s ease',
-            boxShadow: '0 4px 20px rgba(52,211,153,0.1)',
+            background: 'linear-gradient(135deg, rgba(16,185,129,0.1), rgba(16,185,129,0.05))',
+            border: '1px solid rgba(16,185,129,0.25)', borderRadius: 12,
+            padding: '14px 16px', marginBottom: 14, color: 'var(--green)',
+            fontWeight: 700, textAlign: 'center', fontSize: 14,
+            animation: 'fadeIn 0.3s ease',
           }}>
             {t('power.collected_success', { amount: fmt(collected, 6) })}
           </div>
         )}
 
         <button
-          className="btn-gold"
+          className="btn-primary"
           onClick={handleCollectAndWithdraw}
           disabled={collecting || (liveHashes <= 0 && tonBalance <= 0)}
           style={{
-            boxShadow: liveHashes > 0 ? '0 4px 24px rgba(0,212,255,0.25)' : 'none',
+            boxShadow: liveHashes > 0 ? '0 4px 24px rgba(0,212,255,0.2)' : 'none',
             position: 'relative', overflow: 'hidden', borderRadius: 14,
           }}
         >
-          {/* Button shimmer */}
           {liveHashes > 0 && (
             <span style={{
               position: 'absolute', inset: 0,
-              background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)',
+              background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)',
               backgroundSize: '200% 100%',
               animation: 'shimmer 2s ease-in-out infinite',
             }} />
@@ -515,6 +355,50 @@ export default function PowerPage() {
             <span>💎</span>
             {collecting ? t('power.exchanging') : t('power.exchange_btn')}
           </span>
+        </button>
+      </div>
+
+      {/* ── Earnings Forecast ── */}
+      <div style={{
+        display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8,
+        marginBottom: 14, position: 'relative', zIndex: 1,
+      }}>
+        {[
+          { label: t('power.day'), val: fmt(mining?.ton_per_day, 5), sub: 'TON' },
+          { label: t('power.month'), val: fmt(mining?.ton_per_month, 4), sub: 'TON' },
+          { label: t('power.three_months'), val: fmt(mining?.ton_per_3months, 3), sub: 'TON' },
+        ].map((item, i) => (
+          <div key={item.label} style={{
+            animation: `fadeIn 0.4s ease ${i * 0.1}s both`,
+            background: 'var(--glass)',
+            border: '1px solid var(--glass-border)',
+            borderRadius: 14, padding: '14px 8px', textAlign: 'center',
+            backdropFilter: 'blur(8px)',
+          }}>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 8, textTransform: 'uppercase' }}>{item.label}</div>
+            <div style={{
+              fontSize: 15, fontWeight: 800, color: 'var(--ice)',
+            }}>{item.val}</div>
+            <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 4 }}>{item.sub}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Action Buttons ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, position: 'relative', zIndex: 1 }}>
+        <button className="btn-primary" onClick={() => setTab('shop')} style={{
+          padding: '14px 16px', fontSize: 13, borderRadius: 14,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+        }}>
+          <span>⚡</span> {t('power.buy_power')}
+        </button>
+        <button className="btn-outline" onClick={() => setTab('tasks')} style={{
+          padding: '14px 16px', fontSize: 13, borderRadius: 14,
+          background: 'rgba(16,185,129,0.04)',
+          borderColor: 'rgba(16,185,129,0.15)', color: 'var(--green)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+        }}>
+          <span>🎁</span> {t('power.free_power')}
         </button>
       </div>
     </div>
