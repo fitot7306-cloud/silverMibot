@@ -48,6 +48,7 @@ router.post('/init', authMiddleware, async (req, res) => {
   // Check env-based super admins
   const envAdminIds = (process.env.ADMIN_TG_IDS || process.env.ADMIN_TG_ID || '')
     .split(',').map(s => s.trim()).filter(Boolean);
+  console.log(`[Admin Check] user tg_id="${tgId}" | ADMIN_TG_IDS="${process.env.ADMIN_TG_IDS}" | envAdminIds=${JSON.stringify(envAdminIds)} | match=${envAdminIds.includes(tgId)}`);
   if (envAdminIds.includes(tgId)) {
     isAdmin = true;
     adminPerms = '*';
