@@ -1,20 +1,27 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import api from '../../utils/api.js';
 import { useStore } from '../../store/index.js';
 import { fmt, fmtK } from '../../utils/format.js';
 
+// Module-level: used to pass search query from MultiAccountPanel to UsersPanel
+let _searchFromMulti = '';
+
 const ALL_TABS = [
   { id: 'dashboard', icon: '📊', label: 'Обзор' },
   { id: 'users', icon: '👥', label: 'Юзеры' },
+  { id: 'deposits', icon: '💳', label: 'Депозиты' },
   { id: 'withdrawals', icon: '💸', label: 'Выводы' },
   { id: 'tasks', icon: '📋', label: 'Задания' },
   { id: 'orders', icon: '🛒', label: 'Заказы' },
   { id: 'packages', icon: '📦', label: 'Пакеты' },
   { id: 'ads', icon: '🎬', label: 'Реклама' },
   { id: 'referrals', icon: '🤝', label: 'Рефералы' },
+  { id: 'ambassador', icon: '🤝', label: 'Амбассадор' },
+  { id: 'promo', icon: '🎟️', label: 'Промокоды' },
   { id: 'broadcast', icon: '📢', label: 'Рассылка' },
   { id: 'multi', icon: '👁', label: 'Мульти' },
   { id: 'admins', icon: '🛡️', label: 'Админы' },
+  { id: 'activity', icon: '📜', label: 'Лог' },
 ];
 
 export default function AdminPage() {
@@ -31,7 +38,8 @@ export default function AdminPage() {
         return Array.isArray(adminPerms) && adminPerms.includes(t.id);
       });
 
-  const [tab, setTab] = useState(visibleTabs[0]?.id || 'dashboard');
+  const [tab, _setTab] = useState(visibleTabs[0]?.id || 'dashboard');
+  const setTab = (t) => { _setTab(t); try { api.post('/admin/log-action', { action: 'view_tab', details: t }); } catch(e){} };
 
   // Dynamic grid columns based on tab count
   const cols = visibleTabs.length <= 4 ? visibleTabs.length : visibleTabs.length <= 6 ? 3 : 3;
@@ -82,8 +90,12 @@ export default function AdminPage() {
       {tab === 'ads' && <AdsPanel />}
       {tab === 'referrals' && <ReferralsPanel />}
       {tab === 'broadcast' && <BroadcastPanel />}
-      {tab === 'multi' && <MultiAccountPanel />}
+      {tab === 'multi' && <MultiAccountPanel onGoToUser={(tgId) => { _searchFromMulti = String(tgId); setTab('users'); }} />}
       {tab === 'admins' && <AdminsPanel />}
+      {tab === 'ambassador' && <AmbassadorAdminPanel />}
+      {tab === 'promo' && <PromoCodesPanel />}
+      {tab === 'deposits' && <DepositsPanel onGoToUser={(tgId) => { _searchFromMulti = String(tgId); setTab('users'); }} />}
+      {tab === 'activity' && <AdminActivityPanel />}
     </div>
   );
 }
@@ -99,7 +111,12 @@ function Dashboard() {
   const [topLoading, setTopLoading] = useState(false);
 
   const loadStats = async () => {
-    try { const { data } = await api.get('/admin/stats'); setStats(data); } catch (e) {}
+    try {
+      const { data } = await api.get('/admin/stats');
+      setStats(data);
+    } catch (e) {
+      console.error('[Admin] Stats error:', e.message);
+    }
   };
 
   useEffect(() => { loadStats(); }, []);
@@ -132,11 +149,13 @@ function Dashboard() {
   };
 
   const cards = [
-    { icon: '👥', label: 'Пользователи', val: stats.total_users, color: 'var(--gold)' },
+    { icon: '👥', label: 'Всего юзеров', val: stats.total_users, color: 'var(--text-muted)' },
+    { icon: '✅', label: 'Активных', val: stats.active_users || stats.total_users, color: 'var(--green)' },
+    { icon: '🚫', label: 'Забанено', val: stats.blocked_users || 0, color: stats.blocked_users > 0 ? 'var(--red)' : 'var(--text-muted)' },
     { icon: '🆕', label: 'За 24ч', val: stats.new_users_24h, color: 'var(--green)' },
     { icon: '🟢', label: 'Онлайн (5м)', val: stats.online_5min || 0, color: '#22c55e' },
     { icon: '🔵', label: 'Онлайн (1ч)', val: stats.online_1h || 0, color: '#3b82f6' },
-    { icon: '⚡', label: 'Power (всего)', val: fmtK(stats.total_power), color: 'var(--gold-light)', field: 'power' },
+    { icon: '⚡', label: 'Power (актив)', val: fmtK(stats.total_power), color: 'var(--gold-light)', field: 'power' },
     { icon: '💰', label: 'TON баланс', val: fmt(stats.total_ton_balance, 2), color: 'var(--orange)', field: 'ton_balance' },
     { icon: '🛒', label: 'Покупок', val: stats.total_purchases, color: 'var(--green)', field: 'purchases' },
     { icon: '💵', label: 'Выручка', val: `${fmt(stats.total_revenue, 2)} TON`, color: 'var(--gold)', field: 'revenue' },
@@ -186,6 +205,71 @@ function Dashboard() {
           </div>
         ))}
       </div>
+
+      {/* 🛒 Buyers vs Free */}
+      {stats.buyers && (
+        <div className="card" style={{ padding: 14, marginBottom: 16, border: '1px solid rgba(212,175,55,0.15)', animation: 'fadeIn 0.3s ease' }}>
+          <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 10 }}>🛒 Покупатели vs Бесплатные</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            {/* Buyers */}
+            <div style={{ padding: 12, borderRadius: 10, background: 'rgba(52,211,153,0.05)', border: '1px solid rgba(52,211,153,0.15)' }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--green)', marginBottom: 8 }}>💎 Покупатели</div>
+              <div style={{ fontSize: 22, fontWeight: 900, color: 'var(--green)' }}>{stats.buyers.buyers_count}</div>
+              <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 6 }}>юзеров</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <div style={{ fontSize: 10 }}>
+                  <span style={{ color: 'var(--text-muted)' }}>⚡ Power: </span>
+                  <span style={{ color: 'var(--gold)', fontWeight: 700 }}>{fmtK(stats.buyers.buyers_power)}</span>
+                </div>
+                <div style={{ fontSize: 10 }}>
+                  <span style={{ color: 'var(--text-muted)' }}>💰 Баланс: </span>
+                  <span style={{ color: 'var(--orange)', fontWeight: 700 }}>{fmt(stats.buyers.buyers_balance, 4)}</span>
+                </div>
+                <div style={{ fontSize: 10 }}>
+                  <span style={{ color: 'var(--text-muted)' }}>💵 Потратили: </span>
+                  <span style={{ color: 'var(--green)', fontWeight: 700 }}>{fmt(stats.buyers.buyers_spent, 4)} TON</span>
+                </div>
+              </div>
+            </div>
+            {/* Free */}
+            <div style={{ padding: 12, borderRadius: 10, background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)' }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 8 }}>🆓 Бесплатные</div>
+              <div style={{ fontSize: 22, fontWeight: 900, color: 'var(--text-muted)' }}>{stats.buyers.free_count}</div>
+              <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 6 }}>юзеров</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <div style={{ fontSize: 10 }}>
+                  <span style={{ color: 'var(--text-muted)' }}>⚡ Power: </span>
+                  <span style={{ color: 'var(--gold)', fontWeight: 700 }}>{fmtK(stats.buyers.free_power)}</span>
+                </div>
+                <div style={{ fontSize: 10 }}>
+                  <span style={{ color: 'var(--text-muted)' }}>💰 Баланс: </span>
+                  <span style={{ color: 'var(--orange)', fontWeight: 700 }}>{fmt(stats.buyers.free_balance, 4)}</span>
+                </div>
+                <div style={{ fontSize: 10 }}>
+                  <span style={{ color: 'var(--text-muted)' }}>💵 Потратили: </span>
+                  <span style={{ fontWeight: 700 }}>0 TON</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* Conversion rate */}
+          {(stats.buyers.buyers_count + stats.buyers.free_count) > 0 && (() => {
+            const total = stats.buyers.buyers_count + stats.buyers.free_count;
+            const pct = ((stats.buyers.buyers_count / total) * 100).toFixed(1);
+            return (
+              <div style={{ marginTop: 10 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--text-muted)', marginBottom: 4 }}>
+                  <span>Конверсия в покупку</span>
+                  <span style={{ color: 'var(--gold)', fontWeight: 700 }}>{pct}%</span>
+                </div>
+                <div style={{ height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                  <div style={{ width: `${pct}%`, height: '100%', borderRadius: 3, background: 'linear-gradient(90deg, var(--gold-dark), var(--gold))', transition: 'width 0.5s' }} />
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
 
       {/* Top users overlay */}
       {topField && (
@@ -274,6 +358,160 @@ function Dashboard() {
         </div>
       )}
 
+      {/* 💰 Finance Analytics */}
+      {stats.finance && (
+        <div className="card" style={{ padding: 16, marginBottom: 16, border: '1px solid rgba(212,175,55,0.2)', animation: 'fadeIn 0.3s ease' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+            <span style={{ fontSize: 22 }}>💰</span>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 800 }}>Финансовая аналитика</div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>Прогноз затрат и позиция проекта</div>
+            </div>
+          </div>
+
+          {/* Revenue vs Liability */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
+            <div style={{ padding: 12, borderRadius: 10, background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.15)' }}>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>📥 Доход (покупки)</div>
+              <div style={{ fontSize: 18, fontWeight: 900, color: 'var(--green)' }}>{fmt(stats.total_revenue, 4)} TON</div>
+            </div>
+            <div style={{ padding: 12, borderRadius: 10, background: 'rgba(248,113,113,0.06)', border: '1px solid rgba(248,113,113,0.15)' }}>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>📤 Общий долг (балансы)</div>
+              <div style={{ fontSize: 18, fontWeight: 900, color: 'var(--red)' }}>{fmt(stats.finance.total_liability, 4)} TON</div>
+            </div>
+          </div>
+
+          {/* Detailed breakdown */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
+            {[
+              { icon: '👤', label: 'Балансы активных юзеров', val: `${fmt(stats.finance.active_liability, 4)} TON`, color: 'var(--orange)', desc: 'Могут вывести' },
+              { icon: '✅', label: 'Уже выведено', val: `${fmt(stats.finance.total_withdrawn, 4)} TON`, color: 'var(--green)', desc: 'Approved' },
+              { icon: '⏳', label: 'Ожидают вывода', val: `${fmt(stats.finance.pending_withdrawals_ton, 4)} TON`, color: '#f59e0b', desc: 'Pending' },
+            ].map(r => (
+              <div key={r.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '8px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span>{r.icon}</span>
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 700 }}>{r.label}</div>
+                    <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>{r.desc}</div>
+                  </div>
+                </div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: r.color }}>{r.val}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Banned users section */}
+          {stats.finance.banned_users > 0 && (
+            <div style={{ padding: 12, borderRadius: 10, background: 'rgba(248,113,113,0.06)', border: '1px solid rgba(248,113,113,0.15)', marginBottom: 12 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--red)', marginBottom: 8 }}>🚫 Забаненные юзеры</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                <div>
+                  <div style={{ fontSize: 20, fontWeight: 900, color: 'var(--red)' }}>{stats.finance.banned_users}</div>
+                  <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>юзеров в бане</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 20, fontWeight: 900, color: 'var(--red)' }}>{fmt(stats.finance.banned_purchases_ton, 4)} TON</div>
+                  <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>{stats.finance.banned_purchases_count} покупок</div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 12, marginTop: 8, padding: '8px 0', borderTop: '1px solid rgba(248,113,113,0.12)' }}>
+                <div style={{ fontSize: 10 }}>
+                  <span style={{ color: 'var(--text-muted)' }}>⚡ Power: </span>
+                  <span style={{ color: 'var(--gold)', fontWeight: 700 }}>{fmtK(stats.finance.banned_power || 0)}</span>
+                </div>
+                <div style={{ fontSize: 10 }}>
+                  <span style={{ color: 'var(--text-muted)' }}>💰 Баланс: </span>
+                  <span style={{ color: 'var(--orange)', fontWeight: 700 }}>{fmt(stats.finance.banned_balance || 0, 4)} TON</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ⚡ Mining Forecast */}
+          <div style={{ padding: 12, borderRadius: 10, background: 'rgba(212,175,55,0.04)', border: '1px solid rgba(212,175,55,0.15)', marginBottom: 12 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--gold)', marginBottom: 8 }}>⚡ Прогноз майнинга (по текущему Power)</div>
+            <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 10 }}>
+              Активный Power: <span style={{ color: 'var(--gold)', fontWeight: 700 }}>{fmtK(stats.finance.active_power)} GH/s</span>
+              {' '}(100K = 0.036 TON/день)
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, marginBottom: 10 }}>
+              {[
+                { label: 'День', val: stats.finance.mining_ton_per_day, icon: '📅' },
+                { label: 'Неделя', val: stats.finance.mining_ton_per_week, icon: '📆' },
+                { label: 'Месяц', val: stats.finance.mining_ton_per_month, icon: '🗓️' },
+              ].map(p => (
+                <div key={p.label} style={{ textAlign: 'center', padding: 8, borderRadius: 8, background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)' }}>
+                  <div style={{ fontSize: 16, marginBottom: 2 }}>{p.icon}</div>
+                  <div style={{ fontSize: 14, fontWeight: 900, color: 'var(--orange)' }}>{fmt(p.val, 4)}</div>
+                  <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>TON/{p.label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Future liability */}
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--red)', marginBottom: 6 }}>📈 Прогноз затрат (балансы + будущий майнинг)</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 }}>
+              {[
+                { label: '7 дней', val: stats.finance.liability_7d },
+                { label: '30 дней', val: stats.finance.liability_30d },
+                { label: '90 дней', val: stats.finance.liability_90d },
+              ].map(p => (
+                <div key={p.label} style={{ textAlign: 'center', padding: 8, borderRadius: 8, background: 'rgba(248,113,113,0.04)', border: '1px solid rgba(248,113,113,0.12)' }}>
+                  <div style={{ fontSize: 14, fontWeight: 900, color: 'var(--red)' }}>{fmt(p.val, 4)}</div>
+                  <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>через {p.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Net position */}
+          <div style={{
+            padding: 14, borderRadius: 12, textAlign: 'center',
+            background: stats.finance.net_position >= 0
+              ? 'linear-gradient(135deg, rgba(52,211,153,0.08), rgba(52,211,153,0.02))'
+              : 'linear-gradient(135deg, rgba(248,113,113,0.08), rgba(248,113,113,0.02))',
+            border: stats.finance.net_position >= 0
+              ? '1px solid rgba(52,211,153,0.25)' : '1px solid rgba(248,113,113,0.25)',
+          }}>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>
+              📊 Нетто позиция (Доход − Выведено − Ожидает)
+            </div>
+            <div style={{
+              fontSize: 24, fontWeight: 900,
+              color: stats.finance.net_position >= 0 ? 'var(--green)' : 'var(--red)',
+            }}>
+              {stats.finance.net_position >= 0 ? '+' : ''}{fmt(stats.finance.net_position, 4)} TON
+            </div>
+            <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 4 }}>
+              Потенциальный макс. вывод активных юзеров: {fmt(stats.finance.active_liability, 4)} TON
+            </div>
+
+            {/* Health bar */}
+            {stats.total_revenue > 0 && (() => {
+              const paidPct = Math.min(100, (stats.finance.total_withdrawn / stats.total_revenue) * 100);
+              const pendPct = Math.min(100 - paidPct, (stats.finance.pending_withdrawals_ton / stats.total_revenue) * 100);
+              const liabPct = Math.min(100 - paidPct - pendPct, (stats.finance.active_liability / stats.total_revenue) * 100);
+              return (
+                <div style={{ marginTop: 10 }}>
+                  <div style={{ height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.06)', overflow: 'hidden', display: 'flex' }}>
+                    <div style={{ width: `${paidPct}%`, background: 'var(--green)', transition: 'width 0.5s' }} title="Выведено" />
+                    <div style={{ width: `${pendPct}%`, background: '#f59e0b', transition: 'width 0.5s' }} title="Ожидает" />
+                    <div style={{ width: `${liabPct}%`, background: 'var(--red)', opacity: 0.5, transition: 'width 0.5s' }} title="Балансы" />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, fontSize: 8, color: 'var(--text-muted)' }}>
+                    <span>🟢 Выведено {paidPct.toFixed(0)}%</span>
+                    <span>🟡 Ожидает {pendPct.toFixed(0)}%</span>
+                    <span>🔴 Балансы {liabPct.toFixed(0)}%</span>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+      )}
+
       {/* Charts */}
       <DashboardCharts />
     </div>
@@ -358,7 +596,10 @@ function DashboardCharts() {
 // ═══════════════════ USERS ═══════════════════
 function UsersPanel() {
   const [users, setUsers] = useState([]);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(_searchFromMulti || '');
+
+  // Clear module-level search after using it
+  useEffect(() => { if (_searchFromMulti) { _searchFromMulti = ''; } }, []);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [editing, setEditing] = useState(null);
@@ -673,29 +914,341 @@ function WithdrawalsPanel() {
   const [filter, setFilter] = useState('pending');
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [txHashInputs, setTxHashInputs] = useState({});
+  const [msg, setMsg] = useState(null);
+
+  // Withdraw settings state
+  const [ws, setWs] = useState({
+    min_withdraw_ton: '0.1',
+    withdraw_fee_mode: 'none',
+    withdraw_fee_fixed: '0.01',
+    withdraw_fee_percent: '5',
+    withdraw_fee_hybrid_threshold: '1',
+    withdraw_processing_hours: '1-24',
+    withdraw_require_deposit: '0',
+    withdraw_check_bot: '0',
+    withdraw_check_multi: '0',
+  });
+  const [wsSaving, setWsSaving] = useState(false);
 
   const load = async () => {
-    const { data } = await api.get(`/admin/withdrawals?status=${filter}`);
-    setItems(data);
+    try {
+      const { data } = await api.get(`/admin/withdrawals?status=${filter}`);
+      setItems(data);
+    } catch (e) {
+      setMsg('❌ Ошибка загрузки выводов');
+      setTimeout(() => setMsg(null), 3000);
+    }
   };
+
+  // Load withdraw settings
+  useEffect(() => {
+    api.get('/admin/withdraw-settings').then(r => {
+      setWs({
+        min_withdraw_ton: String(r.data.min_withdraw_ton ?? '0.1'),
+        withdraw_fee_mode: r.data.withdraw_fee_mode || 'none',
+        withdraw_fee_fixed: String(r.data.withdraw_fee_fixed ?? '0.01'),
+        withdraw_fee_percent: String(r.data.withdraw_fee_percent ?? '5'),
+        withdraw_fee_hybrid_threshold: String(r.data.withdraw_fee_hybrid_threshold ?? '1'),
+        withdraw_processing_hours: r.data.withdraw_processing_hours || '1-24',
+        withdraw_require_deposit: String(r.data.withdraw_require_deposit ?? '0'),
+        withdraw_check_bot: String(r.data.withdraw_check_bot ?? '0'),
+        withdraw_check_multi: String(r.data.withdraw_check_multi ?? '0'),
+      });
+    }).catch(() => {});
+  }, []);
+
   useEffect(() => { load(); }, [filter]);
 
   const approve = async (id) => {
     setLoading(true);
-    await api.post(`/admin/withdrawals/${id}/approve`, { tx_hash: 'manual_' + Date.now() });
-    load();
+    try {
+      const txHash = txHashInputs[id]?.trim() || ('manual_' + Date.now());
+      await api.post(`/admin/withdrawals/${id}/approve`, { tx_hash: txHash });
+      setTxHashInputs(prev => { const n = {...prev}; delete n[id]; return n; });
+      load();
+    } catch (e) {
+      setMsg('❌ Ошибка одобрения');
+      setTimeout(() => setMsg(null), 3000);
+    }
     setLoading(false);
   };
 
   const reject = async (id) => {
     setLoading(true);
-    await api.post(`/admin/withdrawals/${id}/reject`);
-    load();
+    try {
+      await api.post(`/admin/withdrawals/${id}/reject`);
+      load();
+    } catch (e) {
+      setMsg('❌ Ошибка отклонения');
+      setTimeout(() => setMsg(null), 3000);
+    }
     setLoading(false);
+  };
+
+  const saveWithdrawSettings = async () => {
+    setWsSaving(true);
+    try {
+      await api.put('/admin/withdraw-settings', {
+        min_withdraw_ton: parseFloat(ws.min_withdraw_ton),
+        withdraw_fee_mode: ws.withdraw_fee_mode,
+        withdraw_fee_fixed: parseFloat(ws.withdraw_fee_fixed),
+        withdraw_fee_percent: parseFloat(ws.withdraw_fee_percent),
+        withdraw_fee_hybrid_threshold: parseFloat(ws.withdraw_fee_hybrid_threshold),
+        withdraw_processing_hours: ws.withdraw_processing_hours,
+        withdraw_require_deposit: ws.withdraw_require_deposit,
+        withdraw_check_bot: ws.withdraw_check_bot,
+        withdraw_check_multi: ws.withdraw_check_multi,
+      });
+      setMsg('✅ Настройки вывода сохранены');
+    } catch (e) {
+      setMsg('❌ Ошибка сохранения: ' + (e.response?.data?.error || e.message));
+    }
+    setWsSaving(false);
+    setTimeout(() => setMsg(null), 2500);
+  };
+
+  // Fee preview calculator
+  const previewFee = (amount) => {
+    const mode = ws.withdraw_fee_mode;
+    if (mode === 'none' || !amount) return 0;
+    const fixed = parseFloat(ws.withdraw_fee_fixed) || 0;
+    const pct = parseFloat(ws.withdraw_fee_percent) || 0;
+    const threshold = parseFloat(ws.withdraw_fee_hybrid_threshold) || 1;
+    if (mode === 'fixed') return fixed;
+    if (mode === 'percent') return amount * (pct / 100);
+    if (mode === 'hybrid') return amount <= threshold ? fixed : amount * (pct / 100);
+    return 0;
+  };
+
+  const modeLabels = {
+    none: '❌ Без комиссии',
+    fixed: '💰 Фиксированная',
+    percent: '📊 Процентная',
+    hybrid: '🔀 Гибридная',
+  };
+
+  const modeDescs = {
+    none: 'Юзер получает 100% от суммы вывода',
+    fixed: 'Фиксированная сумма вычитается при каждом выводе',
+    percent: 'Процент от суммы вывода',
+    hybrid: 'До порога — фикс, после порога — процент',
   };
 
   return (
     <div>
+      {/* ═══ Withdraw Settings Card ═══ */}
+      <div className="card" style={{ padding: 16, marginBottom: 16, border: '1px solid rgba(212,175,55,0.2)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+          <span style={{ fontSize: 22 }}>⚙️</span>
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 800 }}>Настройки вывода</div>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>Минимум, комиссия, режим</div>
+          </div>
+        </div>
+
+        {/* Min withdraw */}
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, marginBottom: 6, color: 'var(--text-muted)' }}>💎 МИНИМАЛЬНАЯ СУММА ВЫВОДА</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <input type="number" value={ws.min_withdraw_ton}
+              onChange={e => setWs({...ws, min_withdraw_ton: e.target.value})}
+              step="0.01" min="0"
+              style={{ flex: 1, padding: '10px 12px', fontSize: 16, fontWeight: 700, textAlign: 'center' }} />
+            <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>TON</span>
+          </div>
+        </div>
+
+        {/* Fee mode selector */}
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, marginBottom: 8, color: 'var(--text-muted)' }}>💸 РЕЖИМ КОМИССИИ</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+            {['none', 'fixed', 'percent', 'hybrid'].map(mode => (
+              <button key={mode} onClick={() => setWs({...ws, withdraw_fee_mode: mode})} style={{
+                padding: '10px 8px', borderRadius: 10, border: 'none',
+                background: ws.withdraw_fee_mode === mode
+                  ? 'linear-gradient(135deg, var(--gold-dark), var(--gold))'
+                  : 'rgba(255,255,255,0.04)',
+                color: ws.withdraw_fee_mode === mode ? '#000' : 'var(--text-muted)',
+                fontWeight: 700, fontSize: 11, cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                border: ws.withdraw_fee_mode === mode ? 'none' : '1px solid var(--border)',
+              }}>
+                {modeLabels[mode]}
+              </button>
+            ))}
+          </div>
+          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 6, textAlign: 'center' }}>
+            {modeDescs[ws.withdraw_fee_mode]}
+          </div>
+        </div>
+
+        {/* Fee parameters — shown based on mode */}
+        {ws.withdraw_fee_mode !== 'none' && (
+          <div style={{
+            background: 'rgba(255,255,255,0.02)', borderRadius: 12, padding: 12, marginBottom: 14,
+            border: '1px solid var(--border)', animation: 'fadeIn 0.2s ease'
+          }}>
+            {/* Fixed fee — shown for fixed & hybrid */}
+            {(ws.withdraw_fee_mode === 'fixed' || ws.withdraw_fee_mode === 'hybrid') && (
+              <div style={{ marginBottom: ws.withdraw_fee_mode === 'hybrid' ? 12 : 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                  <span style={{ fontSize: 14 }}>💰</span>
+                  <div style={{ fontSize: 12, fontWeight: 700 }}>Фиксированная комиссия</div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <input type="number" value={ws.withdraw_fee_fixed}
+                    onChange={e => setWs({...ws, withdraw_fee_fixed: e.target.value})}
+                    step="0.001" min="0"
+                    style={{ flex: 1, padding: '8px 12px', fontSize: 16, fontWeight: 700, textAlign: 'center' }} />
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>TON</span>
+                </div>
+                {ws.withdraw_fee_mode === 'hybrid' && (
+                  <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 4 }}>
+                    Применяется при выводе ≤ порога
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Percent fee — shown for percent & hybrid */}
+            {(ws.withdraw_fee_mode === 'percent' || ws.withdraw_fee_mode === 'hybrid') && (
+              <div style={{ marginBottom: ws.withdraw_fee_mode === 'hybrid' ? 12 : 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                  <span style={{ fontSize: 14 }}>📊</span>
+                  <div style={{ fontSize: 12, fontWeight: 700 }}>Процент комиссии</div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <input type="number" value={ws.withdraw_fee_percent}
+                    onChange={e => setWs({...ws, withdraw_fee_percent: e.target.value})}
+                    step="0.1" min="0" max="100"
+                    style={{ flex: 1, padding: '8px 12px', fontSize: 16, fontWeight: 700, textAlign: 'center' }} />
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>%</span>
+                </div>
+                {ws.withdraw_fee_mode === 'hybrid' && (
+                  <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 4 }}>
+                    Применяется при выводе &gt; порога
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Hybrid threshold */}
+            {ws.withdraw_fee_mode === 'hybrid' && (
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                  <span style={{ fontSize: 14 }}>🔀</span>
+                  <div style={{ fontSize: 12, fontWeight: 700 }}>Порог переключения</div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <input type="number" value={ws.withdraw_fee_hybrid_threshold}
+                    onChange={e => setWs({...ws, withdraw_fee_hybrid_threshold: e.target.value})}
+                    step="0.1" min="0"
+                    style={{ flex: 1, padding: '8px 12px', fontSize: 16, fontWeight: 700, textAlign: 'center' }} />
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>TON</span>
+                </div>
+                <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 4 }}>
+                  ≤ порога → фикс ({ws.withdraw_fee_fixed} TON) • &gt; порога → процент ({ws.withdraw_fee_percent}%)
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Fee preview examples */}
+        {ws.withdraw_fee_mode !== 'none' && (
+          <div style={{
+            background: 'rgba(52,211,153,0.04)', borderRadius: 10, padding: 10, marginBottom: 14,
+            border: '1px solid rgba(52,211,153,0.12)'
+          }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 6 }}>📋 ПРЕВЬЮ КОМИССИИ</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 4 }}>
+              {[0.1, 0.5, 1, 2, 5, 10].map(amount => {
+                const fee = previewFee(amount);
+                return (
+                  <div key={amount} style={{
+                    padding: '6px 4px', borderRadius: 6, textAlign: 'center',
+                    background: 'rgba(255,255,255,0.03)', fontSize: 10
+                  }}>
+                    <div style={{ fontWeight: 700, color: 'var(--gold)' }}>{amount} TON</div>
+                    <div style={{ color: 'var(--orange)', fontSize: 9 }}>−{fmt(fee, 4)}</div>
+                    <div style={{ color: 'var(--green)', fontWeight: 700, fontSize: 9 }}>={fmt(amount - fee, 4)}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ═══ Processing time ═══ */}
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, marginBottom: 6, color: 'var(--text-muted)' }}>⏱️ ВРЕМЯ ОБРАБОТКИ (текст)</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <input type="text" value={ws.withdraw_processing_hours}
+              onChange={e => setWs({...ws, withdraw_processing_hours: e.target.value})}
+              placeholder="1-24"
+              style={{ flex: 1, padding: '10px 12px', fontSize: 16, fontWeight: 700, textAlign: 'center' }} />
+            <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>часов</span>
+          </div>
+          <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 4 }}>
+            Отображается юзеру на странице вывода (напр. 1-24, 12-48, до 72)
+          </div>
+        </div>
+
+        {/* ═══ Protection settings ═══ */}
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, marginBottom: 8, color: 'var(--text-muted)' }}>🛡️ СКРЫТЫЕ ПРОВЕРКИ</div>
+          <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 8 }}>
+            Юзер не видит эти требования — при нарушении получит "Вывод временно недоступен"
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {[
+              { key: 'withdraw_require_deposit', icon: '💰', label: 'Обязательный депозит', desc: 'Юзер должен купить хотя бы 1 пакет' },
+              { key: 'withdraw_check_bot', icon: '🤖', label: 'Проверка на бота', desc: 'Блокировка если юзер помечен как бот' },
+              { key: 'withdraw_check_multi', icon: '👥', label: 'Мультиаккаунт', desc: 'Блокировка если IP используется другими аккаунтами' },
+            ].map(item => (
+              <div key={item.key} style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '10px 12px', borderRadius: 10,
+                background: ws[item.key] === '1' ? 'rgba(52,211,153,0.06)' : 'rgba(255,255,255,0.02)',
+                border: ws[item.key] === '1' ? '1px solid rgba(52,211,153,0.2)' : '1px solid var(--border)',
+                transition: 'all 0.2s ease'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 16 }}>{item.icon}</span>
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 700 }}>{item.label}</div>
+                    <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>{item.desc}</div>
+                  </div>
+                </div>
+                <button onClick={() => setWs({...ws, [item.key]: ws[item.key] === '1' ? '0' : '1'})} style={{
+                  width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer',
+                  background: ws[item.key] === '1'
+                    ? 'linear-gradient(135deg, var(--green), #059669)'
+                    : 'rgba(255,255,255,0.1)',
+                  position: 'relative', transition: 'all 0.2s ease',
+                }}>
+                  <div style={{
+                    width: 18, height: 18, borderRadius: '50%', background: '#fff',
+                    position: 'absolute', top: 3,
+                    left: ws[item.key] === '1' ? 23 : 3,
+                    transition: 'left 0.2s ease',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
+                  }} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Save button */}
+        <button className="btn-gold" onClick={saveWithdrawSettings} disabled={wsSaving}
+          style={{ padding: 12, fontSize: 13, width: '100%' }}>
+          {wsSaving ? '⏳ Сохраняю...' : '💾 Сохранить настройки вывода'}
+        </button>
+      </div>
+
+      {/* ═══ Withdrawals list ═══ */}
       <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
         {['pending', 'completed', 'rejected'].map(s => (
           <button key={s} onClick={() => setFilter(s)} style={{
@@ -709,6 +1262,13 @@ function WithdrawalsPanel() {
         ))}
       </div>
 
+      {msg && (
+        <div style={{ padding: '10px 14px', borderRadius: 10, marginBottom: 12,
+          background: msg.startsWith('✅') ? 'rgba(52,211,153,0.1)' : 'var(--red-bg)',
+          color: msg.startsWith('✅') ? 'var(--green)' : 'var(--red)',
+          fontSize: 12, fontWeight: 600, textAlign: 'center' }}>{msg}</div>
+      )}
+
       {items.length === 0 && (
         <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 40 }}>Пусто</div>
       )}
@@ -721,6 +1281,11 @@ function WithdrawalsPanel() {
                 <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--gold-light)' }}>
                   {fmt(w.ton_amount, 4)} TON
                 </div>
+                {parseFloat(w.fee_amount || 0) > 0 && (
+                  <div style={{ fontSize: 10, color: 'var(--orange)', fontWeight: 600 }}>
+                    💸 Комиссия: {fmt(w.fee_amount, 4)} TON
+                  </div>
+                )}
                 <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
                   {w.first_name || w.username} (TG:{w.tg_id})
                 </div>
@@ -738,17 +1303,25 @@ function WithdrawalsPanel() {
             </div>
 
             {filter === 'pending' && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                <button onClick={() => approve(w.id)} disabled={loading} style={{
-                  padding: 10, borderRadius: 10, border: 'none',
-                  background: 'var(--green-bg)', color: 'var(--green)',
-                  fontWeight: 700, fontSize: 13, cursor: 'pointer'
-                }}>✅ Одобрить</button>
-                <button onClick={() => reject(w.id)} disabled={loading} style={{
-                  padding: 10, borderRadius: 10, border: 'none',
-                  background: 'var(--red-bg)', color: 'var(--red)',
-                  fontWeight: 700, fontSize: 13, cursor: 'pointer'
-                }}>❌ Отклонить</button>
+              <div>
+                <div style={{ marginBottom: 8 }}>
+                  <input type="text" value={txHashInputs[w.id] || ''}
+                    onChange={e => setTxHashInputs({...txHashInputs, [w.id]: e.target.value})}
+                    placeholder="TX hash (опционально)"
+                    style={{ fontSize: 11, padding: '6px 10px', fontFamily: 'monospace' }} />
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                  <button onClick={() => approve(w.id)} disabled={loading} style={{
+                    padding: 10, borderRadius: 10, border: 'none',
+                    background: 'var(--green-bg)', color: 'var(--green)',
+                    fontWeight: 700, fontSize: 13, cursor: 'pointer'
+                  }}>✅ Одобрить</button>
+                  <button onClick={() => reject(w.id)} disabled={loading} style={{
+                    padding: 10, borderRadius: 10, border: 'none',
+                    background: 'var(--red-bg)', color: 'var(--red)',
+                    fontWeight: 700, fontSize: 13, cursor: 'pointer'
+                  }}>❌ Отклонить</button>
+                </div>
               </div>
             )}
           </div>
@@ -765,8 +1338,12 @@ function TasksPanel() {
   const [form, setForm] = useState({ title: '', description: '', reward_power: '', type: 'other', link: '', visibility: 'admin' });
 
   const load = async () => {
-    const { data } = await api.get('/admin/tasks');
-    setTasks(data);
+    try {
+      const { data } = await api.get('/admin/tasks');
+      setTasks(data);
+    } catch (e) {
+      console.error('[Admin] Tasks load error:', e.message);
+    }
   };
   useEffect(() => { load(); }, []);
 
@@ -1066,7 +1643,14 @@ function PackagesPanel() {
   const [form, setForm] = useState({ name: '', power_amount: '', price_ton: '' });
   const [msg, setMsg] = useState(null);
 
-  const load = async () => { const { data } = await api.get('/admin/packages'); setPackages(data); };
+  const load = async () => {
+    try {
+      const { data } = await api.get('/admin/packages');
+      setPackages(data);
+    } catch (e) {
+      console.error('[Admin] Packages load error:', e.message);
+    }
+  };
   useEffect(() => { load(); }, []);
 
   const resetForm = () => {
@@ -1415,7 +1999,8 @@ function AdsPanel() {
     api.get('/admin/ad-settings').then(r => {
       // Adsgram defaults
       const adsgramDefaults = [
-        { key: 'adsgram_block_id', value: '29776', label: 'Adsgram Block ID' },
+        { key: 'adsgram_block_id', value: '29776', label: 'Adsgram Block ID (Rewarded)' },
+        { key: 'adsgram_interstitial_block_id', value: '', label: 'Adsgram Interstitial Block ID' },
         { key: 'adsgram_task_id', value: 'task-29788', label: 'Adsgram Task ID' },
         { key: 'ad_reward_power', value: '500', label: 'Power за просмотр (Adsgram)' },
         { key: 'ad_cooldown_seconds', value: '60', label: 'Кулдаун между рекламами (сек)' },
@@ -1472,7 +2057,8 @@ function AdsPanel() {
   };
 
   const adsgramFieldMeta = {
-    adsgram_block_id: { icon: '🎯', unit: 'ID', desc: 'Block ID из личного кабинета Adsgram' },
+    adsgram_block_id: { icon: '🎯', unit: 'ID', desc: 'Block ID для rewarded видео (задания)' },
+    adsgram_interstitial_block_id: { icon: '📺', unit: 'ID', desc: 'Block ID для interstitial (при клике на баланс)' },
     adsgram_task_id: { icon: '📋', unit: 'ID', desc: 'Task ID для спонсорских заданий Adsgram' },
     ad_reward_power: { icon: '⚡', unit: 'POWER', desc: 'Сколько Power юзер получает за один просмотр Adsgram' },
     ad_cooldown_seconds: { icon: '⏱️', unit: 'сек', desc: 'Минимальное время между просмотрами (общее)' },
@@ -1575,21 +2161,16 @@ function AdsPanel() {
           📡 ПОДКЛЮЧЁННЫЕ ПРОВАЙДЕРЫ
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {[
-            { name: 'Adsgram Reward', id: '29776', status: 'Watch & Earn' },
-            { name: 'Adsgram Task', id: 'task-29788', status: 'Sponsored Tasks' },
-            { name: 'Monetag', id: '10984603', status: 'Watch & Earn' },
-            { name: 'Publishers/RichAds', id: '7369', status: 'Авто (Push/Video)' },
-          ].map(p => (
-            <div key={p.id} style={{
+          {[...settings, ...monetagSettings, ...richadsSettings].map(p => (
+            <div key={p.key} style={{
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
               padding: '8px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: 10
             }}>
               <div>
-                <div style={{ fontSize: 12, fontWeight: 700 }}>{p.name}</div>
-                <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'monospace' }}>{p.id}</div>
+                <div style={{ fontSize: 12, fontWeight: 700 }}>{p.label}</div>
+                <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'monospace' }}>{p.value}</div>
               </div>
-              <div style={{ fontSize: 10, color: 'var(--green)', fontWeight: 600 }}>{p.status}</div>
+              <div style={{ fontSize: 10, color: 'var(--green)', fontWeight: 600 }}>✓ Настроено</div>
             </div>
           ))}
         </div>
@@ -1598,34 +2179,227 @@ function AdsPanel() {
   );
 }
 // ═══════════════════ MULTI-ACCOUNT DETECTION ═══════════════════
-function MultiAccountPanel() {
-  const [groups, setGroups] = useState([]);
+function MultiAccountPanel({ onGoToUser }) {
+  const [data, setData] = useState({ active: [], blocked: [] });
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState(null);
   const [expanded, setExpanded] = useState(null);
+  const [subTab, setSubTab] = useState('active');
+  const [blacklist, setBlacklist] = useState([]);
+  const [ignoreList, setIgnoreList] = useState([]);
+  const [newIp, setNewIp] = useState('');
+  const [newIgnoreIp, setNewIgnoreIp] = useState('');
+  const [actionLoading, setActionLoading] = useState(null);
+  const [search, setSearch] = useState('');
 
   const load = async () => {
     try {
-      const { data } = await api.get('/admin/multi-accounts');
-      setGroups(data);
+      const { data: d } = await api.get('/admin/multi-accounts');
+      setData(d);
     } catch (e) { setMsg('❌ Ошибка загрузки'); }
     setLoading(false);
   };
-  useEffect(() => { load(); }, []);
+
+  const loadBlacklist = async () => {
+    try { const { data: d } = await api.get('/admin/ip-blacklist'); setBlacklist(d); } catch (e) {}
+  };
+
+  const loadIgnore = async () => {
+    try { const { data: d } = await api.get('/admin/multi-ignore'); setIgnoreList(d); } catch (e) {}
+  };
+
+  useEffect(() => { load(); loadBlacklist(); loadIgnore(); }, []);
 
   const showMsg = (t) => { setMsg(t); setTimeout(() => setMsg(null), 3000); };
 
   const blockUser = async (userId) => {
     try {
-      await api.post(`/admin/users/${userId}/block`);
-      showMsg('🚫 Пользователь заблокирован');
-      load();
+      await api.post(`/admin/users/${userId}/block`, { blocked: true });
+      showMsg('🚫 Пользователь заблокирован'); load();
     } catch (e) { showMsg(`❌ ${e.response?.data?.error || 'Ошибка'}`); }
+  };
+
+  const blockGroup = async (ip) => {
+    setActionLoading(ip);
+    try {
+      const { data: d } = await api.post('/admin/multi-accounts/block-group', { ip });
+      showMsg(`🚫 Группа заблокирована: ${d.blocked_users} юзеров`);
+      load(); loadBlacklist();
+    } catch (e) { showMsg(`❌ ${e.response?.data?.error || 'Ошибка'}`); }
+    setActionLoading(null);
+  };
+
+  const unblockGroup = async (ip) => {
+    setActionLoading(ip);
+    try {
+      const { data: d } = await api.post('/admin/multi-accounts/unblock-group', { ip });
+      showMsg(`✅ Разблокировано: ${d.unblocked_users} юзеров`);
+      load(); loadBlacklist();
+    } catch (e) { showMsg(`❌ ${e.response?.data?.error || 'Ошибка'}`); }
+    setActionLoading(null);
+  };
+
+  const addToBlacklist = async () => {
+    if (!newIp.trim()) return;
+    try {
+      await api.post('/admin/ip-blacklist', { ip: newIp.trim(), reason: 'Manual' });
+      showMsg('✅ IP добавлен в ЧС'); setNewIp(''); loadBlacklist();
+    } catch (e) { showMsg(`❌ ${e.response?.data?.error || 'Ошибка'}`); }
+  };
+
+  const removeFromBlacklist = async (id) => {
+    try { await api.delete(`/admin/ip-blacklist/${id}`); showMsg('✅ Удалён из ЧС'); loadBlacklist(); }
+    catch (e) { showMsg('❌ Ошибка'); }
+  };
+
+  const ignoreIp = async (ip, reason) => {
+    setActionLoading('ign_' + ip);
+    try {
+      await api.post('/admin/multi-ignore', { ip, reason: reason || 'Admin whitelist' });
+      showMsg(`✅ IP ${ip} добавлен в игнор`); loadIgnore(); load();
+    } catch (e) { showMsg(`❌ ${e.response?.data?.error || 'Ошибка'}`); }
+    setActionLoading(null);
+  };
+
+  const removeIgnore = async (id) => {
+    try { await api.delete(`/admin/multi-ignore/${id}`); showMsg('✅ Убран из игнора'); loadIgnore(); load(); }
+    catch (e) { showMsg('❌ Ошибка'); }
   };
 
   if (loading) return <Loading />;
 
-  const totalSuspects = groups.reduce((s, g) => s + g.users.length, 0);
+  const filterGroups = (groups) => {
+    if (!search.trim()) return groups;
+    const q = search.toLowerCase().trim();
+    return groups.filter(g =>
+      g.ip.includes(q) ||
+      g.users.some(u =>
+        (u.username || '').toLowerCase().includes(q) ||
+        (u.first_name || '').toLowerCase().includes(q) ||
+        String(u.tg_id).includes(q) || String(u.id).includes(q)
+      )
+    );
+  };
+
+  const groups = filterGroups(subTab === 'blocked' ? data.blocked : data.active);
+
+  const renderGroup = (g, gi, isBlocked) => (
+    <div key={g.ip} className="card" style={{
+      animation: `fadeIn 0.3s ease ${gi * 0.05}s both`,
+      border: isBlocked ? '1px solid rgba(248,113,113,0.3)'
+        : g.is_ignored ? '1px solid rgba(52,211,153,0.3)'
+        : g.user_count >= 3 ? '1px solid rgba(248,113,113,0.4)' : '1px solid var(--border)',
+    }}>
+      <div onClick={() => setExpanded(expanded === g.ip ? null : g.ip)}
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', padding: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: '50%',
+            background: isBlocked ? 'rgba(248,113,113,0.15)' : g.is_ignored ? 'rgba(52,211,153,0.15)' : g.user_count >= 3 ? 'rgba(248,113,113,0.15)' : 'rgba(251,191,36,0.15)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0,
+          }}>
+            {isBlocked ? '🔒' : g.is_ignored ? '✅' : g.user_count >= 3 ? '🚨' : '⚠️'}
+          </div>
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 700, fontFamily: 'monospace' }}>{g.ip}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+              <span style={{ fontSize: 11, color: g.user_count >= 3 ? 'var(--red)' : 'var(--gold)', fontWeight: 700 }}>
+                {g.user_count} акк.
+              </span>
+              {g.has_admin && <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 4, background: 'rgba(212,175,55,0.15)', color: 'var(--gold)', fontWeight: 700 }}>👑 ADMIN</span>}
+              {g.is_blacklisted && <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 4, background: 'var(--red-bg)', color: 'var(--red)', fontWeight: 700 }}>⛔ ЧС</span>}
+              {g.is_ignored && <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 4, background: 'rgba(52,211,153,0.12)', color: 'var(--green)', fontWeight: 700 }}>✅ ИГНОР</span>}
+            </div>
+          </div>
+        </div>
+        <span style={{ fontSize: 14, color: 'var(--text-muted)', transition: 'transform 0.2s', transform: expanded === g.ip ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+      </div>
+
+      {expanded === g.ip && (
+        <div style={{ padding: '0 14px 10px', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {!isBlocked && !g.has_admin && (
+            <button onClick={(e) => { e.stopPropagation(); blockGroup(g.ip); }}
+              disabled={actionLoading === g.ip}
+              style={{ flex: 1, padding: 10, borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #dc2626, #991b1b)', color: '#fff', fontSize: 11, fontWeight: 800, cursor: 'pointer', opacity: actionLoading === g.ip ? 0.5 : 1, minWidth: 100 }}>
+              {actionLoading === g.ip ? '⏳...' : '🚫 Блок группу'}
+            </button>
+          )}
+          {isBlocked && (
+            <button onClick={(e) => { e.stopPropagation(); unblockGroup(g.ip); }}
+              disabled={actionLoading === g.ip}
+              style={{ flex: 1, padding: 10, borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #059669, #047857)', color: '#fff', fontSize: 11, fontWeight: 800, cursor: 'pointer', opacity: actionLoading === g.ip ? 0.5 : 1, minWidth: 100 }}>
+              {actionLoading === g.ip ? '⏳...' : '✅ Разблокировать'}
+            </button>
+          )}
+          {!g.is_ignored ? (
+            <button onClick={(e) => { e.stopPropagation(); ignoreIp(g.ip, `Group: ${g.user_count} users`); }}
+              disabled={actionLoading === 'ign_' + g.ip}
+              style={{ flex: 1, padding: 10, borderRadius: 10, background: 'rgba(52,211,153,0.1)', color: 'var(--green)', fontSize: 11, fontWeight: 800, cursor: 'pointer', border: '1px solid rgba(52,211,153,0.3)', minWidth: 100, opacity: actionLoading === 'ign_' + g.ip ? 0.5 : 1 }}>
+              {actionLoading === 'ign_' + g.ip ? '⏳...' : '👁 Игнор'}
+            </button>
+          ) : (
+            <button onClick={(e) => { e.stopPropagation(); const item = ignoreList.find(i => i.ip === g.ip); if (item) removeIgnore(item.id); }}
+              style={{ flex: 1, padding: 10, borderRadius: 10, background: 'rgba(251,191,36,0.1)', color: 'var(--orange)', fontSize: 11, fontWeight: 800, cursor: 'pointer', border: '1px solid rgba(251,191,36,0.3)', minWidth: 100 }}>
+              ❌ Убрать игнор
+            </button>
+          )}
+        </div>
+      )}
+
+      {expanded === g.ip && (
+        <div style={{ padding: '0 14px 14px', display: 'flex', flexDirection: 'column', gap: 6, animation: 'fadeIn 0.2s ease' }}>
+          {g.users.map(u => (
+            <div key={u.id} style={{
+              padding: 10, borderRadius: 10,
+              background: u.is_admin ? 'rgba(212,175,55,0.06)' : u.is_blocked ? 'rgba(248,113,113,0.08)' : 'rgba(255,255,255,0.03)',
+              border: u.is_admin ? '1px solid rgba(212,175,55,0.25)' : u.is_blocked ? '1px solid rgba(248,113,113,0.2)' : '1px solid var(--border)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700 }}>
+                    {u.first_name || u.username || 'Noname'}
+                    {u.is_premium && <span style={{ fontSize: 9, marginLeft: 4 }}>⭐</span>}
+                    {u.is_admin && <span style={{ fontSize: 8, marginLeft: 6, padding: '1px 5px', borderRadius: 4, background: 'rgba(212,175,55,0.15)', color: 'var(--gold)', fontWeight: 700 }}>👑</span>}
+                    {u.is_blocked && <span style={{ fontSize: 8, marginLeft: 6, padding: '1px 5px', borderRadius: 4, background: 'var(--red-bg)', color: 'var(--red)', fontWeight: 700 }}>BAN</span>}
+                  </div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
+                    ID:{u.id} • TG:{u.tg_id}{u.username ? ` • @${u.username}` : ''}
+                  </div>
+                  <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+                    <span style={{ fontSize: 10, color: 'var(--gold)' }}>⚡ {fmtK(u.power)}</span>
+                    <span style={{ fontSize: 10, color: 'var(--green)' }}>💎 {parseFloat(u.ton_balance || 0).toFixed(4)}</span>
+                  </div>
+                  <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>Рег: {new Date(u.created_at).toLocaleDateString()}</div>
+                  {u.ref_tg_id ? (
+                    <div style={{ fontSize: 9, marginTop: 3, color: 'var(--text-muted)' }}>
+                      👤 <span style={{ color: 'var(--gold)', fontWeight: 700 }}>{u.ref_first_name || u.ref_username || 'Noname'}</span>
+                      <span style={{ fontFamily: 'monospace', marginLeft: 4 }}>TG:{u.ref_tg_id}</span>
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: 9, marginTop: 3, color: 'var(--text-muted)', opacity: 0.5 }}>👤 Без реф</div>
+                  )}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flexShrink: 0 }}>
+                  {onGoToUser && (
+                    <button onClick={() => onGoToUser(u.tg_id)} style={{
+                      background: 'rgba(212,175,55,0.1)', border: 'none', borderRadius: 8,
+                      padding: '6px 10px', color: 'var(--gold)', fontSize: 10, fontWeight: 700, cursor: 'pointer',
+                    }}>👤</button>
+                  )}
+                  {!u.is_blocked && !u.is_admin && (
+                    <button onClick={() => blockUser(u.id)} style={{
+                      background: 'var(--red-bg)', border: 'none', borderRadius: 8,
+                      padding: '6px 10px', color: 'var(--red)', fontSize: 10, fontWeight: 700, cursor: 'pointer',
+                    }}>🚫</button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div>
@@ -1639,116 +2413,142 @@ function MultiAccountPanel() {
       )}
 
       <div className="card" style={{ padding: 14, marginBottom: 14 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 24 }}>👁</span>
           <div>
             <div style={{ fontSize: 14, fontWeight: 800 }}>Мульти-аккаунты</div>
             <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-              {groups.length ? `${groups.length} IP • ${totalSuspects} юзеров` : 'Подозрительных не найдено'}
+              {data.active.length + data.blocked.length} групп • {ignoreList.length} игнор • {blacklist.length} ЧС
             </div>
           </div>
         </div>
-        <div style={{ fontSize: 10, color: 'var(--text-muted)', lineHeight: 1.5 }}>
-          Показаны IP-адреса, с которых заходили 2+ разных аккаунта.
-          Данные собираются автоматически при каждом входе.
-        </div>
       </div>
 
-      <button onClick={() => { setLoading(true); load(); }}
+      {/* Search */}
+      <input value={search} onChange={e => setSearch(e.target.value)}
+        placeholder="🔍 Поиск по IP, username, TG ID..."
+        style={{
+          width: '100%', padding: '10px 14px', borderRadius: 12, fontSize: 13, marginBottom: 12,
+          border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text)',
+          outline: 'none', fontFamily: 'monospace', boxSizing: 'border-box',
+        }} />
+
+      {/* Sub-tabs */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 4, marginBottom: 12 }}>
+        {[
+          { id: 'active', label: '⚠️ Актив', count: data.active.length },
+          { id: 'blocked', label: '🔒 Блок', count: data.blocked.length },
+          { id: 'ignore', label: '👁 Игнор', count: ignoreList.length },
+          { id: 'blacklist', label: '⛔ ЧС', count: blacklist.length },
+        ].map(t => (
+          <button key={t.id} onClick={() => setSubTab(t.id)} style={{
+            padding: '8px 4px', borderRadius: 10, border: 'none', fontSize: 9, fontWeight: 700, cursor: 'pointer',
+            background: subTab === t.id ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)',
+            color: subTab === t.id ? 'var(--gold)' : 'var(--text-muted)',
+          }}>{t.label} ({t.count})</button>
+        ))}
+      </div>
+
+      <button onClick={() => { setLoading(true); load(); loadBlacklist(); loadIgnore(); }}
         className="btn-gold" style={{ marginBottom: 14, padding: 10, fontSize: 13 }}>
         🔄 Обновить
       </button>
 
-      {groups.length === 0 && (
-        <div className="card" style={{ textAlign: 'center', padding: 30 }}>
-          <div style={{ fontSize: 30, marginBottom: 8 }}>✅</div>
-          <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Мульти-аккаунтов не обнаружено</div>
-          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>
-            IP-данные начнут собираться после деплоя
+      {/* Ignore tab */}
+      {subTab === 'ignore' && (
+        <div>
+          <div className="card" style={{ padding: 14, marginBottom: 12, border: '1px solid rgba(52,211,153,0.15)' }}>
+            <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>👁 Список игнора</div>
+            <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 10 }}>
+              IP из игнора не блокируются при выводе, даже если обнаружен мультиаккаунт
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input value={newIgnoreIp} onChange={e => setNewIgnoreIp(e.target.value)} placeholder="IP адрес"
+                style={{ flex: 1, padding: 10, borderRadius: 10, border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text)', fontSize: 13, fontFamily: 'monospace', outline: 'none' }} />
+              <button onClick={() => { if (newIgnoreIp.trim()) { ignoreIp(newIgnoreIp.trim(), 'Manual'); setNewIgnoreIp(''); } }}
+                className="btn-gold" style={{ padding: '10px 16px', fontSize: 12, flexShrink: 0 }}>
+                👁 Добавить
+              </button>
+            </div>
           </div>
+
+          {ignoreList.length === 0 ? (
+            <div className="card" style={{ textAlign: 'center', padding: 30 }}>
+              <div style={{ fontSize: 30, marginBottom: 8 }}>📋</div>
+              <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Список игнора пуст</div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {ignoreList.filter(i => !search.trim() || i.ip.includes(search.trim())).map(item => (
+                <div key={item.id} className="card" style={{ padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid rgba(52,211,153,0.15)' }}>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, fontFamily: 'monospace', color: 'var(--green)' }}>✅ {item.ip}</div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{item.reason || '—'} • {new Date(item.created_at).toLocaleDateString()}</div>
+                  </div>
+                  <button onClick={() => removeIgnore(item.id)} style={{
+                    background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 8,
+                    padding: '6px 10px', color: 'var(--orange)', fontSize: 10, fontWeight: 700, cursor: 'pointer', flexShrink: 0,
+                  }}>❌ Убрать</button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {groups.map((g, gi) => (
-          <div key={g.ip} className="card" style={{
-            animation: `fadeIn 0.3s ease ${gi * 0.05}s both`,
-            border: g.user_count >= 3 ? '1px solid rgba(248,113,113,0.4)' : '1px solid var(--border)',
-          }}>
-            {/* Group header */}
-            <div onClick={() => setExpanded(expanded === g.ip ? null : g.ip)}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', padding: 14 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{
-                  width: 36, height: 36, borderRadius: '50%',
-                  background: g.user_count >= 3 ? 'rgba(248,113,113,0.15)' : 'rgba(251,191,36,0.15)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 16, flexShrink: 0,
-                }}>
-                  {g.user_count >= 3 ? '🚨' : '⚠️'}
-                </div>
-                <div>
-                  <div style={{ fontSize: 12, fontWeight: 700, fontFamily: 'monospace' }}>{g.ip}</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 11, color: g.user_count >= 3 ? 'var(--red)' : 'var(--gold)', fontWeight: 700 }}>
-                      {g.user_count} аккаунтов
-                    </span>
-                    {g.has_admin && (
-                      <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 4, background: 'rgba(212,175,55,0.15)', color: 'var(--gold)', fontWeight: 700 }}>
-                        👑 ADMIN
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-              <span style={{ fontSize: 14, color: 'var(--text-muted)', transition: 'transform 0.2s',
-                transform: expanded === g.ip ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+      {/* Blacklist tab */}
+      {subTab === 'blacklist' && (
+        <div>
+          <div className="card" style={{ padding: 14, marginBottom: 12 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>➕ Добавить IP в ЧС</div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input value={newIp} onChange={e => setNewIp(e.target.value)} placeholder="IP адрес"
+                style={{ flex: 1, padding: 10, borderRadius: 10, border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text)', fontSize: 13, fontFamily: 'monospace', outline: 'none' }} />
+              <button onClick={addToBlacklist} className="btn-gold" style={{ padding: '10px 16px', fontSize: 12, flexShrink: 0 }}>⛔ Добавить</button>
             </div>
-
-            {/* Expanded user list */}
-            {expanded === g.ip && (
-              <div style={{ padding: '0 14px 14px', display: 'flex', flexDirection: 'column', gap: 6, animation: 'fadeIn 0.2s ease' }}>
-                {g.users.map(u => (
-                    <div key={u.id} style={{
-                    padding: 10, borderRadius: 10,
-                    background: u.is_admin ? 'rgba(212,175,55,0.06)' : u.is_blocked ? 'rgba(248,113,113,0.08)' : 'rgba(255,255,255,0.03)',
-                    border: u.is_admin ? '1px solid rgba(212,175,55,0.25)' : u.is_blocked ? '1px solid rgba(248,113,113,0.2)' : '1px solid var(--border)',
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div>
-                        <div style={{ fontSize: 13, fontWeight: 700 }}>
-                          {u.first_name || u.username || 'Noname'}
-                          {u.is_premium && <span style={{ fontSize: 9, marginLeft: 4 }}>⭐</span>}
-                          {u.is_admin && <span style={{ fontSize: 8, marginLeft: 6, padding: '1px 5px', borderRadius: 4, background: 'rgba(212,175,55,0.15)', color: 'var(--gold)', fontWeight: 700 }}>👑 ADMIN</span>}
-                          {u.is_blocked && <span style={{ fontSize: 8, marginLeft: 6, padding: '1px 5px', borderRadius: 4, background: 'var(--red-bg)', color: 'var(--red)', fontWeight: 700 }}>BLOCKED</span>}
-                        </div>
-                        <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
-                          ID: {u.id} • TG: {u.tg_id}
-                          {u.username ? ` • @${u.username}` : ''}
-                        </div>
-                        <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-                          <span style={{ fontSize: 10, color: 'var(--gold)' }}>⚡ {fmtK(u.power)}</span>
-                          <span style={{ fontSize: 10, color: 'var(--green)' }}>💎 {parseFloat(u.ton_balance || 0).toFixed(4)}</span>
-                        </div>
-                        <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>
-                          Рег: {new Date(u.created_at).toLocaleDateString()}
-                        </div>
-                      </div>
-                      {!u.is_blocked && !u.is_admin && (
-                        <button onClick={() => blockUser(u.id)} style={{
-                          background: 'var(--red-bg)', border: 'none', borderRadius: 8,
-                          padding: '6px 10px', color: 'var(--red)', fontSize: 10, fontWeight: 700, cursor: 'pointer',
-                          flexShrink: 0,
-                        }}>🚫 Бан</button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+            <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 6 }}>Юзеры с этого IP заблокируются при входе</div>
           </div>
-        ))}
-      </div>
+          {blacklist.length === 0 ? (
+            <div className="card" style={{ textAlign: 'center', padding: 30 }}>
+              <div style={{ fontSize: 30, marginBottom: 8 }}>✅</div>
+              <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>ЧС пуст</div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {blacklist.filter(b => !search.trim() || b.ip.includes(search.trim())).map(b => (
+                <div key={b.id} className="card" style={{ padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, fontFamily: 'monospace' }}>⛔ {b.ip}</div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{b.reason || '—'} • {new Date(b.created_at).toLocaleDateString()}</div>
+                  </div>
+                  <button onClick={() => removeFromBlacklist(b.id)} style={{
+                    background: 'rgba(52,211,153,0.1)', border: 'none', borderRadius: 8,
+                    padding: '6px 10px', color: 'var(--green)', fontSize: 10, fontWeight: 700, cursor: 'pointer', flexShrink: 0,
+                  }}>✅ Убрать</button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Active / Blocked groups */}
+      {(subTab === 'active' || subTab === 'blocked') && (
+        <div>
+          {groups.length === 0 ? (
+            <div className="card" style={{ textAlign: 'center', padding: 30 }}>
+              <div style={{ fontSize: 30, marginBottom: 8 }}>{search ? '🔍' : subTab === 'blocked' ? '🔓' : '✅'}</div>
+              <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+                {search ? 'Ничего не найдено' : subTab === 'blocked' ? 'Нет заблокированных групп' : 'Подозрительных нет'}
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {groups.map((g, gi) => renderGroup(g, gi, subTab === 'blocked'))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -1760,20 +2560,63 @@ function BroadcastPanel() {
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState(null);
   const [confirm, setConfirm] = useState(false);
+  const [isRtl, setIsRtl] = useState(false);
+  const [progress, setProgress] = useState(null); // { status, total, sent, failed }
+  const [photoUrl, setPhotoUrl] = useState('');
+  const pollRef = useRef(null);
+
+  // Poll broadcast status every 2s while sending
+  const startPolling = () => {
+    pollRef.current = setInterval(async () => {
+      try {
+        const { data } = await api.get('/admin/broadcast/status');
+        setProgress(data);
+        if (data.status === 'done' || data.status === 'error' || data.status === 'idle') {
+          clearInterval(pollRef.current);
+          pollRef.current = null;
+          setSending(false);
+          if (data.status === 'done' || data.status === 'error') {
+            setResult(data);
+          }
+        }
+      } catch (e) {}
+    }, 2000);
+  };
+
+  useEffect(() => () => { if (pollRef.current) clearInterval(pollRef.current); }, []);
 
   const send = async () => {
     setConfirm(false);
     setSending(true);
     setResult(null);
+    setProgress(null);
     try {
-      const { data } = await api.post('/admin/broadcast', { message, parse_mode: parseMode });
-      setResult(data);
-      setMessage('');
+      const finalMsg = isRtl ? '\u200F' + message : message;
+      const opts = { message: finalMsg };
+      if (parseMode) opts.parse_mode = parseMode;
+      if (photoUrl.trim()) opts.photo_url = photoUrl.trim();
+      const { data } = await api.post('/admin/broadcast', opts);
+      if (data.status === 'started') {
+        setProgress({ status: 'sending', total: data.total, sent: 0, failed: 0 });
+        setMessage('');
+        startPolling();
+      } else {
+        // Immediate result (0 users)
+        setResult(data);
+        setSending(false);
+      }
     } catch (e) {
-      setResult({ error: e.response?.data?.error || 'Ошибка отправки' });
+      console.error('[Broadcast] Error:', e);
+      const status = e.response?.status;
+      const serverMsg = e.response?.data?.error;
+      let errorText = serverMsg || e.message || 'Ошибка отправки';
+      if (status) errorText = `[${status}] ${errorText}`;
+      setResult({ error: errorText });
+      setSending(false);
     }
-    setSending(false);
   };
+
+  const pct = progress && progress.total > 0 ? Math.round(((progress.sent + progress.failed) / progress.total) * 100) : 0;
 
   return (
     <div>
@@ -1789,6 +2632,9 @@ function BroadcastPanel() {
           Сообщение придёт всем незаблокированным юзерам через бота.
           Можно использовать HTML: &lt;b&gt;жирный&lt;/b&gt;, &lt;i&gt;курсив&lt;/i&gt;, &lt;code&gt;код&lt;/code&gt;
         </div>
+        <div style={{ fontSize: 10, color: '#3b82f6', lineHeight: 1.5, marginTop: 6, padding: '6px 8px', borderRadius: 8, background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.15)' }}>
+          💡 Вставь <b>{'{promo}'}</b> в текст — каждый юзер получит уникальный партнёрский промокод
+        </div>
       </div>
 
       {/* Format toggle */}
@@ -1802,20 +2648,70 @@ function BroadcastPanel() {
         ))}
       </div>
 
+      {/* RTL toggle */}
+      <label onClick={() => setIsRtl(!isRtl)} style={{
+        display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10,
+        padding: '8px 12px', borderRadius: 10, cursor: 'pointer',
+        background: isRtl ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.04)',
+        border: isRtl ? '1px solid rgba(212,175,55,0.3)' : '1px solid var(--border)',
+        transition: 'all 0.2s ease',
+      }}>
+        <div style={{
+          width: 18, height: 18, borderRadius: 4, flexShrink: 0,
+          background: isRtl ? 'var(--gold)' : 'transparent',
+          border: isRtl ? 'none' : '2px solid var(--border)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 11, color: '#000', fontWeight: 800,
+          transition: 'all 0.2s ease',
+        }}>{isRtl ? '✓' : ''}</div>
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: isRtl ? 'var(--gold)' : 'var(--text-muted)' }}>🇸🇦 Арабский (RTL)</div>
+          <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>Текст справа налево — для арабского, иврита, фарси</div>
+        </div>
+      </label>
+
       {/* Message input */}
       <textarea
         value={message}
         onChange={e => setMessage(e.target.value)}
-        placeholder="Введите сообщение для рассылки..."
+        placeholder={isRtl ? 'اكتب رسالتك هنا...' : 'Введите сообщение для рассылки...'}
+        dir={isRtl ? 'rtl' : 'ltr'}
         style={{
           width: '100%', minHeight: 120, padding: 12, borderRadius: 12,
           background: 'var(--bg-card)', border: '1px solid var(--border)',
           color: 'var(--text)', fontSize: 13, fontFamily: 'inherit',
           resize: 'vertical', outline: 'none', boxSizing: 'border-box',
+          textAlign: isRtl ? 'right' : 'left',
         }}
       />
       <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4, marginBottom: 12, textAlign: 'right' }}>
         {message.length} символов
+      </div>
+
+      {/* Photo URL */}
+      <div style={{ marginBottom: 12 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 6 }}>🖼️ Картинка (необязательно)</div>
+        <input
+          type="text"
+          value={photoUrl}
+          onChange={e => setPhotoUrl(e.target.value)}
+          placeholder="https://example.com/image.jpg"
+          style={{
+            width: '100%', padding: '10px 12px', borderRadius: 10,
+            background: 'var(--bg-card)', border: '1px solid var(--border)',
+            color: 'var(--text)', fontSize: 12, fontFamily: 'monospace',
+            outline: 'none', boxSizing: 'border-box',
+          }}
+        />
+        <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 4 }}>
+          Вставьте прямую ссылку на картинку (URL). Текст станет подписью под фото.
+        </div>
+        {photoUrl.trim() && (
+          <div style={{ marginTop: 8, borderRadius: 10, overflow: 'hidden', border: '1px solid var(--border)', maxHeight: 150 }}>
+            <img src={photoUrl} alt="preview" onError={e => e.target.style.display='none'}
+              style={{ width: '100%', maxHeight: 150, objectFit: 'cover', display: 'block' }} />
+          </div>
+        )}
       </div>
 
       {/* Send button */}
@@ -1823,10 +2719,33 @@ function BroadcastPanel() {
         onClick={() => setConfirm(true)}
         disabled={!message.trim() || sending}
         className="btn-gold"
-        style={{ padding: 12, fontSize: 14, opacity: !message.trim() ? 0.4 : 1 }}
+        style={{ padding: 12, fontSize: 14, opacity: !message.trim() || sending ? 0.4 : 1 }}
       >
         {sending ? '✉️ Отправка...' : '📢 Отправить всем'}
       </button>
+
+      {/* Live progress */}
+      {sending && progress && progress.status === 'sending' && (
+        <div className="card" style={{ marginTop: 12, padding: 14, border: '1px solid rgba(212,175,55,0.3)', animation: 'fadeIn 0.3s ease' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--gold)' }}>📤 Отправка...</div>
+            <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--gold)' }}>{pct}%</div>
+          </div>
+          {/* Progress bar */}
+          <div style={{ height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.06)', marginBottom: 10, overflow: 'hidden' }}>
+            <div style={{
+              height: '100%', borderRadius: 3, transition: 'width 0.5s ease',
+              background: 'linear-gradient(90deg, var(--gold-dark), var(--gold))',
+              width: `${pct}%`,
+            }} />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+            <MiniStat label="Всего" val={progress.total} color="var(--text)" />
+            <MiniStat label="Отправлено" val={progress.sent} color="var(--green)" />
+            <MiniStat label="Ошибки" val={progress.failed} color="var(--red)" />
+          </div>
+        </div>
+      )}
 
       {/* Confirmation */}
       {confirm && (
@@ -1841,7 +2760,8 @@ function BroadcastPanel() {
             Сообщение будет отправлено всем пользователям!
           </div>
           <div style={{ padding: 10, background: 'rgba(255,255,255,0.03)', borderRadius: 8, marginBottom: 12,
-            fontSize: 12, color: 'var(--text)', textAlign: 'left', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+            fontSize: 12, color: 'var(--text)', textAlign: isRtl ? 'right' : 'left',
+            whiteSpace: 'pre-wrap', wordBreak: 'break-word', direction: isRtl ? 'rtl' : 'ltr' }}>
             {message}
           </div>
           <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
@@ -1856,11 +2776,11 @@ function BroadcastPanel() {
         </div>
       )}
 
-      {/* Result */}
-      {result && (
+      {/* Final result */}
+      {result && !sending && (
         <div className="card" style={{
           marginTop: 12, padding: 14, animation: 'fadeIn 0.3s ease',
-          border: result.error ? '1px solid rgba(248,113,113,0.3)' : '1px solid rgba(52,211,153,0.3)',
+          border: result.error || result.status === 'error' ? '1px solid rgba(248,113,113,0.3)' : '1px solid rgba(52,211,153,0.3)',
         }}>
           {result.error ? (
             <div style={{ fontSize: 13, color: 'var(--red)', fontWeight: 700 }}>❌ {result.error}</div>
@@ -1872,6 +2792,36 @@ function BroadcastPanel() {
                 <MiniStat label="Доставлено" val={result.sent} color="var(--green)" />
                 <MiniStat label="Ошибки" val={result.failed} color="var(--red)" />
               </div>
+              {(result.blocked_auto > 0 || result.blocked_skipped > 0) && (
+                <div style={{ marginTop: 10, padding: 10, background: 'rgba(212,175,55,0.06)', borderRadius: 8 }}>
+                  <div style={{ fontSize: 10, color: 'var(--gold)', fontWeight: 700, marginBottom: 6 }}>🧹 Автоочистка</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                    {result.blocked_auto > 0 && (
+                      <div style={{ fontSize: 11 }}>
+                        <span style={{ color: 'var(--red)', fontWeight: 700 }}>🚫 {result.blocked_auto}</span>
+                        <span style={{ color: 'var(--text-muted)' }}> забанены авто</span>
+                      </div>
+                    )}
+                    {result.blocked_skipped > 0 && (
+                      <div style={{ fontSize: 11 }}>
+                        <span style={{ color: 'var(--text-muted)', fontWeight: 700 }}>⏭ {result.blocked_skipped}</span>
+                        <span style={{ color: 'var(--text-muted)' }}> пропущено</span>
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 4 }}>
+                    Юзеры заблокировавшие бота автоматически исключаются из следующих рассылок
+                  </div>
+                </div>
+              )}
+              {result.errors && result.errors.length > 0 && (
+                <div style={{ marginTop: 10, padding: 10, background: 'rgba(248,113,113,0.06)', borderRadius: 8 }}>
+                  <div style={{ fontSize: 10, color: 'var(--red)', fontWeight: 700, marginBottom: 4 }}>⚠️ Первые ошибки:</div>
+                  {result.errors.map((err, i) => (
+                    <div key={i} style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'monospace', marginBottom: 2 }}>{err}</div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -1883,14 +2833,18 @@ function BroadcastPanel() {
 // ═══════════════════ ADMINS ═══════════════════
 const PERM_TABS = [
   { id: 'users', icon: '👥', label: 'Юзеры' },
+  { id: 'deposits', icon: '💳', label: 'Депозиты' },
   { id: 'withdrawals', icon: '💸', label: 'Выводы' },
   { id: 'tasks', icon: '📋', label: 'Задания' },
   { id: 'orders', icon: '🛒', label: 'Заказы' },
   { id: 'packages', icon: '📦', label: 'Пакеты' },
   { id: 'ads', icon: '🎬', label: 'Реклама' },
   { id: 'referrals', icon: '🤝', label: 'Рефералы' },
+  { id: 'ambassador', icon: '🤝', label: 'Амбассадор' },
+  { id: 'promo', icon: '🎟️', label: 'Промокоды' },
   { id: 'broadcast', icon: '📢', label: 'Рассылка' },
   { id: 'multi', icon: '👁', label: 'Мульти' },
+  { id: 'activity', icon: '📜', label: 'Лог' },
 ];
 
 function AdminsPanel() {
@@ -2172,6 +3126,564 @@ function AdminsPanel() {
   );
 }
 
+// ═══════════════════ AMBASSADOR ADMIN ═══════════════════
+function AmbassadorAdminPanel() {
+  const [subTab, setSubTab] = useState('settings');
+  const [settings, setSettings] = useState(null);
+  const [channels, setChannels] = useState([]);
+  const [posts, setPosts] = useState([]);
+  const [msg, setMsg] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const loadAll = async () => {
+    try {
+      const [sRes, chRes, pRes] = await Promise.all([
+        api.get('/ambassador/admin/settings'),
+        api.get('/ambassador/admin/channels'),
+        api.get('/ambassador/admin/posts'),
+      ]);
+      setSettings(sRes.data);
+      setChannels(chRes.data);
+      setPosts(pRes.data);
+    } catch (e) { setMsg('❌ Ошибка загрузки'); }
+    setLoading(false);
+  };
+  useEffect(() => { loadAll(); }, []);
+
+  const showMsg = (t) => { setMsg(t); setTimeout(() => setMsg(null), 3000); };
+
+  if (loading) return <Loading />;
+
+  const tabs = [
+    { id: 'settings', icon: '⚙️', label: 'Настройки' },
+    { id: 'channels', icon: '📢', label: `Каналы (${channels.filter(c => c.status === 'pending').length})` },
+    { id: 'posts', icon: '📝', label: 'Посты' },
+  ];
+
+  return (
+    <div>
+      {msg && (
+        <div style={{
+          padding: '10px 14px', borderRadius: 10, marginBottom: 12,
+          background: msg.startsWith('✅') ? 'rgba(52,211,153,0.1)' : 'var(--red-bg)',
+          color: msg.startsWith('✅') ? 'var(--green)' : 'var(--red)',
+          fontSize: 12, fontWeight: 600, textAlign: 'center', animation: 'fadeIn 0.3s ease'
+        }}>{msg}</div>
+      )}
+
+      <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
+        {tabs.map(t => (
+          <button key={t.id} onClick={() => setSubTab(t.id)} style={{
+            flex: 1, padding: '10px 6px', borderRadius: 10, border: 'none', fontSize: 10, fontWeight: 700, cursor: 'pointer',
+            background: subTab === t.id ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)',
+            color: subTab === t.id ? 'var(--gold)' : 'var(--text-muted)',
+          }}>{t.icon} {t.label}</button>
+        ))}
+      </div>
+
+      {subTab === 'settings' && <AmbassadorSettings settings={settings} onSave={loadAll} showMsg={showMsg} />}
+      {subTab === 'channels' && <AmbassadorChannels channels={channels} onUpdate={loadAll} showMsg={showMsg} />}
+      {subTab === 'posts' && <AmbassadorPosts posts={posts} channels={channels} onUpdate={loadAll} showMsg={showMsg} />}
+    </div>
+  );
+}
+
+function AmbassadorSettings({ settings, onSave, showMsg }) {
+  const [vis, setVis] = useState(settings?.visibility ?? 0);
+  const [commission, setCommission] = useState(settings?.commission_pct ?? 25);
+  const [minSubs, setMinSubs] = useState(settings?.min_subscribers ?? 1000);
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await api.post('/ambassador/admin/settings', { visibility: vis, commission_pct: commission, min_subscribers: minSubs });
+      showMsg('✅ Настройки сохранены');
+      onSave();
+    } catch (e) { showMsg('❌ Ошибка'); }
+    setSaving(false);
+  };
+
+  const visOptions = [
+    { val: 0, icon: '🔒', label: 'Скрыт', desc: 'Никто не видит раздел', color: 'var(--red)' },
+    { val: 1, icon: '🌍', label: 'Все видят', desc: 'Все пользователи видят раздел', color: 'var(--green)' },
+    { val: 2, icon: '🛡️', label: 'Только админ', desc: 'Только админы видят раздел', color: 'var(--orange)' },
+  ];
+
+  return (
+    <div>
+      {/* Stats */}
+      {settings?.stats && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 }}>
+          {[
+            { icon: '📢', label: 'Каналов', val: settings.stats.total_channels, color: 'var(--gold)' },
+            { icon: '✅', label: 'Одобрено', val: settings.stats.approved_channels, color: 'var(--green)' },
+            { icon: '⏳', label: 'Ожидают', val: settings.stats.pending_channels, color: 'var(--orange)' },
+            { icon: '📝', label: 'Постов', val: settings.stats.total_posts, color: 'var(--gold-light)' },
+          ].map((c, i) => (
+            <div key={c.label} className="card" style={{ padding: 14, animation: `fadeIn 0.3s ease ${i * 0.05}s both` }}>
+              <div style={{ fontSize: 16, marginBottom: 4 }}>{c.icon}</div>
+              <div style={{ fontSize: 20, fontWeight: 900, color: c.color }}>{c.val}</div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{c.label}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Commission */}
+      <div style={{ fontSize: 12, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 10, fontWeight: 600 }}>
+        💰 КОМИССИЯ АМБАССАДОРА
+      </div>
+      <div className="card" style={{ padding: 14, marginBottom: 16 }}>
+        <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 10, lineHeight: 1.5 }}>
+          Амбассадоры получают повышенный % от покупок своих рефералов (вместо стандартной реферальной комиссии)
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <input
+            type="number" min="0" max="100" step="1"
+            value={commission}
+            onChange={e => setCommission(parseFloat(e.target.value) || 0)}
+            style={{ width: 80, textAlign: 'center', fontSize: 18, fontWeight: 800, padding: '10px 12px' }}
+          />
+          <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--gold)' }}>%</span>
+          <div style={{ flex: 1, fontSize: 11, color: 'var(--text-muted)' }}>
+            Стандартная: {settings?.standard_commission_pct ?? '...'}%<br/>Амбассадор: <span style={{ color: 'var(--gold)', fontWeight: 700 }}>{commission}%</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Min Subscribers */}
+      <div style={{ fontSize: 12, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 10, fontWeight: 600 }}>
+        👥 МИН. ПОДПИСЧИКОВ
+      </div>
+      <div className="card" style={{ padding: 14, marginBottom: 16 }}>
+        <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 10, lineHeight: 1.5 }}>
+          Минимальное количество подписчиков в канале для подачи заявки
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <input
+            type="number" min="0" step="100"
+            value={minSubs}
+            onChange={e => setMinSubs(parseInt(e.target.value) || 0)}
+            style={{ width: 110, textAlign: 'center', fontSize: 18, fontWeight: 800, padding: '10px 12px' }}
+          />
+          <div style={{ flex: 1, fontSize: 11, color: 'var(--text-muted)' }}>
+            Текущий порог: <span style={{ color: 'var(--gold)', fontWeight: 700 }}>{minSubs.toLocaleString()}</span> подписчиков
+          </div>
+        </div>
+      </div>
+
+      <div style={{ fontSize: 12, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 12, fontWeight: 600 }}>
+        👁 ВИДИМОСТЬ РАЗДЕЛА
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+        {visOptions.map(o => (
+          <button key={o.val} onClick={() => setVis(o.val)} className="card" style={{
+            padding: '14px 16px', cursor: 'pointer', textAlign: 'left',
+            border: vis === o.val ? `1px solid ${o.color}` : '1px solid var(--border)',
+            background: vis === o.val ? `${o.color}11` : undefined,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 22 }}>{o.icon}</span>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: vis === o.val ? o.color : 'var(--text)' }}>{o.label}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{o.desc}</div>
+              </div>
+            </div>
+          </button>
+        ))}
+      </div>
+      <button className="btn-gold" onClick={save} disabled={saving} style={{ padding: 12, fontSize: 13 }}>
+        {saving ? '⏳ Сохраняю...' : '💾 Сохранить настройки'}
+      </button>
+    </div>
+  );
+}
+
+function AmbassadorChannels({ channels, onUpdate, showMsg }) {
+  const [processing, setProcessing] = useState(null);
+
+  const approve = async (id) => {
+    setProcessing(id);
+    try { await api.post(`/ambassador/admin/channels/${id}/approve`); showMsg('✅ Канал одобрен'); onUpdate(); }
+    catch { showMsg('❌ Ошибка'); }
+    setProcessing(null);
+  };
+  const reject = async (id) => {
+    setProcessing(id);
+    try { await api.post(`/ambassador/admin/channels/${id}/reject`); showMsg('✅ Канал отклонён'); onUpdate(); }
+    catch { showMsg('❌ Ошибка'); }
+    setProcessing(null);
+  };
+  const del = async (id) => {
+    setProcessing(id);
+    try { await api.delete(`/ambassador/admin/channels/${id}`); showMsg('🗑 Удалён'); onUpdate(); }
+    catch { showMsg('❌ Ошибка'); }
+    setProcessing(null);
+  };
+
+  const statusColors = { pending: 'var(--orange)', approved: 'var(--green)', rejected: 'var(--red)' };
+  const statusLabels = { pending: '⏳ Ожидает', approved: '✅ Одобрен', rejected: '❌ Отклонён' };
+
+  if (!channels.length) return (
+    <div className="card" style={{ textAlign: 'center', padding: 30 }}>
+      <div style={{ fontSize: 30, marginBottom: 8 }}>📭</div>
+      <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Заявок пока нет</div>
+    </div>
+  );
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {channels.map((ch, i) => (
+        <div key={ch.id} className="card" style={{
+          padding: 14, animation: `fadeIn 0.3s ease ${i * 0.04}s both`,
+          border: ch.status === 'pending' ? '1px solid rgba(251,191,36,0.3)' : undefined,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+            <span style={{ fontSize: 20 }}>📢</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, fontWeight: 700 }}>{ch.channel_title}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
+                @{ch.channel_username} • 👥 {ch.subscribers_count}
+              </div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>
+                От: {ch.first_name || ch.username || `TG:${ch.tg_id}`}
+              </div>
+            </div>
+            <span style={{
+              fontSize: 10, padding: '3px 8px', borderRadius: 6, fontWeight: 700,
+              background: `${statusColors[ch.status]}22`, color: statusColors[ch.status],
+            }}>{statusLabels[ch.status]}</span>
+          </div>
+          <div style={{ display: 'flex', gap: 6 }}>
+            {ch.status === 'pending' && (
+              <>
+                <button onClick={() => approve(ch.id)} disabled={processing === ch.id} style={{
+                  flex: 1, padding: 8, borderRadius: 8, border: 'none', fontWeight: 700, fontSize: 11, cursor: 'pointer',
+                  background: 'rgba(52,211,153,0.15)', color: 'var(--green)',
+                }}>✅ Одобрить</button>
+                <button onClick={() => reject(ch.id)} disabled={processing === ch.id} style={{
+                  flex: 1, padding: 8, borderRadius: 8, border: 'none', fontWeight: 700, fontSize: 11, cursor: 'pointer',
+                  background: 'rgba(248,113,113,0.15)', color: 'var(--red)',
+                }}>❌ Отклонить</button>
+              </>
+            )}
+            <button onClick={() => del(ch.id)} disabled={processing === ch.id} style={{
+              padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(248,113,113,0.2)',
+              background: 'transparent', color: 'var(--text-muted)', fontSize: 11, cursor: 'pointer',
+            }}>🗑</button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function AmbassadorPosts({ posts, channels, onUpdate, showMsg }) {
+  const [showForm, setShowForm] = useState(false);
+  const [title, setTitle] = useState('');
+  const [text, setText] = useState('');
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [creating, setCreating] = useState(false);
+  const [publishing, setPublishing] = useState(null);
+  const [publishResult, setPublishResult] = useState(null);
+  const [previewId, setPreviewId] = useState(null);
+  const [editId, setEditId] = useState(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editText, setEditText] = useState('');
+  const [editImageFile, setEditImageFile] = useState(null);
+  const [editImagePreview, setEditImagePreview] = useState(null);
+  const [saving, setSaving] = useState(false);
+
+  const apiBase = (import.meta.env.VITE_API_URL || '/api').replace(/\/api$/, '');
+
+  const handleImage = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setImagePreview(ev.target.result);
+    reader.readAsDataURL(file);
+  };
+
+  const create = async () => {
+    if (!title && !text) return;
+    setCreating(true);
+    try {
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('text', text);
+      if (imageFile) formData.append('image', imageFile);
+
+      await api.post('/ambassador/admin/posts', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      showMsg('✅ Пост создан');
+      setTitle(''); setText(''); setImageFile(null); setImagePreview(null);
+      setShowForm(false);
+      onUpdate();
+    } catch (e) { showMsg('❌ Ошибка создания'); }
+    setCreating(false);
+  };
+
+  const handleEditImage = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setEditImageFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setEditImagePreview(ev.target.result);
+    reader.readAsDataURL(file);
+  };
+
+  const startEdit = (p) => {
+    setEditId(p.id); setEditTitle(p.title || ''); setEditText(p.text || '');
+    setEditImageFile(null); setEditImagePreview(p.image_path ? `${apiBase}${p.image_path}` : null);
+    setPreviewId(null);
+  };
+
+  const cancelEdit = () => { setEditId(null); setEditTitle(''); setEditText(''); setEditImageFile(null); setEditImagePreview(null); };
+
+  const saveEdit = async () => {
+    setSaving(true);
+    try {
+      const formData = new FormData();
+      formData.append('title', editTitle);
+      formData.append('text', editText);
+      if (editImageFile) formData.append('image', editImageFile);
+      await api.put(`/ambassador/admin/posts/${editId}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      showMsg('✅ Пост обновлён'); cancelEdit(); onUpdate();
+    } catch (e) { showMsg('❌ Ошибка сохранения'); }
+    setSaving(false);
+  };
+
+  const deletePost = async (id) => {
+    try { await api.delete(`/ambassador/admin/posts/${id}`); showMsg('🗑 Пост удалён'); onUpdate(); }
+    catch { showMsg('❌ Ошибка'); }
+  };
+
+  const publish = async (id) => {
+    setPublishing(id);
+    setPublishResult(null);
+    try {
+      const { data } = await api.post(`/ambassador/admin/posts/${id}/publish`);
+      setPublishResult(data);
+      showMsg(`✅ Опубликовано: ${data.sent}/${data.total}`);
+      onUpdate();
+    } catch (e) {
+      showMsg('❌ ' + (e.response?.data?.error || 'Ошибка публикации'));
+    }
+    setPublishing(null);
+  };
+
+  const approvedCount = channels.filter(c => c.status === 'approved').length;
+
+  return (
+    <div>
+      <div className="card" style={{ padding: 12, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ fontSize: 16 }}>📢</span>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+          Одобренных каналов: <span style={{ color: 'var(--gold)', fontWeight: 700 }}>{approvedCount}</span>
+        </div>
+      </div>
+
+      <button onClick={() => setShowForm(!showForm)} className="btn-gold" style={{ marginBottom: 14, padding: 10, fontSize: 13 }}>
+        {showForm ? '✕ Отмена' : '+ Новый пост'}
+      </button>
+
+      {showForm && (
+        <div className="card" style={{ marginBottom: 14, animation: 'fadeIn 0.3s ease' }}>
+          <div style={{ fontSize: 11, color: 'var(--gold)', fontWeight: 700, marginBottom: 10, letterSpacing: 1 }}>
+            📝 НОВЫЙ ПОСТ
+          </div>
+          <input type="text" value={title} onChange={e => setTitle(e.target.value)}
+            placeholder="Заголовок" style={{ marginBottom: 8, fontSize: 13 }} />
+          <textarea value={text} onChange={e => setText(e.target.value)}
+            placeholder="Текст поста (поддерживается HTML)&#10;&#10;Спец. символы:&#10;{REF_LINK} — реф. ссылка партнёра&#10;{REF_CODE} — реф. код партнёра&#10;{promo} — партнёрский промокод"
+            style={{
+              width: '100%', minHeight: 100, padding: 12, borderRadius: 12,
+              background: 'var(--bg-card)', border: '1px solid var(--border)',
+              color: 'var(--text)', fontSize: 13, fontFamily: 'inherit',
+              resize: 'vertical', outline: 'none', boxSizing: 'border-box', marginBottom: 4,
+            }} />
+          <div style={{
+            padding: '8px 12px', marginBottom: 8, borderRadius: 8,
+            background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.12)',
+          }}>
+            <div style={{ fontSize: 10, color: 'var(--gold)', fontWeight: 700, marginBottom: 4 }}>📌 СПЕЦ. СИМВОЛЫ:</div>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)', lineHeight: 1.6 }}>
+              <code style={{ background: 'rgba(255,255,255,0.06)', padding: '1px 5px', borderRadius: 4, color: 'var(--green)' }}>{'{REF_LINK}'}</code> — ссылка партнёра (авто для каждого канала)<br/>
+              <code style={{ background: 'rgba(255,255,255,0.06)', padding: '1px 5px', borderRadius: 4, color: 'var(--green)' }}>{'{REF_CODE}'}</code> — TG ID партнёра<br/>
+              <code style={{ background: 'rgba(255,255,255,0.06)', padding: '1px 5px', borderRadius: 4, color: '#3b82f6' }}>{'{promo}'}</code> — 🎁 партнёрский промокод (уникальный для каждого канала)<br/>
+              <span style={{ color: 'var(--gold)' }}>🔘 Кнопка «Открыть»</span> — автоматически добавляется к каждому посту
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 10 }}>
+            <label style={{
+              display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px',
+              borderRadius: 10, border: '1px dashed var(--border)', cursor: 'pointer',
+              background: 'rgba(255,255,255,0.02)',
+            }}>
+              <span style={{ fontSize: 20 }}>📷</span>
+              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                {imageFile ? imageFile.name : 'Загрузить картинку'}
+              </span>
+              <input type="file" accept="image/*" onChange={handleImage} style={{ display: 'none' }} />
+            </label>
+          </div>
+
+          {imagePreview && (
+            <div style={{ marginBottom: 10, position: 'relative' }}>
+              <img src={imagePreview} alt="preview" style={{
+                width: '100%', borderRadius: 10, maxHeight: 200, objectFit: 'cover',
+              }} />
+              <button onClick={() => { setImageFile(null); setImagePreview(null); }} style={{
+                position: 'absolute', top: 6, right: 6, background: 'rgba(0,0,0,0.7)',
+                border: 'none', borderRadius: '50%', width: 24, height: 24,
+                color: '#fff', fontSize: 12, cursor: 'pointer',
+              }}>✕</button>
+            </div>
+          )}
+
+          {/* Live Preview */}
+          {(title || text || imagePreview) && (
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ fontSize: 10, color: 'var(--gold)', letterSpacing: 1, fontWeight: 700, marginBottom: 8 }}>
+                👁 ПРЕДПРОСМОТР
+              </div>
+              <div style={{
+                padding: 14, borderRadius: 12,
+                background: 'linear-gradient(135deg, rgba(212,175,55,0.05), rgba(0,0,0,0.2))',
+                border: '1px solid rgba(212,175,55,0.15)',
+              }}>
+                {imagePreview && (
+                  <img src={imagePreview} alt="" style={{
+                    width: '100%', borderRadius: 8, maxHeight: 180, objectFit: 'cover', marginBottom: 10,
+                  }} />
+                )}
+                {title && <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 6 }}>{title}</div>}
+                {text && (
+                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}
+                    dangerouslySetInnerHTML={{ __html: text }} />
+                )}
+              </div>
+            </div>
+          )}
+
+          <button className="btn-gold" onClick={create} disabled={creating || (!title && !text)}
+            style={{ padding: 10, fontSize: 13 }}>
+            {creating ? '⏳ Создаю...' : '💾 Создать пост'}
+          </button>
+        </div>
+      )}
+
+      {/* Publish result */}
+      {publishResult && (
+        <div className="card" style={{
+          marginBottom: 14, padding: 14, animation: 'fadeIn 0.3s ease',
+          border: publishResult.failed ? '1px solid rgba(251,191,36,0.3)' : '1px solid rgba(52,211,153,0.3)',
+        }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--green)', marginBottom: 8 }}>📊 Результат публикации</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+            <MiniStat label="Всего" val={publishResult.total} color="var(--text)" />
+            <MiniStat label="Отправлено" val={publishResult.sent} color="var(--green)" />
+            <MiniStat label="Ошибки" val={publishResult.failed} color="var(--red)" />
+          </div>
+          {publishResult.errors?.length > 0 && (
+            <div style={{ marginTop: 8, fontSize: 10, color: 'var(--text-muted)' }}>
+              {publishResult.errors.map((e, i) => <div key={i}>{e}</div>)}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Posts list */}
+      {posts.length === 0 && !showForm && (
+        <div className="card" style={{ textAlign: 'center', padding: 30 }}>
+          <div style={{ fontSize: 30, marginBottom: 8 }}>📝</div>
+          <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Постов пока нет</div>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {posts.map((p, i) => (
+          <div key={p.id} className="card" style={{
+            padding: 14, animation: `fadeIn 0.3s ease ${i * 0.04}s both`,
+          }}>
+            {editId === p.id ? (
+              <div style={{ animation: 'fadeIn 0.2s ease' }}>
+                <div style={{ fontSize: 11, color: '#3b82f6', fontWeight: 700, marginBottom: 10, letterSpacing: 1 }}>✏️ РЕДАКТИРОВАНИЕ</div>
+                <input type="text" value={editTitle} onChange={e => setEditTitle(e.target.value)}
+                  placeholder="Заголовок" style={{ marginBottom: 8, fontSize: 13 }} />
+                <textarea value={editText} onChange={e => setEditText(e.target.value)}
+                  placeholder="Текст поста..."
+                  style={{ width:'100%', minHeight:80, padding:12, borderRadius:12, background:'var(--bg-card)', border:'1px solid var(--border)', color:'var(--text)', fontSize:13, fontFamily:'inherit', resize:'vertical', outline:'none', boxSizing:'border-box', marginBottom:8 }} />
+                {editImagePreview && (
+                  <div style={{ marginBottom: 8, position: 'relative' }}>
+                    <img src={editImagePreview} alt="" style={{ width:'100%', borderRadius:10, maxHeight:150, objectFit:'cover' }} />
+                    <button onClick={() => { setEditImageFile(null); setEditImagePreview(null); }} style={{
+                      position:'absolute', top:6, right:6, background:'rgba(0,0,0,0.7)', border:'none', borderRadius:'50%', width:24, height:24, color:'#fff', fontSize:12, cursor:'pointer',
+                    }}>✕</button>
+                  </div>
+                )}
+                <label style={{ display:'flex', alignItems:'center', gap:8, padding:'8px 12px', marginBottom:10, borderRadius:10, border:'1px dashed var(--border)', cursor:'pointer', background:'rgba(255,255,255,0.02)' }}>
+                  <span style={{ fontSize:16 }}>📷</span>
+                  <span style={{ fontSize:11, color:'var(--text-muted)' }}>{editImageFile ? editImageFile.name : 'Заменить картинку'}</span>
+                  <input type="file" accept="image/*" onChange={handleEditImage} style={{ display:'none' }} />
+                </label>
+                <div style={{ display:'flex', gap:6 }}>
+                  <button className="btn-gold" onClick={saveEdit} disabled={saving || (!editTitle && !editText)} style={{ flex:1, padding:8, fontSize:12 }}>
+                    {saving ? '⏳ Сохраняю...' : '💾 Сохранить'}
+                  </button>
+                  <button onClick={cancelEdit} style={{ padding:'8px 16px', borderRadius:10, border:'1px solid var(--border)', background:'transparent', color:'var(--text-muted)', fontSize:12, cursor:'pointer' }}>Отмена</button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, flex: 1 }}>{p.title}</div>
+                  <button onClick={() => setPreviewId(previewId === p.id ? null : p.id)} style={{
+                    padding: '4px 10px', borderRadius: 8, border: '1px solid rgba(212,175,55,0.2)',
+                    background: previewId === p.id ? 'rgba(212,175,55,0.1)' : 'transparent',
+                    color: 'var(--gold)', fontSize: 10, fontWeight: 700, cursor: 'pointer',
+                  }}>
+                    {previewId === p.id ? '✕ Закрыть' : '👁 Просмотр'}
+                  </button>
+                </div>
+                {previewId === p.id && (
+                  <div style={{ padding:14, borderRadius:12, marginBottom:10, background:'linear-gradient(135deg, rgba(212,175,55,0.05), rgba(0,0,0,0.2))', border:'1px solid rgba(212,175,55,0.15)', animation:'fadeIn 0.3s ease' }}>
+                    <div style={{ fontSize:9, color:'var(--gold)', letterSpacing:1, fontWeight:700, marginBottom:8 }}>👁 ПРЕДПРОСМОТР (как в Telegram)</div>
+                    {p.image_path && <img src={`${apiBase}${p.image_path}`} alt="" style={{ width:'100%', borderRadius:8, maxHeight:250, objectFit:'cover', marginBottom:10 }} />}
+                    {p.title && <div style={{ fontSize:15, fontWeight:800, marginBottom:6 }}>{p.title}</div>}
+                    {p.text && <div style={{ fontSize:13, color:'var(--text-secondary)', lineHeight:1.6, whiteSpace:'pre-wrap' }} dangerouslySetInnerHTML={{ __html: p.text }} />}
+                  </div>
+                )}
+                {previewId !== p.id && p.text && (
+                  <div style={{ fontSize:12, color:'var(--text-secondary)', marginBottom:8, lineHeight:1.4, maxHeight:40, overflow:'hidden' }}>{p.text}</div>
+                )}
+                <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:10 }}>
+                  <span style={{ fontSize:9, padding:'2px 6px', borderRadius:6, fontWeight:700, background: p.status==='published' ? 'rgba(52,211,153,0.15)' : 'rgba(251,191,36,0.15)', color: p.status==='published' ? 'var(--green)' : 'var(--orange)' }}>{p.status === 'published' ? '✅ Опубликован' : '📝 Черновик'}</span>
+                  {p.published_at && <span style={{ fontSize:9, color:'var(--text-muted)' }}>{new Date(p.published_at).toLocaleString()}</span>}
+                  {p.image_path && previewId !== p.id && <span style={{ fontSize:9, color:'var(--text-muted)' }}>📷 С картинкой</span>}
+                </div>
+                <div style={{ display:'flex', gap:6 }}>
+                  <button onClick={() => publish(p.id)} disabled={publishing === p.id || approvedCount === 0}
+                    style={{ flex:1, padding:8, borderRadius:8, border:'none', fontWeight:700, fontSize:11, cursor:'pointer', background:'linear-gradient(135deg, var(--gold-dark), var(--gold))', color:'#000', opacity: approvedCount===0 ? 0.4 : 1 }}>
+                    {publishing === p.id ? '⏳ Публикация...' : `📤 Опубликовать (${approvedCount} каналов)`}
+                  </button>
+                  <button onClick={() => startEdit(p)} style={{ padding:'8px 12px', borderRadius:8, border:'1px solid rgba(59,130,246,0.2)', background:'transparent', color:'#3b82f6', fontSize:11, cursor:'pointer', fontWeight:700 }}>✏️</button>
+                  <button onClick={() => deletePost(p.id)} style={{ padding:'8px 12px', borderRadius:8, border:'1px solid rgba(248,113,113,0.2)', background:'transparent', color:'var(--red)', fontSize:11, cursor:'pointer' }}>🗑</button>
+                </div>
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ═══════════════════ HELPERS ═══════════════════
 function MiniStat({ label, val, color }) {
   return (
@@ -2194,6 +3706,551 @@ function PagBtn({ children, ...props }) {
   );
 }
 
+// ═══════════════════ PROMO CODES ═══════════════════
+function PromoCodesPanel() {
+  const [promos, setPromos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [code, setCode] = useState('');
+  const [discountPct, setDiscountPct] = useState(10);
+  const [maxUses, setMaxUses] = useState(0);
+  const [expiresAt, setExpiresAt] = useState('');
+  const [creating, setCreating] = useState(false);
+  const [isPartner, setIsPartner] = useState(false);
+  const [msg, setMsg] = useState(null);
+  const [usesId, setUsesId] = useState(null);
+  const [uses, setUses] = useState([]);
+  const [usesLoading, setUsesLoading] = useState(false);
+
+  const load = async () => {
+    try { const { data } = await api.get('/admin/promo-codes'); setPromos(data); }
+    catch (e) {} finally { setLoading(false); }
+  };
+  useEffect(() => { load(); }, []);
+  const showMsg = (m) => { setMsg(m); setTimeout(() => setMsg(null), 3000); };
+
+  const create = async () => {
+    if (!code.trim()) return;
+    setCreating(true);
+    try {
+      await api.post('/admin/promo-codes', { code: code.trim(), discount_pct: discountPct, max_uses: maxUses, expires_at: expiresAt || null, is_partner: isPartner });
+      showMsg('✅ Промокод создан');
+      setCode(''); setDiscountPct(10); setMaxUses(0); setExpiresAt(''); setIsPartner(false); setShowForm(false); load();
+    } catch (e) { showMsg(`❌ ${e.response?.data?.error || 'Ошибка'}`); }
+    setCreating(false);
+  };
+  const toggle = async (id) => { try { await api.post(`/admin/promo-codes/${id}/toggle`); load(); } catch (e) { showMsg('❌ Ошибка'); } };
+  const remove = async (id) => { try { await api.delete(`/admin/promo-codes/${id}`); showMsg('🗑 Удалён'); load(); } catch (e) { showMsg('❌ Ошибка'); } };
+
+  const toggleUses = async (id) => {
+    if (usesId === id) { setUsesId(null); return; }
+    setUsesId(id); setUsesLoading(true);
+    try { const { data } = await api.get(`/admin/promo-codes/${id}/uses`); setUses(data); }
+    catch { setUses([]); }
+    setUsesLoading(false);
+  };
+
+  if (loading) return <Loading />;
+
+  return (
+    <div>
+      <div style={{ fontSize: 18, fontWeight: 900, marginBottom: 4 }}>🎟️ Промокоды</div>
+      <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>Скидки на покупки в магазине</div>
+
+      {msg && (<div style={{ padding: 10, borderRadius: 10, marginBottom: 12, fontSize: 12, fontWeight: 600,
+        background: msg.includes('✅') ? 'rgba(52,211,153,0.1)' : 'rgba(248,113,113,0.1)',
+        color: msg.includes('✅') ? 'var(--green)' : 'var(--red)',
+      }}>{msg}</div>)}
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 16 }}>
+        {[
+          { icon: '🎟️', label: 'Всего', val: promos.length, color: 'var(--gold)' },
+          { icon: '✅', label: 'Активных', val: promos.filter(p => p.is_active).length, color: 'var(--green)' },
+          { icon: '🔢', label: 'Исп-но', val: promos.reduce((a, p) => a + p.used_count, 0), color: 'var(--gold-light)' },
+        ].map(c => (
+          <div key={c.label} className="card" style={{ padding: 12, textAlign: 'center' }}>
+            <div style={{ fontSize: 14, marginBottom: 2 }}>{c.icon}</div>
+            <div style={{ fontSize: 18, fontWeight: 900, color: c.color }}>{c.val}</div>
+            <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>{c.label}</div>
+          </div>
+        ))}
+      </div>
+
+      <button onClick={() => setShowForm(!showForm)} className="btn-gold" style={{ marginBottom: 14, padding: 10, fontSize: 13, width: '100%' }}>
+        {showForm ? '✕ Отмена' : '+ Новый промокод'}
+      </button>
+
+      {showForm && (
+        <div className="card" style={{ marginBottom: 14, animation: 'fadeIn 0.3s ease' }}>
+          <div style={{ fontSize: 11, color: 'var(--gold)', fontWeight: 700, marginBottom: 12, letterSpacing: 1 }}>🎟️ НОВЫЙ ПРОМОКОД</div>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+            <input type="text" value={code} onChange={e => setCode(e.target.value.toUpperCase())}
+              placeholder="Код (например: WELCOME20)" style={{ flex: 1, fontSize: 14, fontWeight: 700, letterSpacing: 2 }} />
+            <button onClick={() => {
+              const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+              let r = '';
+              for (let i = 0; i < 8; i++) r += chars[Math.floor(Math.random() * chars.length)];
+              setCode(r);
+            }} style={{
+              padding: '10px 14px', borderRadius: 10, border: '1px solid rgba(212,175,55,0.2)',
+              background: 'rgba(212,175,55,0.08)', color: 'var(--gold)',
+              fontSize: 16, cursor: 'pointer', fontWeight: 700, whiteSpace: 'nowrap',
+            }} title="Сгенерировать случайный код">🎲</button>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
+            <div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>Скидка (%)</div>
+              <input type="number" min="1" max="100" value={discountPct} onChange={e => setDiscountPct(parseInt(e.target.value) || 0)} style={{ fontSize: 16, fontWeight: 800, textAlign: 'center' }} />
+            </div>
+            <div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>Макс. исп. (0=∞)</div>
+              <input type="number" min="0" value={maxUses} onChange={e => setMaxUses(parseInt(e.target.value) || 0)} style={{ fontSize: 16, fontWeight: 800, textAlign: 'center' }} />
+            </div>
+          </div>
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>Срок действия (необязательно)</div>
+            <input type="datetime-local" value={expiresAt} onChange={e => setExpiresAt(e.target.value)} style={{ fontSize: 12 }} />
+          </div>
+          {/* Partner checkbox */}
+          <label onClick={() => setIsPartner(!isPartner)} style={{
+            display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12,
+            padding: '8px 12px', borderRadius: 10, cursor: 'pointer',
+            background: isPartner ? 'rgba(59,130,246,0.12)' : 'rgba(255,255,255,0.04)',
+            border: isPartner ? '1px solid rgba(59,130,246,0.3)' : '1px solid var(--border)',
+          }}>
+            <div style={{
+              width: 18, height: 18, borderRadius: 4, flexShrink: 0,
+              background: isPartner ? '#3b82f6' : 'transparent',
+              border: isPartner ? 'none' : '2px solid var(--border)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 11, color: '#fff', fontWeight: 800,
+            }}>{isPartner ? '✓' : ''}</div>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: isPartner ? '#3b82f6' : 'var(--text-muted)' }}>🤝 Партнёрский промокод</div>
+              <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>Будет автоматически вставляться в рассылку через {'{promo}'}</div>
+            </div>
+          </label>
+          {code && (
+            <div style={{ padding: 10, borderRadius: 10, marginBottom: 12, background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.15)' }}>
+              <div style={{ fontSize: 10, color: 'var(--green)', fontWeight: 700, marginBottom: 4 }}>ПРЕДПРОСМОТР</div>
+              <div style={{ fontSize: 14, fontWeight: 800 }}>{code} — <span style={{ color: 'var(--green)' }}>-{discountPct}%</span>
+                {maxUses > 0 && <span style={{ fontSize: 11, color: 'var(--text-muted)' }}> (макс. {maxUses} исп.)</span>}
+              </div>
+            </div>
+          )}
+          <button className="btn-gold" onClick={create} disabled={creating || !code.trim() || discountPct <= 0} style={{ padding: 10, fontSize: 13 }}>
+            {creating ? '⏳ Создаю...' : '💾 Создать промокод'}
+          </button>
+        </div>
+      )}
+
+      {promos.length === 0 && !showForm && (
+        <div className="card" style={{ textAlign: 'center', padding: 30 }}>
+          <div style={{ fontSize: 30, marginBottom: 8 }}>🎟️</div>
+          <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Промокодов пока нет</div>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {promos.map((p, i) => {
+          const expired = p.expires_at && new Date(p.expires_at) < new Date();
+          const exhausted = p.max_uses > 0 && p.used_count >= p.max_uses;
+          return (
+            <div key={p.id} className="card" style={{ padding: 14, animation: `fadeIn 0.3s ease ${i * 0.04}s both`, opacity: (!p.is_active || expired || exhausted) ? 0.5 : 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                <div style={{ fontSize: 16, fontWeight: 900, letterSpacing: 2, color: 'var(--gold)' }}>{p.code}</div>
+                <div style={{ fontSize: 16, fontWeight: 800, background: 'linear-gradient(135deg, #22c55e, #16a34a)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>-{p.discount_pct}%</div>
+              </div>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
+                {p.is_partner && (
+                  <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 6, fontWeight: 700,
+                    background: 'rgba(59,130,246,0.15)', color: '#3b82f6' }}>🤝 Партнёр</span>
+                )}
+                <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 6, fontWeight: 700,
+                  background: p.is_active && !expired && !exhausted ? 'rgba(52,211,153,0.15)' : 'rgba(248,113,113,0.15)',
+                  color: p.is_active && !expired && !exhausted ? 'var(--green)' : 'var(--red)',
+                }}>{!p.is_active ? '⏸ Неактивен' : expired ? '⏰ Истёк' : exhausted ? '🔢 Лимит' : '✅ Активен'}</span>
+                <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 6, background: 'rgba(212,175,55,0.1)', color: 'var(--gold)', fontWeight: 600 }}>
+                  Исп: {p.used_count}{p.max_uses > 0 ? `/${p.max_uses}` : '/∞'}
+                </span>
+                {p.expires_at && <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 6, background: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)' }}>до {new Date(p.expires_at).toLocaleDateString()}</span>}
+              </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button onClick={() => toggle(p.id)} style={{ flex: 1, padding: 8, borderRadius: 8, border: 'none', fontWeight: 700, fontSize: 11, cursor: 'pointer',
+                  background: p.is_active ? 'rgba(251,191,36,0.1)' : 'rgba(52,211,153,0.1)', color: p.is_active ? 'var(--orange)' : 'var(--green)' }}>
+                  {p.is_active ? '⏸ Выключить' : '▶ Включить'}
+                </button>
+                {p.used_count > 0 && (
+                  <button onClick={() => toggleUses(p.id)} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(59,130,246,0.2)',
+                    background: usesId === p.id ? 'rgba(59,130,246,0.1)' : 'transparent', color: '#3b82f6', fontSize: 11, cursor: 'pointer', fontWeight: 700 }}>
+                    👥 {p.used_count}
+                  </button>
+                )}
+                <button onClick={() => remove(p.id)} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(248,113,113,0.2)', background: 'transparent', color: 'var(--red)', fontSize: 11, cursor: 'pointer' }}>🗑</button>
+              </div>
+
+              {/* Uses list */}
+              {usesId === p.id && (
+                <div style={{ marginTop: 10, padding: 10, borderRadius: 10, background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.12)', animation: 'fadeIn 0.2s ease' }}>
+                  <div style={{ fontSize: 10, color: '#3b82f6', fontWeight: 700, marginBottom: 8 }}>👥 Кто использовал:</div>
+                  {usesLoading ? <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>⏳ Загрузка...</div> : uses.length === 0 ? (
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Нет данных</div>
+                  ) : uses.map((u, j) => (
+                    <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: j < uses.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 12, fontWeight: 700 }}>{u.first_name || u.username || `ID:${u.tg_id}`}</div>
+                        {u.username && <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>@{u.username}</div>}
+                      </div>
+                      <span style={{ fontSize: 8, padding: '2px 5px', borderRadius: 4, fontWeight: 700,
+                        background: u.source === 'purchase' ? 'rgba(52,211,153,0.15)' : u.source === 'broadcast' ? 'rgba(251,191,36,0.15)' : 'rgba(59,130,246,0.15)',
+                        color: u.source === 'purchase' ? 'var(--green)' : u.source === 'broadcast' ? 'var(--orange)' : '#3b82f6',
+                      }}>{u.source === 'purchase' ? '💰 Покупка' : u.source === 'broadcast' ? '📢 Рассылка' : '🤝 Амбассадор'}</span>
+                      <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>{new Date(u.used_at).toLocaleDateString()}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function Btn({ children, ...props }) {
+  return (
+    <button {...props} style={{
+      padding: '8px 18px', borderRadius: 10, border: 'none',
+      background: props.disabled ? 'rgba(255,255,255,0.03)' : 'var(--bg-card)',
+      color: props.disabled ? 'var(--text-muted)' : 'var(--text)',
+      fontWeight: 600, fontSize: 12, cursor: props.disabled ? 'default' : 'pointer',
+      opacity: props.disabled ? 0.4 : 1
+    }}>{children}</button>
+  );
+}
+
+// ═══════════════════ DEPOSITS ═══════════════════
+function DepositsPanel({ onGoToUser }) {
+  const [data, setData] = useState(null);
+  const [pending, setPending] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [subTab, setSubTab] = useState('completed');
+
+  const load = async (p) => {
+    setLoading(true);
+    try {
+      const { data: d } = await api.get(`/admin/deposits?page=${p || page}`);
+      setData(d);
+    } catch (e) {}
+    setLoading(false);
+  };
+  const loadPending = async () => {
+    try { const { data: d } = await api.get('/admin/deposits/pending'); setPending(d); } catch (e) {}
+  };
+  useEffect(() => { load(); loadPending(); }, [page]);
+
+  if (loading && !data) return <Loading />;
+  if (!data) return <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-muted)' }}>Ошибка загрузки</div>;
+
+  const s = data.summary;
+  const totalPages = Math.ceil(data.total / 50);
+  const pendingActive = pending?.stats?.active || 0;
+
+  const timeAgo = (date) => {
+    const diff = (Date.now() - new Date(date).getTime()) / 1000;
+    if (diff < 0) return 'скоро';
+    if (diff < 60) return `${Math.floor(diff)}с назад`;
+    if (diff < 3600) return `${Math.floor(diff / 60)}м назад`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}ч назад`;
+    return `${Math.floor(diff / 86400)}д назад`;
+  };
+  const timeLeft = (date) => {
+    const diff = (new Date(date).getTime() - Date.now()) / 1000;
+    if (diff <= 0) return null;
+    if (diff < 60) return `${Math.floor(diff)}с`;
+    if (diff < 3600) return `${Math.floor(diff / 60)}м`;
+    return `${Math.floor(diff / 3600)}ч`;
+  };
+
+  return (
+    <div>
+      <div className="card" style={{ padding: 14, marginBottom: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 24 }}>💳</span>
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 800 }}>Депозиты</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Всего {data.total} пополнений</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Sub-tabs */}
+      <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+        <button onClick={() => setSubTab('completed')} style={{
+          flex: 1, padding: '8px 6px', borderRadius: 10, border: 'none', fontSize: 11, fontWeight: 700, cursor: 'pointer',
+          background: subTab === 'completed' ? 'rgba(52,211,153,0.15)' : 'rgba(255,255,255,0.04)',
+          color: subTab === 'completed' ? 'var(--green)' : 'var(--text-muted)',
+        }}>✅ Оплачено ({data.total})</button>
+        <button onClick={() => setSubTab('pending')} style={{
+          flex: 1, padding: '8px 6px', borderRadius: 10, border: 'none', fontSize: 11, fontWeight: 700, cursor: 'pointer',
+          background: subTab === 'pending' ? 'rgba(251,191,36,0.15)' : 'rgba(255,255,255,0.04)',
+          color: subTab === 'pending' ? '#f59e0b' : 'var(--text-muted)', position: 'relative',
+        }}>
+          ⏳ Ожидают ({pendingActive})
+          {pendingActive > 0 && <span style={{ position: 'absolute', top: 2, right: 6, width: 6, height: 6, borderRadius: '50%', background: '#f59e0b' }} />}
+        </button>
+      </div>
+
+      {/* COMPLETED */}
+      {subTab === 'completed' && (<div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 14 }}>
+          {[
+            { label: 'Сегодня', count: s.today_count, ton: s.today_ton, color: 'var(--green)' },
+            { label: 'Неделя', count: s.week_count, ton: s.week_ton, color: 'var(--gold)' },
+            { label: 'Месяц', count: s.month_count, ton: s.month_ton, color: 'var(--orange)' },
+          ].map(c => (
+            <div key={c.label} className="card" style={{ padding: 10, textAlign: 'center' }}>
+              <div style={{ fontSize: 16, fontWeight: 900, color: c.color }}>{c.count}</div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{c.label}</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: c.color, marginTop: 2 }}>{fmt(c.ton, 4)} TON</div>
+            </div>
+          ))}
+        </div>
+        <button onClick={() => { load(page); loadPending(); }} className="btn-gold" style={{ marginBottom: 14, padding: 10, fontSize: 13 }}>🔄 Обновить</button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {data.deposits.map((d, i) => (
+            <div key={d.id} className="card" style={{
+              padding: 12, animation: `fadeIn 0.2s ease ${i * 0.03}s both`,
+              border: d.is_blocked ? '1px solid rgba(248,113,113,0.2)' : '1px solid var(--border)',
+              opacity: d.is_blocked ? 0.6 : 1,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                    <span style={{ fontSize: 13, fontWeight: 800 }}>{d.first_name || d.username || 'Noname'}</span>
+                    {d.is_premium && <span style={{ fontSize: 8 }}>⭐</span>}
+                    {d.is_blocked && <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 4, background: 'var(--red-bg)', color: 'var(--red)', fontWeight: 700 }}>BAN</span>}
+                    <span style={{ fontSize: 9, color: 'var(--text-muted)', marginLeft: 'auto' }}>{timeAgo(d.created_at)}</span>
+                  </div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'monospace', marginBottom: 4 }}>
+                    TG: {d.tg_id}{d.username ? ` • @${d.username}` : ''}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: 13, fontWeight: 900, color: 'var(--green)' }}>+{fmt(d.ton_paid, 4)} TON</span>
+                    {d.original_price && parseFloat(d.ton_paid) < parseFloat(d.original_price) && (
+                      <span style={{ fontSize: 9, color: 'var(--text-muted)', textDecoration: 'line-through' }}>{fmt(d.original_price, 4)}</span>
+                    )}
+                    <span style={{ fontSize: 10, color: 'var(--gold)' }}>⚡ +{fmtK(d.power_amount)}</span>
+                    {d.package_name && <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 6, background: 'rgba(212,175,55,0.1)', color: 'var(--gold)', fontWeight: 600 }}>📦 {d.package_name}</span>}
+                    {d.promo_code && (
+                      <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 6, background: 'rgba(52,211,153,0.12)', color: 'var(--green)', fontWeight: 700 }}>
+                        🎟️ {d.promo_code} -{d.promo_discount}%
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ display: 'flex', gap: 10, marginTop: 4, fontSize: 9, color: 'var(--text-muted)' }}>
+                    <span>Итого: ⚡ {fmtK(d.power)}</span>
+                    <span>💰 {fmt(parseFloat(d.ton_balance || 0), 4)} TON</span>
+                  </div>
+                </div>
+                {onGoToUser && <button onClick={() => onGoToUser(d.tg_id)} style={{
+                  background: 'rgba(212,175,55,0.1)', border: 'none', borderRadius: 8,
+                  padding: '6px 10px', color: 'var(--gold)', fontSize: 10, fontWeight: 700, cursor: 'pointer', flexShrink: 0, marginLeft: 8,
+                }}>👤</button>}
+              </div>
+            </div>
+          ))}
+        </div>
+        {totalPages > 1 && (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8, marginTop: 14 }}>
+            <button onClick={() => setPage(Math.max(1, page - 1))} disabled={page <= 1} style={{ padding: '6px 12px', borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.06)', color: 'var(--text-muted)', fontSize: 12, cursor: 'pointer' }}>←</button>
+            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{page} / {totalPages}</span>
+            <button onClick={() => setPage(Math.min(totalPages, page + 1))} disabled={page >= totalPages} style={{ padding: '6px 12px', borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.06)', color: 'var(--text-muted)', fontSize: 12, cursor: 'pointer' }}>→</button>
+          </div>
+        )}
+      </div>)}
+
+      {/* PENDING */}
+      {subTab === 'pending' && (<div>
+        <button onClick={loadPending} className="btn-gold" style={{ marginBottom: 14, padding: 10, fontSize: 13 }}>🔄 Обновить</button>
+        {pending && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 14 }}>
+            {[
+              { label: 'Активные', val: pending.stats.active, color: '#f59e0b' },
+              { label: 'Истекли', val: pending.stats.expired, color: 'var(--red)' },
+              { label: 'Оплачено', val: pending.stats.completed, color: 'var(--green)' },
+            ].map(c => (
+              <div key={c.label} className="card" style={{ padding: 10, textAlign: 'center' }}>
+                <div style={{ fontSize: 18, fontWeight: 900, color: c.color }}>{c.val}</div>
+                <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{c.label}</div>
+              </div>
+            ))}
+          </div>
+        )}
+        {!pending?.items?.length ? (
+          <div className="card" style={{ textAlign: 'center', padding: 30 }}>
+            <div style={{ fontSize: 30, marginBottom: 8 }}>✅</div>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Нет ожидающих платежей</div>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {pending.items.map((p, i) => {
+              const isExpired = p.status === 'pending' && new Date(p.expires_at) <= new Date();
+              const isCompleted = p.status === 'completed';
+              const tl = timeLeft(p.expires_at);
+              return (
+                <div key={p.id} className="card" style={{
+                  padding: 12, animation: `fadeIn 0.2s ease ${i * 0.03}s both`,
+                  border: isCompleted ? '1px solid rgba(52,211,153,0.25)' : isExpired ? '1px solid rgba(248,113,113,0.2)' : '1px solid rgba(251,191,36,0.25)',
+                  opacity: isExpired ? 0.5 : 1,
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: 13, fontWeight: 800 }}>{p.first_name || p.username || 'Noname'}</span>
+                        {isCompleted && <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 4, background: 'rgba(52,211,153,0.15)', color: 'var(--green)', fontWeight: 700 }}>✅ PAID</span>}
+                        {isExpired && <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 4, background: 'var(--red-bg)', color: 'var(--red)', fontWeight: 700 }}>⏰ EXPIRED</span>}
+                        {!isCompleted && !isExpired && tl && <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 4, background: 'rgba(251,191,36,0.15)', color: '#f59e0b', fontWeight: 700 }}>⏳ {tl}</span>}
+                        <span style={{ fontSize: 9, color: 'var(--text-muted)', marginLeft: 'auto' }}>{timeAgo(p.created_at)}</span>
+                      </div>
+                      <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'monospace', marginBottom: 4 }}>
+                        TG: {p.tg_id}{p.username ? ` • @${p.username}` : ''}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: 13, fontWeight: 900, color: isCompleted ? 'var(--green)' : '#f59e0b' }}>{fmt(p.ton_amount, 4)} TON</span>
+                        {p.package_name && <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 6, background: 'rgba(212,175,55,0.1)', color: 'var(--gold)', fontWeight: 600 }}>📦 {p.package_name}</span>}
+                        <span style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'monospace' }}>memo: {p.memo}</span>
+                      </div>
+                      <div style={{ display: 'flex', gap: 10, marginTop: 4, fontSize: 9, color: 'var(--text-muted)' }}>
+                        <span>⚡ {fmtK(p.power)}</span>
+                        <span>💰 {fmt(parseFloat(p.ton_balance || 0), 4)} TON</span>
+                      </div>
+                    </div>
+                    {onGoToUser && <button onClick={() => onGoToUser(p.tg_id)} style={{
+                      background: 'rgba(212,175,55,0.1)', border: 'none', borderRadius: 8,
+                      padding: '6px 10px', color: 'var(--gold)', fontSize: 10, fontWeight: 700, cursor: 'pointer', flexShrink: 0, marginLeft: 8,
+                    }}>👤</button>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>)}
+    </div>
+  );
+}
+
+// ═══════════════════ ADMIN ACTIVITY ═══════════════════
+function AdminActivityPanel() {
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = async () => {
+    setLoading(true);
+    try { const { data } = await api.get('/admin/activity'); setLogs(data); } catch (e) {}
+    setLoading(false);
+  };
+  useEffect(() => { load(); }, []);
+
+  if (loading) return <Loading />;
+
+  const timeAgo = (date) => {
+    const diff = (Date.now() - new Date(date).getTime()) / 1000;
+    if (diff < 60) return `${Math.floor(diff)}с назад`;
+    if (diff < 3600) return `${Math.floor(diff / 60)}м назад`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}ч назад`;
+    return `${Math.floor(diff / 86400)}д назад`;
+  };
+
+  const actionIcon = (a) => {
+    if (a === 'view_tab') return '👁';
+    if (a.includes('ban') || a.includes('block')) return '🚫';
+    if (a.includes('withdraw')) return '💸';
+    if (a.includes('broadcast')) return '📢';
+    if (a.includes('delete')) return '🗑️';
+    if (a.includes('create') || a.includes('add')) return '➕';
+    if (a.includes('edit') || a.includes('update')) return '✏️';
+    return '📋';
+  };
+
+  const actionLabel = (a, d) => {
+    if (a === 'view_tab') {
+      const tabNames = { dashboard:'Обзор', users:'Юзеры', deposits:'Депозиты', withdrawals:'Выводы', tasks:'Задания', orders:'Заказы', packages:'Пакеты', ads:'Реклама', referrals:'Рефералы', ambassador:'Амбассадор', promo:'Промокоды', broadcast:'Рассылка', multi:'Мульти', admins:'Админы', activity:'Лог' };
+      return `Открыл: ${tabNames[d] || d}`;
+    }
+    return `${a}${d ? ': ' + d : ''}`;
+  };
+
+  // Group by admin
+  const admins = {};
+  logs.forEach(l => {
+    if (!admins[l.admin_tg_id]) admins[l.admin_tg_id] = { name: l.admin_name, logs: [] };
+    admins[l.admin_tg_id].logs.push(l);
+  });
+
+  return (
+    <div>
+      <div className="card" style={{ padding: 14, marginBottom: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 24 }}>📜</span>
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 800 }}>Активность админов</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{logs.length} записей</div>
+          </div>
+        </div>
+      </div>
+
+      <button onClick={load} className="btn-gold" style={{ marginBottom: 14, padding: 10, fontSize: 13 }}>🔄 Обновить</button>
+
+      {/* Summary per admin */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 }}>
+        {Object.entries(admins).map(([tgId, a]) => {
+          const lastSeen = a.logs[0]?.created_at;
+          return (
+            <div key={tgId} className="card" style={{ padding: 10 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <span style={{ fontSize: 13, fontWeight: 800 }}>🛡️ {a.name}</span>
+                  <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 8 }}>ID: {tgId}</span>
+                </div>
+                <div style={{ fontSize: 10, color: 'var(--green)' }}>⏱ {timeAgo(lastSeen)}</div>
+              </div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>
+                {a.logs.length} действий
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Full log */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        {logs.map((l, i) => (
+          <div key={l.id} className="card" style={{
+            padding: '8px 12px', animation: `fadeIn 0.15s ease ${i * 0.02}s both`,
+            borderLeft: l.action === 'view_tab' ? '3px solid rgba(212,175,55,0.3)' : '3px solid rgba(52,211,153,0.3)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 14 }}>{actionIcon(l.action)}</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 11, fontWeight: 700 }}>
+                  {l.admin_name}
+                  <span style={{ fontWeight: 400, color: 'var(--text-muted)', marginLeft: 6 }}>{actionLabel(l.action, l.details)}</span>
+                </div>
+              </div>
+              <span style={{ fontSize: 9, color: 'var(--text-muted)', flexShrink: 0 }}>{timeAgo(l.created_at)}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Loading() {
   return <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 40 }}>Загрузка...</div>;
 }
+
