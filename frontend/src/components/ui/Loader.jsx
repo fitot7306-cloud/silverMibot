@@ -9,7 +9,7 @@ export default function Loader() {
       {/* Glow background */}
       <div style={{
         position: 'absolute', width: 200, height: 200, borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(192,38,211,0.12) 0%, transparent 70%)',
+        background: 'radial-gradient(circle, rgba(192,192,192,0.12) 0%, transparent 70%)',
         filter: 'blur(40px)'
       }} />
 
@@ -19,7 +19,7 @@ export default function Loader() {
         background: 'linear-gradient(135deg, #B8860B, #D4AF37, #F5D76E)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: 32, animation: 'pulse 1.5s ease-in-out infinite',
-        boxShadow: '0 0 40px rgba(192,38,211,0.3)',
+        boxShadow: '0 0 40px rgba(192,192,192,0.3)',
         position: 'relative'
       }}>⚡</div>
 

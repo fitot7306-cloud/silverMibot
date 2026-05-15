@@ -72,7 +72,7 @@ export default function AdminPage() {
             fontWeight: 700, fontSize: 10, cursor: 'pointer',
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
             transition: 'all 0.2s ease',
-            boxShadow: tab === t.id ? '0 4px 12px rgba(192,38,211,0.3)' : 'none',
+            boxShadow: tab === t.id ? '0 4px 12px rgba(192,192,192,0.3)' : 'none',
             border: tab === t.id ? 'none' : '1px solid var(--border)',
           }}>
             <span style={{ fontSize: 22 }}>{t.icon}</span>
@@ -208,11 +208,11 @@ function Dashboard() {
 
       {/* 🛒 Buyers vs Free */}
       {stats.buyers && (
-        <div className="card" style={{ padding: 14, marginBottom: 16, border: '1px solid rgba(192,38,211,0.15)', animation: 'fadeIn 0.3s ease' }}>
+        <div className="card" style={{ padding: 14, marginBottom: 16, border: '1px solid rgba(192,192,192,0.15)', animation: 'fadeIn 0.3s ease' }}>
           <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 10 }}>🛒 Покупатели vs Бесплатные</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
             {/* Buyers */}
-            <div style={{ padding: 12, borderRadius: 10, background: 'rgba(192,38,211,0.05)', border: '1px solid rgba(192,38,211,0.15)' }}>
+            <div style={{ padding: 12, borderRadius: 10, background: 'rgba(192,192,192,0.05)', border: '1px solid rgba(192,192,192,0.15)' }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--green)', marginBottom: 8 }}>💎 Покупатели</div>
               <div style={{ fontSize: 22, fontWeight: 900, color: 'var(--green)' }}>{stats.buyers.buyers_count}</div>
               <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 6 }}>юзеров</div>
@@ -294,7 +294,7 @@ function Dashboard() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div style={{
                       width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
-                      background: i < 3 ? 'rgba(192,38,211,0.15)' : 'rgba(255,255,255,0.05)',
+                      background: i < 3 ? 'rgba(192,192,192,0.15)' : 'rgba(255,255,255,0.05)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: 11, fontWeight: 800, color: i < 3 ? 'var(--primary)' : 'var(--text-muted)',
                     }}>{i + 1}</div>
@@ -360,7 +360,7 @@ function Dashboard() {
 
       {/* 💰 Finance Analytics */}
       {stats.finance && (
-        <div className="card" style={{ padding: 16, marginBottom: 16, border: '1px solid rgba(192,38,211,0.2)', animation: 'fadeIn 0.3s ease' }}>
+        <div className="card" style={{ padding: 16, marginBottom: 16, border: '1px solid rgba(192,192,192,0.2)', animation: 'fadeIn 0.3s ease' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
             <span style={{ fontSize: 22 }}>💰</span>
             <div>
@@ -371,7 +371,7 @@ function Dashboard() {
 
           {/* Revenue vs Liability */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
-            <div style={{ padding: 12, borderRadius: 10, background: 'rgba(192,38,211,0.06)', border: '1px solid rgba(192,38,211,0.15)' }}>
+            <div style={{ padding: 12, borderRadius: 10, background: 'rgba(192,192,192,0.06)', border: '1px solid rgba(192,192,192,0.15)' }}>
               <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>📥 Доход (покупки)</div>
               <div style={{ fontSize: 18, fontWeight: 900, color: 'var(--green)' }}>{fmt(stats.total_revenue, 4)} TON</div>
             </div>
@@ -430,7 +430,7 @@ function Dashboard() {
           )}
 
           {/* ⚡ Mining Forecast */}
-          <div style={{ padding: 12, borderRadius: 10, background: 'rgba(192,38,211,0.04)', border: '1px solid rgba(192,38,211,0.15)', marginBottom: 12 }}>
+          <div style={{ padding: 12, borderRadius: 10, background: 'rgba(192,192,192,0.04)', border: '1px solid rgba(192,192,192,0.15)', marginBottom: 12 }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--primary)', marginBottom: 8 }}>⚡ Прогноз майнинга (по текущему Power)</div>
             <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 10 }}>
               Активный Power: <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{fmtK(stats.finance.active_power)} GH/s</span>
@@ -470,10 +470,10 @@ function Dashboard() {
           <div style={{
             padding: 14, borderRadius: 12, textAlign: 'center',
             background: stats.finance.net_position >= 0
-              ? 'linear-gradient(135deg, rgba(192,38,211,0.08), rgba(192,38,211,0.02))'
+              ? 'linear-gradient(135deg, rgba(192,192,192,0.08), rgba(192,192,192,0.02))'
               : 'linear-gradient(135deg, rgba(248,113,113,0.08), rgba(248,113,113,0.02))',
             border: stats.finance.net_position >= 0
-              ? '1px solid rgba(192,38,211,0.25)' : '1px solid rgba(248,113,113,0.25)',
+              ? '1px solid rgba(192,192,192,0.25)' : '1px solid rgba(248,113,113,0.25)',
           }}>
             <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>
               📊 Нетто позиция (Доход − Выведено − Ожидает)
@@ -669,7 +669,7 @@ function UsersPanel() {
     ];
     return (
       <div>
-        {msg && <div style={{ padding: '10px 14px', borderRadius: 10, marginBottom: 12, background: msg.startsWith('✅') || msg.startsWith('🗑') ? 'rgba(192,38,211,0.1)' : 'var(--red-bg)', color: msg.startsWith('✅') || msg.startsWith('🗑') ? 'var(--green)' : 'var(--red)', fontSize: 12, fontWeight: 600, textAlign: 'center' }}>{msg}</div>}
+        {msg && <div style={{ padding: '10px 14px', borderRadius: 10, marginBottom: 12, background: msg.startsWith('✅') || msg.startsWith('🗑') ? 'rgba(192,192,192,0.1)' : 'var(--red-bg)', color: msg.startsWith('✅') || msg.startsWith('🗑') ? 'var(--green)' : 'var(--red)', fontSize: 12, fontWeight: 600, textAlign: 'center' }}>{msg}</div>}
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
@@ -815,7 +815,7 @@ function UsersPanel() {
   // ── Users List ──
   return (
     <div>
-      {msg && <div style={{ padding: '10px 14px', borderRadius: 10, marginBottom: 12, background: msg.startsWith('✅') || msg.startsWith('🗑') ? 'rgba(192,38,211,0.1)' : 'var(--red-bg)', color: msg.startsWith('✅') || msg.startsWith('🗑') ? 'var(--green)' : 'var(--red)', fontSize: 12, fontWeight: 600, textAlign: 'center' }}>{msg}</div>}
+      {msg && <div style={{ padding: '10px 14px', borderRadius: 10, marginBottom: 12, background: msg.startsWith('✅') || msg.startsWith('🗑') ? 'rgba(192,192,192,0.1)' : 'var(--red-bg)', color: msg.startsWith('✅') || msg.startsWith('🗑') ? 'var(--green)' : 'var(--red)', fontSize: 12, fontWeight: 600, textAlign: 'center' }}>{msg}</div>}
 
       <input type="text" value={search} onChange={e => { setSearch(e.target.value); setPage(1); }}
         placeholder="🔍 Поиск по имени, username, tg_id..."
@@ -1038,7 +1038,7 @@ function WithdrawalsPanel() {
   return (
     <div>
       {/* ═══ Withdraw Settings Card ═══ */}
-      <div className="card" style={{ padding: 16, marginBottom: 16, border: '1px solid rgba(192,38,211,0.2)' }}>
+      <div className="card" style={{ padding: 16, marginBottom: 16, border: '1px solid rgba(192,192,192,0.2)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
           <span style={{ fontSize: 22 }}>⚙️</span>
           <div>
@@ -1158,8 +1158,8 @@ function WithdrawalsPanel() {
         {/* Fee preview examples */}
         {ws.withdraw_fee_mode !== 'none' && (
           <div style={{
-            background: 'rgba(192,38,211,0.04)', borderRadius: 10, padding: 10, marginBottom: 14,
-            border: '1px solid rgba(192,38,211,0.12)'
+            background: 'rgba(192,192,192,0.04)', borderRadius: 10, padding: 10, marginBottom: 14,
+            border: '1px solid rgba(192,192,192,0.12)'
           }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 6 }}>📋 ПРЕВЬЮ КОМИССИИ</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 4 }}>
@@ -1210,8 +1210,8 @@ function WithdrawalsPanel() {
               <div key={item.key} style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 padding: '10px 12px', borderRadius: 10,
-                background: ws[item.key] === '1' ? 'rgba(192,38,211,0.06)' : 'rgba(255,255,255,0.02)',
-                border: ws[item.key] === '1' ? '1px solid rgba(192,38,211,0.2)' : '1px solid var(--border)',
+                background: ws[item.key] === '1' ? 'rgba(192,192,192,0.06)' : 'rgba(255,255,255,0.02)',
+                border: ws[item.key] === '1' ? '1px solid rgba(192,192,192,0.2)' : '1px solid var(--border)',
                 transition: 'all 0.2s ease'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -1264,7 +1264,7 @@ function WithdrawalsPanel() {
 
       {msg && (
         <div style={{ padding: '10px 14px', borderRadius: 10, marginBottom: 12,
-          background: msg.startsWith('✅') ? 'rgba(192,38,211,0.1)' : 'var(--red-bg)',
+          background: msg.startsWith('✅') ? 'rgba(192,192,192,0.1)' : 'var(--red-bg)',
           color: msg.startsWith('✅') ? 'var(--green)' : 'var(--red)',
           fontSize: 12, fontWeight: 600, textAlign: 'center' }}>{msg}</div>
       )}
@@ -1401,7 +1401,7 @@ function TasksPanel() {
             }}>🔒 Только я</button>
             <button onClick={() => setForm({...form, visibility: 'all'})} style={{
               flex: 1, padding: 10, borderRadius: 10, border: 'none', fontWeight: 700, fontSize: 12, cursor: 'pointer',
-              background: form.visibility === 'all' ? 'rgba(192,38,211,0.15)' : 'rgba(255,255,255,0.04)',
+              background: form.visibility === 'all' ? 'rgba(192,192,192,0.15)' : 'rgba(255,255,255,0.04)',
               color: form.visibility === 'all' ? 'var(--green)' : 'var(--text-muted)',
             }}>🌍 Все юзеры</button>
           </div>
@@ -1422,14 +1422,14 @@ function TasksPanel() {
                 <span style={{ fontSize: 13, fontWeight: 600 }}>{t.title}</span>
                 <span style={{
                   fontSize: 9, padding: '2px 6px', borderRadius: 6, fontWeight: 700,
-                  background: t.visibility === 'admin' ? 'rgba(248,113,113,0.15)' : 'rgba(192,38,211,0.15)',
+                  background: t.visibility === 'admin' ? 'rgba(248,113,113,0.15)' : 'rgba(192,192,192,0.15)',
                   color: t.visibility === 'admin' ? 'var(--red)' : 'var(--green)',
                 }}>{t.visibility === 'admin' ? '🔒 СКРЫТ' : '🌍 ПУБЛ'}</span>
               </div>
               <div style={{ fontSize: 11, color: 'var(--primary)' }}>+{fmtK(t.reward_power)} POWER</div>
             </div>
             <button onClick={() => toggleVisibility(t.id, t.visibility)} title="Видимость" style={{
-              background: t.visibility === 'admin' ? 'rgba(248,113,113,0.1)' : 'rgba(192,38,211,0.1)',
+              background: t.visibility === 'admin' ? 'rgba(248,113,113,0.1)' : 'rgba(192,192,192,0.1)',
               border: 'none', borderRadius: 8, padding: '4px 8px',
               color: t.visibility === 'admin' ? 'var(--red)' : 'var(--green)',
               fontSize: 11, fontWeight: 600, cursor: 'pointer'
@@ -1615,7 +1615,7 @@ function OrdersPanel() {
               <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
                 <button onClick={() => approve(o.id)} disabled={processing === o.id} style={{
                   flex: 1, padding: 10, borderRadius: 10, border: 'none', fontWeight: 700, fontSize: 12, cursor: 'pointer',
-                  background: 'rgba(192,38,211,0.15)', color: 'var(--green)',
+                  background: 'rgba(192,192,192,0.15)', color: 'var(--green)',
                 }}>✅ Одобрить</button>
                 <button onClick={() => reject(o.id)} disabled={processing === o.id} style={{
                   flex: 1, padding: 10, borderRadius: 10, border: 'none', fontWeight: 700, fontSize: 12, cursor: 'pointer',
@@ -1887,7 +1887,7 @@ function ReferralsPanel() {
       {msg && (
         <div style={{
           padding: '10px 14px', borderRadius: 10, marginBottom: 12,
-          background: msg.startsWith('✅') ? 'rgba(192,38,211,0.1)' : 'var(--red-bg)',
+          background: msg.startsWith('✅') ? 'rgba(192,192,192,0.1)' : 'var(--red-bg)',
           color: msg.startsWith('✅') ? 'var(--green)' : 'var(--red)',
           fontSize: 12, fontWeight: 600, textAlign: 'center',
           animation: 'fadeIn 0.3s ease'
@@ -2103,7 +2103,7 @@ function AdsPanel() {
       {msg && (
         <div style={{
           padding: '10px 14px', borderRadius: 10, marginBottom: 12,
-          background: msg.startsWith('✅') ? 'rgba(192,38,211,0.1)' : 'var(--red-bg)',
+          background: msg.startsWith('✅') ? 'rgba(192,192,192,0.1)' : 'var(--red-bg)',
           color: msg.startsWith('✅') ? 'var(--green)' : 'var(--red)',
           fontSize: 12, fontWeight: 600, textAlign: 'center'
         }}>{msg}</div>
@@ -2287,7 +2287,7 @@ function MultiAccountPanel({ onGoToUser }) {
     <div key={g.ip} className="card" style={{
       animation: `fadeIn 0.3s ease ${gi * 0.05}s both`,
       border: isBlocked ? '1px solid rgba(248,113,113,0.3)'
-        : g.is_ignored ? '1px solid rgba(192,38,211,0.3)'
+        : g.is_ignored ? '1px solid rgba(192,192,192,0.3)'
         : g.user_count >= 3 ? '1px solid rgba(248,113,113,0.4)' : '1px solid var(--border)',
     }}>
       <div onClick={() => setExpanded(expanded === g.ip ? null : g.ip)}
@@ -2295,7 +2295,7 @@ function MultiAccountPanel({ onGoToUser }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
             width: 36, height: 36, borderRadius: '50%',
-            background: isBlocked ? 'rgba(248,113,113,0.15)' : g.is_ignored ? 'rgba(192,38,211,0.15)' : g.user_count >= 3 ? 'rgba(248,113,113,0.15)' : 'rgba(251,191,36,0.15)',
+            background: isBlocked ? 'rgba(248,113,113,0.15)' : g.is_ignored ? 'rgba(192,192,192,0.15)' : g.user_count >= 3 ? 'rgba(248,113,113,0.15)' : 'rgba(251,191,36,0.15)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0,
           }}>
             {isBlocked ? '🔒' : g.is_ignored ? '✅' : g.user_count >= 3 ? '🚨' : '⚠️'}
@@ -2306,9 +2306,9 @@ function MultiAccountPanel({ onGoToUser }) {
               <span style={{ fontSize: 11, color: g.user_count >= 3 ? 'var(--red)' : 'var(--primary)', fontWeight: 700 }}>
                 {g.user_count} акк.
               </span>
-              {g.has_admin && <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 4, background: 'rgba(192,38,211,0.15)', color: 'var(--primary)', fontWeight: 700 }}>👑 ADMIN</span>}
+              {g.has_admin && <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 4, background: 'rgba(192,192,192,0.15)', color: 'var(--primary)', fontWeight: 700 }}>👑 ADMIN</span>}
               {g.is_blacklisted && <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 4, background: 'var(--red-bg)', color: 'var(--red)', fontWeight: 700 }}>⛔ ЧС</span>}
-              {g.is_ignored && <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 4, background: 'rgba(192,38,211,0.12)', color: 'var(--green)', fontWeight: 700 }}>✅ ИГНОР</span>}
+              {g.is_ignored && <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 4, background: 'rgba(192,192,192,0.12)', color: 'var(--green)', fontWeight: 700 }}>✅ ИГНОР</span>}
             </div>
           </div>
         </div>
@@ -2334,7 +2334,7 @@ function MultiAccountPanel({ onGoToUser }) {
           {!g.is_ignored ? (
             <button onClick={(e) => { e.stopPropagation(); ignoreIp(g.ip, `Group: ${g.user_count} users`); }}
               disabled={actionLoading === 'ign_' + g.ip}
-              style={{ flex: 1, padding: 10, borderRadius: 10, background: 'rgba(192,38,211,0.1)', color: 'var(--green)', fontSize: 11, fontWeight: 800, cursor: 'pointer', border: '1px solid rgba(192,38,211,0.3)', minWidth: 100, opacity: actionLoading === 'ign_' + g.ip ? 0.5 : 1 }}>
+              style={{ flex: 1, padding: 10, borderRadius: 10, background: 'rgba(192,192,192,0.1)', color: 'var(--green)', fontSize: 11, fontWeight: 800, cursor: 'pointer', border: '1px solid rgba(192,192,192,0.3)', minWidth: 100, opacity: actionLoading === 'ign_' + g.ip ? 0.5 : 1 }}>
               {actionLoading === 'ign_' + g.ip ? '⏳...' : '👁 Игнор'}
             </button>
           ) : (
@@ -2351,15 +2351,15 @@ function MultiAccountPanel({ onGoToUser }) {
           {g.users.map(u => (
             <div key={u.id} style={{
               padding: 10, borderRadius: 10,
-              background: u.is_admin ? 'rgba(192,38,211,0.06)' : u.is_blocked ? 'rgba(248,113,113,0.08)' : 'rgba(255,255,255,0.03)',
-              border: u.is_admin ? '1px solid rgba(192,38,211,0.25)' : u.is_blocked ? '1px solid rgba(248,113,113,0.2)' : '1px solid var(--border)',
+              background: u.is_admin ? 'rgba(192,192,192,0.06)' : u.is_blocked ? 'rgba(248,113,113,0.08)' : 'rgba(255,255,255,0.03)',
+              border: u.is_admin ? '1px solid rgba(192,192,192,0.25)' : u.is_blocked ? '1px solid rgba(248,113,113,0.2)' : '1px solid var(--border)',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 700 }}>
                     {u.first_name || u.username || 'Noname'}
                     {u.is_premium && <span style={{ fontSize: 9, marginLeft: 4 }}>⭐</span>}
-                    {u.is_admin && <span style={{ fontSize: 8, marginLeft: 6, padding: '1px 5px', borderRadius: 4, background: 'rgba(192,38,211,0.15)', color: 'var(--primary)', fontWeight: 700 }}>👑</span>}
+                    {u.is_admin && <span style={{ fontSize: 8, marginLeft: 6, padding: '1px 5px', borderRadius: 4, background: 'rgba(192,192,192,0.15)', color: 'var(--primary)', fontWeight: 700 }}>👑</span>}
                     {u.is_blocked && <span style={{ fontSize: 8, marginLeft: 6, padding: '1px 5px', borderRadius: 4, background: 'var(--red-bg)', color: 'var(--red)', fontWeight: 700 }}>BAN</span>}
                   </div>
                   <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
@@ -2382,7 +2382,7 @@ function MultiAccountPanel({ onGoToUser }) {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flexShrink: 0 }}>
                   {onGoToUser && (
                     <button onClick={() => onGoToUser(u.tg_id)} style={{
-                      background: 'rgba(192,38,211,0.1)', border: 'none', borderRadius: 8,
+                      background: 'rgba(192,192,192,0.1)', border: 'none', borderRadius: 8,
                       padding: '6px 10px', color: 'var(--primary)', fontSize: 10, fontWeight: 700, cursor: 'pointer',
                     }}>👤</button>
                   )}
@@ -2406,7 +2406,7 @@ function MultiAccountPanel({ onGoToUser }) {
       {msg && (
         <div style={{
           padding: '10px 14px', borderRadius: 10, marginBottom: 12,
-          background: msg.startsWith('✅') || msg.startsWith('🚫') ? 'rgba(192,38,211,0.1)' : 'var(--red-bg)',
+          background: msg.startsWith('✅') || msg.startsWith('🚫') ? 'rgba(192,192,192,0.1)' : 'var(--red-bg)',
           color: msg.startsWith('✅') || msg.startsWith('🚫') ? 'var(--green)' : 'var(--red)',
           fontSize: 12, fontWeight: 600, textAlign: 'center', animation: 'fadeIn 0.3s ease'
         }}>{msg}</div>
@@ -2443,7 +2443,7 @@ function MultiAccountPanel({ onGoToUser }) {
         ].map(t => (
           <button key={t.id} onClick={() => setSubTab(t.id)} style={{
             padding: '8px 4px', borderRadius: 10, border: 'none', fontSize: 9, fontWeight: 700, cursor: 'pointer',
-            background: subTab === t.id ? 'rgba(192,38,211,0.15)' : 'rgba(255,255,255,0.04)',
+            background: subTab === t.id ? 'rgba(192,192,192,0.15)' : 'rgba(255,255,255,0.04)',
             color: subTab === t.id ? 'var(--primary)' : 'var(--text-muted)',
           }}>{t.label} ({t.count})</button>
         ))}
@@ -2457,7 +2457,7 @@ function MultiAccountPanel({ onGoToUser }) {
       {/* Ignore tab */}
       {subTab === 'ignore' && (
         <div>
-          <div className="card" style={{ padding: 14, marginBottom: 12, border: '1px solid rgba(192,38,211,0.15)' }}>
+          <div className="card" style={{ padding: 14, marginBottom: 12, border: '1px solid rgba(192,192,192,0.15)' }}>
             <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>👁 Список игнора</div>
             <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 10 }}>
               IP из игнора не блокируются при выводе, даже если обнаружен мультиаккаунт
@@ -2480,7 +2480,7 @@ function MultiAccountPanel({ onGoToUser }) {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {ignoreList.filter(i => !search.trim() || i.ip.includes(search.trim())).map(item => (
-                <div key={item.id} className="card" style={{ padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid rgba(192,38,211,0.15)' }}>
+                <div key={item.id} className="card" style={{ padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid rgba(192,192,192,0.15)' }}>
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 700, fontFamily: 'monospace', color: 'var(--green)' }}>✅ {item.ip}</div>
                     <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{item.reason || '—'} • {new Date(item.created_at).toLocaleDateString()}</div>
@@ -2522,7 +2522,7 @@ function MultiAccountPanel({ onGoToUser }) {
                     <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{b.reason || '—'} • {new Date(b.created_at).toLocaleDateString()}</div>
                   </div>
                   <button onClick={() => removeFromBlacklist(b.id)} style={{
-                    background: 'rgba(192,38,211,0.1)', border: 'none', borderRadius: 8,
+                    background: 'rgba(192,192,192,0.1)', border: 'none', borderRadius: 8,
                     padding: '6px 10px', color: 'var(--green)', fontSize: 10, fontWeight: 700, cursor: 'pointer', flexShrink: 0,
                   }}>✅ Убрать</button>
                 </div>
@@ -2642,7 +2642,7 @@ function BroadcastPanel() {
         {['HTML', 'Markdown', 'Plain'].map(m => (
           <button key={m} onClick={() => setParseMode(m === 'Plain' ? '' : m)} style={{
             padding: '6px 14px', borderRadius: 8, border: 'none', fontSize: 11, fontWeight: 700, cursor: 'pointer',
-            background: (parseMode === m || (m === 'Plain' && !parseMode)) ? 'rgba(192,38,211,0.15)' : 'rgba(255,255,255,0.04)',
+            background: (parseMode === m || (m === 'Plain' && !parseMode)) ? 'rgba(192,192,192,0.15)' : 'rgba(255,255,255,0.04)',
             color: (parseMode === m || (m === 'Plain' && !parseMode)) ? 'var(--primary)' : 'var(--text-muted)',
           }}>{m}</button>
         ))}
@@ -2652,8 +2652,8 @@ function BroadcastPanel() {
       <label onClick={() => setIsRtl(!isRtl)} style={{
         display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10,
         padding: '8px 12px', borderRadius: 10, cursor: 'pointer',
-        background: isRtl ? 'rgba(192,38,211,0.12)' : 'rgba(255,255,255,0.04)',
-        border: isRtl ? '1px solid rgba(192,38,211,0.3)' : '1px solid var(--border)',
+        background: isRtl ? 'rgba(192,192,192,0.12)' : 'rgba(255,255,255,0.04)',
+        border: isRtl ? '1px solid rgba(192,192,192,0.3)' : '1px solid var(--border)',
         transition: 'all 0.2s ease',
       }}>
         <div style={{
@@ -2726,7 +2726,7 @@ function BroadcastPanel() {
 
       {/* Live progress */}
       {sending && progress && progress.status === 'sending' && (
-        <div className="card" style={{ marginTop: 12, padding: 14, border: '1px solid rgba(192,38,211,0.3)', animation: 'fadeIn 0.3s ease' }}>
+        <div className="card" style={{ marginTop: 12, padding: 14, border: '1px solid rgba(192,192,192,0.3)', animation: 'fadeIn 0.3s ease' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--primary)' }}>📤 Отправка...</div>
             <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--primary)' }}>{pct}%</div>
@@ -2780,7 +2780,7 @@ function BroadcastPanel() {
       {result && !sending && (
         <div className="card" style={{
           marginTop: 12, padding: 14, animation: 'fadeIn 0.3s ease',
-          border: result.error || result.status === 'error' ? '1px solid rgba(248,113,113,0.3)' : '1px solid rgba(192,38,211,0.3)',
+          border: result.error || result.status === 'error' ? '1px solid rgba(248,113,113,0.3)' : '1px solid rgba(192,192,192,0.3)',
         }}>
           {result.error ? (
             <div style={{ fontSize: 13, color: 'var(--red)', fontWeight: 700 }}>❌ {result.error}</div>
@@ -2793,7 +2793,7 @@ function BroadcastPanel() {
                 <MiniStat label="Ошибки" val={result.failed} color="var(--red)" />
               </div>
               {(result.blocked_auto > 0 || result.blocked_skipped > 0) && (
-                <div style={{ marginTop: 10, padding: 10, background: 'rgba(192,38,211,0.06)', borderRadius: 8 }}>
+                <div style={{ marginTop: 10, padding: 10, background: 'rgba(192,192,192,0.06)', borderRadius: 8 }}>
                   <div style={{ fontSize: 10, color: 'var(--primary)', fontWeight: 700, marginBottom: 6 }}>🧹 Автоочистка</div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
                     {result.blocked_auto > 0 && (
@@ -2924,7 +2924,7 @@ function AdminsPanel() {
       {msg && (
         <div style={{
           padding: '10px 14px', borderRadius: 10, marginBottom: 12,
-          background: msg.startsWith('✅') || msg.startsWith('🗑') ? 'rgba(192,38,211,0.1)' : 'var(--red-bg)',
+          background: msg.startsWith('✅') || msg.startsWith('🗑') ? 'rgba(192,192,192,0.1)' : 'var(--red-bg)',
           color: msg.startsWith('✅') || msg.startsWith('🗑') ? 'var(--green)' : 'var(--red)',
           fontSize: 12, fontWeight: 600, textAlign: 'center', animation: 'fadeIn 0.3s ease'
         }}>{msg}</div>
@@ -2970,7 +2970,7 @@ function AdminsPanel() {
                   permissions: active ? form.permissions.filter(p => p !== t.id) : [...form.permissions, t.id]
                 })} style={{
                   padding: '5px 10px', borderRadius: 8, border: 'none', fontSize: 10, fontWeight: 700, cursor: 'pointer',
-                  background: active ? 'rgba(192,38,211,0.15)' : 'rgba(255,255,255,0.04)',
+                  background: active ? 'rgba(192,192,192,0.15)' : 'rgba(255,255,255,0.04)',
                   color: active ? 'var(--green)' : 'var(--text-muted)',
                 }}>{t.icon} {t.label}</button>
               );
@@ -2987,7 +2987,7 @@ function AdminsPanel() {
         {admins.map((a, i) => (
           <div key={a.tg_id} className="card" style={{
             padding: '14px', animation: `fadeIn 0.3s ease ${i * 0.04}s both`,
-            border: a.is_env ? '1px solid rgba(192,38,211,0.3)' : '1px solid var(--border)',
+            border: a.is_env ? '1px solid rgba(192,192,192,0.3)' : '1px solid var(--border)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1 }}>
@@ -3016,14 +3016,14 @@ function AdminsPanel() {
                   {/* Permissions badges */}
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, marginTop: 4 }}>
                     {a.permissions === '*' ? (
-                      <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 4, background: 'rgba(192,38,211,0.15)', color: 'var(--primary)', fontWeight: 700 }}>
+                      <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 4, background: 'rgba(192,192,192,0.15)', color: 'var(--primary)', fontWeight: 700 }}>
                         ✦ Полный доступ
                       </span>
                     ) : Array.isArray(a.permissions) && a.permissions.length > 0 ? (
                       a.permissions.map(p => {
                         const t = PERM_TABS.find(x => x.id === p);
                         return t ? (
-                          <span key={p} style={{ fontSize: 8, padding: '1px 5px', borderRadius: 4, background: 'rgba(192,38,211,0.1)', color: 'var(--green)', fontWeight: 600 }}>
+                          <span key={p} style={{ fontSize: 8, padding: '1px 5px', borderRadius: 4, background: 'rgba(192,192,192,0.1)', color: 'var(--green)', fontWeight: 600 }}>
                             {t.icon}
                           </span>
                         ) : null;
@@ -3041,7 +3041,7 @@ function AdminsPanel() {
                 {!a.is_env && (
                   <>
                     <button onClick={() => editPerms === a.tg_id ? setEditPerms(null) : startEditPerms(a)} style={{
-                      background: editPerms === a.tg_id ? 'rgba(192,38,211,0.15)' : 'rgba(255,255,255,0.04)',
+                      background: editPerms === a.tg_id ? 'rgba(192,192,192,0.15)' : 'rgba(255,255,255,0.04)',
                       border: 'none', borderRadius: 8, padding: '6px 10px',
                       color: editPerms === a.tg_id ? 'var(--primary)' : 'var(--text-muted)',
                       fontSize: 11, fontWeight: 700, cursor: 'pointer',
@@ -3071,7 +3071,7 @@ function AdminsPanel() {
                     return (
                       <button key={t.id} onClick={() => togglePerm(t.id)} style={{
                         padding: '6px 10px', borderRadius: 8, border: 'none', fontSize: 10, fontWeight: 700, cursor: 'pointer',
-                        background: active ? 'rgba(192,38,211,0.15)' : 'rgba(255,255,255,0.04)',
+                        background: active ? 'rgba(192,192,192,0.15)' : 'rgba(255,255,255,0.04)',
                         color: active ? 'var(--green)' : 'var(--text-muted)',
                         transition: 'all 0.15s ease',
                       }}>{active ? '✅' : '⬜'} {t.icon} {t.label}</button>
@@ -3165,7 +3165,7 @@ function AmbassadorAdminPanel() {
       {msg && (
         <div style={{
           padding: '10px 14px', borderRadius: 10, marginBottom: 12,
-          background: msg.startsWith('✅') ? 'rgba(192,38,211,0.1)' : 'var(--red-bg)',
+          background: msg.startsWith('✅') ? 'rgba(192,192,192,0.1)' : 'var(--red-bg)',
           color: msg.startsWith('✅') ? 'var(--green)' : 'var(--red)',
           fontSize: 12, fontWeight: 600, textAlign: 'center', animation: 'fadeIn 0.3s ease'
         }}>{msg}</div>
@@ -3175,7 +3175,7 @@ function AmbassadorAdminPanel() {
         {tabs.map(t => (
           <button key={t.id} onClick={() => setSubTab(t.id)} style={{
             flex: 1, padding: '10px 6px', borderRadius: 10, border: 'none', fontSize: 10, fontWeight: 700, cursor: 'pointer',
-            background: subTab === t.id ? 'rgba(192,38,211,0.15)' : 'rgba(255,255,255,0.04)',
+            background: subTab === t.id ? 'rgba(192,192,192,0.15)' : 'rgba(255,255,255,0.04)',
             color: subTab === t.id ? 'var(--primary)' : 'var(--text-muted)',
           }}>{t.icon} {t.label}</button>
         ))}
@@ -3360,7 +3360,7 @@ function AmbassadorChannels({ channels, onUpdate, showMsg }) {
               <>
                 <button onClick={() => approve(ch.id)} disabled={processing === ch.id} style={{
                   flex: 1, padding: 8, borderRadius: 8, border: 'none', fontWeight: 700, fontSize: 11, cursor: 'pointer',
-                  background: 'rgba(192,38,211,0.15)', color: 'var(--green)',
+                  background: 'rgba(192,192,192,0.15)', color: 'var(--green)',
                 }}>✅ Одобрить</button>
                 <button onClick={() => reject(ch.id)} disabled={processing === ch.id} style={{
                   flex: 1, padding: 8, borderRadius: 8, border: 'none', fontWeight: 700, fontSize: 11, cursor: 'pointer',
@@ -3508,7 +3508,7 @@ function AmbassadorPosts({ posts, channels, onUpdate, showMsg }) {
             }} />
           <div style={{
             padding: '8px 12px', marginBottom: 8, borderRadius: 8,
-            background: 'rgba(192,38,211,0.06)', border: '1px solid rgba(192,38,211,0.12)',
+            background: 'rgba(192,192,192,0.06)', border: '1px solid rgba(192,192,192,0.12)',
           }}>
             <div style={{ fontSize: 10, color: 'var(--primary)', fontWeight: 700, marginBottom: 4 }}>📌 СПЕЦ. СИМВОЛЫ:</div>
             <div style={{ fontSize: 10, color: 'var(--text-muted)', lineHeight: 1.6 }}>
@@ -3554,8 +3554,8 @@ function AmbassadorPosts({ posts, channels, onUpdate, showMsg }) {
               </div>
               <div style={{
                 padding: 14, borderRadius: 12,
-                background: 'linear-gradient(135deg, rgba(192,38,211,0.05), rgba(0,0,0,0.2))',
-                border: '1px solid rgba(192,38,211,0.15)',
+                background: 'linear-gradient(135deg, rgba(192,192,192,0.05), rgba(0,0,0,0.2))',
+                border: '1px solid rgba(192,192,192,0.15)',
               }}>
                 {imagePreview && (
                   <img src={imagePreview} alt="" style={{
@@ -3582,7 +3582,7 @@ function AmbassadorPosts({ posts, channels, onUpdate, showMsg }) {
       {publishResult && (
         <div className="card" style={{
           marginBottom: 14, padding: 14, animation: 'fadeIn 0.3s ease',
-          border: publishResult.failed ? '1px solid rgba(251,191,36,0.3)' : '1px solid rgba(192,38,211,0.3)',
+          border: publishResult.failed ? '1px solid rgba(251,191,36,0.3)' : '1px solid rgba(192,192,192,0.3)',
         }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--green)', marginBottom: 8 }}>📊 Результат публикации</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
@@ -3644,15 +3644,15 @@ function AmbassadorPosts({ posts, channels, onUpdate, showMsg }) {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                   <div style={{ fontSize: 14, fontWeight: 700, flex: 1 }}>{p.title}</div>
                   <button onClick={() => setPreviewId(previewId === p.id ? null : p.id)} style={{
-                    padding: '4px 10px', borderRadius: 8, border: '1px solid rgba(192,38,211,0.2)',
-                    background: previewId === p.id ? 'rgba(192,38,211,0.1)' : 'transparent',
+                    padding: '4px 10px', borderRadius: 8, border: '1px solid rgba(192,192,192,0.2)',
+                    background: previewId === p.id ? 'rgba(192,192,192,0.1)' : 'transparent',
                     color: 'var(--primary)', fontSize: 10, fontWeight: 700, cursor: 'pointer',
                   }}>
                     {previewId === p.id ? '✕ Закрыть' : '👁 Просмотр'}
                   </button>
                 </div>
                 {previewId === p.id && (
-                  <div style={{ padding:14, borderRadius:12, marginBottom:10, background:'linear-gradient(135deg, rgba(192,38,211,0.05), rgba(0,0,0,0.2))', border:'1px solid rgba(192,38,211,0.15)', animation:'fadeIn 0.3s ease' }}>
+                  <div style={{ padding:14, borderRadius:12, marginBottom:10, background:'linear-gradient(135deg, rgba(192,192,192,0.05), rgba(0,0,0,0.2))', border:'1px solid rgba(192,192,192,0.15)', animation:'fadeIn 0.3s ease' }}>
                     <div style={{ fontSize:9, color:'var(--primary)', letterSpacing:1, fontWeight:700, marginBottom:8 }}>👁 ПРЕДПРОСМОТР (как в Telegram)</div>
                     {p.image_path && <img src={`${apiBase}${p.image_path}`} alt="" style={{ width:'100%', borderRadius:8, maxHeight:250, objectFit:'cover', marginBottom:10 }} />}
                     {p.title && <div style={{ fontSize:15, fontWeight:800, marginBottom:6 }}>{p.title}</div>}
@@ -3663,7 +3663,7 @@ function AmbassadorPosts({ posts, channels, onUpdate, showMsg }) {
                   <div style={{ fontSize:12, color:'var(--text-secondary)', marginBottom:8, lineHeight:1.4, maxHeight:40, overflow:'hidden' }}>{p.text}</div>
                 )}
                 <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:10 }}>
-                  <span style={{ fontSize:9, padding:'2px 6px', borderRadius:6, fontWeight:700, background: p.status==='published' ? 'rgba(192,38,211,0.15)' : 'rgba(251,191,36,0.15)', color: p.status==='published' ? 'var(--green)' : 'var(--orange)' }}>{p.status === 'published' ? '✅ Опубликован' : '📝 Черновик'}</span>
+                  <span style={{ fontSize:9, padding:'2px 6px', borderRadius:6, fontWeight:700, background: p.status==='published' ? 'rgba(192,192,192,0.15)' : 'rgba(251,191,36,0.15)', color: p.status==='published' ? 'var(--green)' : 'var(--orange)' }}>{p.status === 'published' ? '✅ Опубликован' : '📝 Черновик'}</span>
                   {p.published_at && <span style={{ fontSize:9, color:'var(--text-muted)' }}>{new Date(p.published_at).toLocaleString()}</span>}
                   {p.image_path && previewId !== p.id && <span style={{ fontSize:9, color:'var(--text-muted)' }}>📷 С картинкой</span>}
                 </div>
@@ -3758,7 +3758,7 @@ function PromoCodesPanel() {
       <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>Скидки на покупки в магазине</div>
 
       {msg && (<div style={{ padding: 10, borderRadius: 10, marginBottom: 12, fontSize: 12, fontWeight: 600,
-        background: msg.includes('✅') ? 'rgba(192,38,211,0.1)' : 'rgba(248,113,113,0.1)',
+        background: msg.includes('✅') ? 'rgba(192,192,192,0.1)' : 'rgba(248,113,113,0.1)',
         color: msg.includes('✅') ? 'var(--green)' : 'var(--red)',
       }}>{msg}</div>)}
 
@@ -3792,8 +3792,8 @@ function PromoCodesPanel() {
               for (let i = 0; i < 8; i++) r += chars[Math.floor(Math.random() * chars.length)];
               setCode(r);
             }} style={{
-              padding: '10px 14px', borderRadius: 10, border: '1px solid rgba(192,38,211,0.2)',
-              background: 'rgba(192,38,211,0.08)', color: 'var(--primary)',
+              padding: '10px 14px', borderRadius: 10, border: '1px solid rgba(192,192,192,0.2)',
+              background: 'rgba(192,192,192,0.08)', color: 'var(--primary)',
               fontSize: 16, cursor: 'pointer', fontWeight: 700, whiteSpace: 'nowrap',
             }} title="Сгенерировать случайный код">🎲</button>
           </div>
@@ -3831,7 +3831,7 @@ function PromoCodesPanel() {
             </div>
           </label>
           {code && (
-            <div style={{ padding: 10, borderRadius: 10, marginBottom: 12, background: 'rgba(192,38,211,0.06)', border: '1px solid rgba(192,38,211,0.15)' }}>
+            <div style={{ padding: 10, borderRadius: 10, marginBottom: 12, background: 'rgba(192,192,192,0.06)', border: '1px solid rgba(192,192,192,0.15)' }}>
               <div style={{ fontSize: 10, color: 'var(--green)', fontWeight: 700, marginBottom: 4 }}>ПРЕДПРОСМОТР</div>
               <div style={{ fontSize: 14, fontWeight: 800 }}>{code} — <span style={{ color: 'var(--green)' }}>-{discountPct}%</span>
                 {maxUses > 0 && <span style={{ fontSize: 11, color: 'var(--text-muted)' }}> (макс. {maxUses} исп.)</span>}
@@ -3867,17 +3867,17 @@ function PromoCodesPanel() {
                     background: 'rgba(59,130,246,0.15)', color: '#3b82f6' }}>🤝 Партнёр</span>
                 )}
                 <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 6, fontWeight: 700,
-                  background: p.is_active && !expired && !exhausted ? 'rgba(192,38,211,0.15)' : 'rgba(248,113,113,0.15)',
+                  background: p.is_active && !expired && !exhausted ? 'rgba(192,192,192,0.15)' : 'rgba(248,113,113,0.15)',
                   color: p.is_active && !expired && !exhausted ? 'var(--green)' : 'var(--red)',
                 }}>{!p.is_active ? '⏸ Неактивен' : expired ? '⏰ Истёк' : exhausted ? '🔢 Лимит' : '✅ Активен'}</span>
-                <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 6, background: 'rgba(192,38,211,0.1)', color: 'var(--primary)', fontWeight: 600 }}>
+                <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 6, background: 'rgba(192,192,192,0.1)', color: 'var(--primary)', fontWeight: 600 }}>
                   Исп: {p.used_count}{p.max_uses > 0 ? `/${p.max_uses}` : '/∞'}
                 </span>
                 {p.expires_at && <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 6, background: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)' }}>до {new Date(p.expires_at).toLocaleDateString()}</span>}
               </div>
               <div style={{ display: 'flex', gap: 6 }}>
                 <button onClick={() => toggle(p.id)} style={{ flex: 1, padding: 8, borderRadius: 8, border: 'none', fontWeight: 700, fontSize: 11, cursor: 'pointer',
-                  background: p.is_active ? 'rgba(251,191,36,0.1)' : 'rgba(192,38,211,0.1)', color: p.is_active ? 'var(--orange)' : 'var(--green)' }}>
+                  background: p.is_active ? 'rgba(251,191,36,0.1)' : 'rgba(192,192,192,0.1)', color: p.is_active ? 'var(--orange)' : 'var(--green)' }}>
                   {p.is_active ? '⏸ Выключить' : '▶ Включить'}
                 </button>
                 {p.used_count > 0 && (
@@ -3902,7 +3902,7 @@ function PromoCodesPanel() {
                         {u.username && <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>@{u.username}</div>}
                       </div>
                       <span style={{ fontSize: 8, padding: '2px 5px', borderRadius: 4, fontWeight: 700,
-                        background: u.source === 'purchase' ? 'rgba(192,38,211,0.15)' : u.source === 'broadcast' ? 'rgba(251,191,36,0.15)' : 'rgba(59,130,246,0.15)',
+                        background: u.source === 'purchase' ? 'rgba(192,192,192,0.15)' : u.source === 'broadcast' ? 'rgba(251,191,36,0.15)' : 'rgba(59,130,246,0.15)',
                         color: u.source === 'purchase' ? 'var(--green)' : u.source === 'broadcast' ? 'var(--orange)' : '#3b82f6',
                       }}>{u.source === 'purchase' ? '💰 Покупка' : u.source === 'broadcast' ? '📢 Рассылка' : '🤝 Амбассадор'}</span>
                       <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>{new Date(u.used_at).toLocaleDateString()}</div>
@@ -3990,7 +3990,7 @@ function DepositsPanel({ onGoToUser }) {
       <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
         <button onClick={() => setSubTab('completed')} style={{
           flex: 1, padding: '8px 6px', borderRadius: 10, border: 'none', fontSize: 11, fontWeight: 700, cursor: 'pointer',
-          background: subTab === 'completed' ? 'rgba(192,38,211,0.15)' : 'rgba(255,255,255,0.04)',
+          background: subTab === 'completed' ? 'rgba(192,192,192,0.15)' : 'rgba(255,255,255,0.04)',
           color: subTab === 'completed' ? 'var(--green)' : 'var(--text-muted)',
         }}>✅ Оплачено ({data.total})</button>
         <button onClick={() => setSubTab('pending')} style={{
@@ -4043,9 +4043,9 @@ function DepositsPanel({ onGoToUser }) {
                       <span style={{ fontSize: 9, color: 'var(--text-muted)', textDecoration: 'line-through' }}>{fmt(d.original_price, 4)}</span>
                     )}
                     <span style={{ fontSize: 10, color: 'var(--primary)' }}>⚡ +{fmtK(d.power_amount)}</span>
-                    {d.package_name && <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 6, background: 'rgba(192,38,211,0.1)', color: 'var(--primary)', fontWeight: 600 }}>📦 {d.package_name}</span>}
+                    {d.package_name && <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 6, background: 'rgba(192,192,192,0.1)', color: 'var(--primary)', fontWeight: 600 }}>📦 {d.package_name}</span>}
                     {d.promo_code && (
-                      <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 6, background: 'rgba(192,38,211,0.12)', color: 'var(--green)', fontWeight: 700 }}>
+                      <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 6, background: 'rgba(192,192,192,0.12)', color: 'var(--green)', fontWeight: 700 }}>
                         🎟️ {d.promo_code} -{d.promo_discount}%
                       </span>
                     )}
@@ -4056,7 +4056,7 @@ function DepositsPanel({ onGoToUser }) {
                   </div>
                 </div>
                 {onGoToUser && <button onClick={() => onGoToUser(d.tg_id)} style={{
-                  background: 'rgba(192,38,211,0.1)', border: 'none', borderRadius: 8,
+                  background: 'rgba(192,192,192,0.1)', border: 'none', borderRadius: 8,
                   padding: '6px 10px', color: 'var(--primary)', fontSize: 10, fontWeight: 700, cursor: 'pointer', flexShrink: 0, marginLeft: 8,
                 }}>👤</button>}
               </div>
@@ -4103,14 +4103,14 @@ function DepositsPanel({ onGoToUser }) {
               return (
                 <div key={p.id} className="card" style={{
                   padding: 12, animation: `fadeIn 0.2s ease ${i * 0.03}s both`,
-                  border: isCompleted ? '1px solid rgba(192,38,211,0.25)' : isExpired ? '1px solid rgba(248,113,113,0.2)' : '1px solid rgba(251,191,36,0.25)',
+                  border: isCompleted ? '1px solid rgba(192,192,192,0.25)' : isExpired ? '1px solid rgba(248,113,113,0.2)' : '1px solid rgba(251,191,36,0.25)',
                   opacity: isExpired ? 0.5 : 1,
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, flexWrap: 'wrap' }}>
                         <span style={{ fontSize: 13, fontWeight: 800 }}>{p.first_name || p.username || 'Noname'}</span>
-                        {isCompleted && <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 4, background: 'rgba(192,38,211,0.15)', color: 'var(--green)', fontWeight: 700 }}>✅ PAID</span>}
+                        {isCompleted && <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 4, background: 'rgba(192,192,192,0.15)', color: 'var(--green)', fontWeight: 700 }}>✅ PAID</span>}
                         {isExpired && <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 4, background: 'var(--red-bg)', color: 'var(--red)', fontWeight: 700 }}>⏰ EXPIRED</span>}
                         {!isCompleted && !isExpired && tl && <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 4, background: 'rgba(251,191,36,0.15)', color: '#f59e0b', fontWeight: 700 }}>⏳ {tl}</span>}
                         <span style={{ fontSize: 9, color: 'var(--text-muted)', marginLeft: 'auto' }}>{timeAgo(p.created_at)}</span>
@@ -4120,7 +4120,7 @@ function DepositsPanel({ onGoToUser }) {
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                         <span style={{ fontSize: 13, fontWeight: 900, color: isCompleted ? 'var(--green)' : '#f59e0b' }}>{fmt(p.ton_amount, 4)} TON</span>
-                        {p.package_name && <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 6, background: 'rgba(192,38,211,0.1)', color: 'var(--primary)', fontWeight: 600 }}>📦 {p.package_name}</span>}
+                        {p.package_name && <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 6, background: 'rgba(192,192,192,0.1)', color: 'var(--primary)', fontWeight: 600 }}>📦 {p.package_name}</span>}
                         <span style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'monospace' }}>memo: {p.memo}</span>
                       </div>
                       <div style={{ display: 'flex', gap: 10, marginTop: 4, fontSize: 9, color: 'var(--text-muted)' }}>
@@ -4129,7 +4129,7 @@ function DepositsPanel({ onGoToUser }) {
                       </div>
                     </div>
                     {onGoToUser && <button onClick={() => onGoToUser(p.tg_id)} style={{
-                      background: 'rgba(192,38,211,0.1)', border: 'none', borderRadius: 8,
+                      background: 'rgba(192,192,192,0.1)', border: 'none', borderRadius: 8,
                       padding: '6px 10px', color: 'var(--primary)', fontSize: 10, fontWeight: 700, cursor: 'pointer', flexShrink: 0, marginLeft: 8,
                     }}>👤</button>}
                   </div>
@@ -4231,7 +4231,7 @@ function AdminActivityPanel() {
         {logs.map((l, i) => (
           <div key={l.id} className="card" style={{
             padding: '8px 12px', animation: `fadeIn 0.15s ease ${i * 0.02}s both`,
-            borderLeft: l.action === 'view_tab' ? '3px solid rgba(192,38,211,0.3)' : '3px solid rgba(192,38,211,0.3)',
+            borderLeft: l.action === 'view_tab' ? '3px solid rgba(192,192,192,0.3)' : '3px solid rgba(192,192,192,0.3)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontSize: 14 }}>{actionIcon(l.action)}</span>

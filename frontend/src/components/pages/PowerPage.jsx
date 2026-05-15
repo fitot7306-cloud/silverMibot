@@ -6,10 +6,10 @@ import { useInterstitialAd } from '../../hooks/useInterstitialAd.js';
 import api from '../../utils/api.js';
 
 const LANGS = [
-  { code: 'en', label: 'EN' },
-  { code: 'ru', label: 'RU' },
-  { code: 'uk', label: 'UA' },
-  { code: 'ar', label: 'AR' },
+  { code: 'en', label: '🇬🇧' },
+  { code: 'ru', label: '🇷🇺' },
+  { code: 'uk', label: '🇺🇦' },
+  { code: 'ar', label: '🇸🇦' },
 ];
 
 export default function PowerPage() {
@@ -84,64 +84,45 @@ export default function PowerPage() {
   const hashesPerDay = mining?.hashes_per_day || 0;
   const tonPerDay = mining?.ton_per_day || 0;
   const tonPerMonth = mining?.ton_per_month || 0;
-  
-  const progressPct = Math.min((liveHashes / Math.max(hashesPerDay || 1, 1)) * 100, 100);
 
   return (
     <div className="page" style={{ position: 'relative' }}>
       
-      {/* ── Top Navigation ── */}
+      {/* ── Silver Header ── */}
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        marginBottom: 24, padding: '0 4px'
+        marginBottom: 24, paddingBottom: 12, borderBottom: '1px solid var(--border)'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{
-            width: 44, height: 44, borderRadius: 16,
-            background: 'linear-gradient(135deg, rgba(192, 38, 211, 0.2), rgba(6, 182, 212, 0.2))',
-            border: '1px solid rgba(255,255,255,0.1)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 0 20px rgba(192, 38, 211, 0.3), inset 0 0 10px rgba(6, 182, 212, 0.2)',
-            fontSize: 20
-          }}>✨</div>
-          <div>
-            <div style={{
-              fontSize: 20, fontWeight: 800, letterSpacing: 0.5,
-              background: 'linear-gradient(135deg, #fff, var(--secondary-light))',
-              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-            }}>{t('power.brand', 'SilverMibot')}</div>
-            <div style={{ fontSize: 11, color: 'var(--secondary)', letterSpacing: 1, textTransform: 'uppercase', fontWeight: 700 }}>
-              {t('power.subtitle', 'Deep Space')}
-            </div>
-          </div>
+        <div>
+          <div className="text-silver" style={{
+            fontSize: 22, fontWeight: 900, letterSpacing: 1,
+            textTransform: 'uppercase'
+          }}>{t('power.brand', 'SilverMibot')}</div>
+          <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2 }}>{t('power.subtitle', 'Platinum Edition')}</div>
         </div>
-        
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           {isAdmin && (
-            <button onClick={() => setTab('admin')} className="lang-btn" style={{ padding: '8px', borderRadius: '50%', width: 38, height: 38, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              🛡️
-            </button>
+            <button onClick={() => setTab('admin')} style={{
+              background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)',
+              borderRadius: 8, width: 34, height: 34, cursor: 'pointer',
+              fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}>⚙️</button>
           )}
           <div style={{ position: 'relative' }}>
-            <button onClick={() => setShowLang(!showLang)} className="lang-btn" style={{ borderRadius: 14 }}>
-              {LANGS.find(l => l.code === i18n.language)?.label || 'EN'} ▾
+            <button onClick={() => setShowLang(!showLang)} className="lang-btn">
+              {LANGS.find(l => l.code === i18n.language)?.label || '🌐'}
             </button>
             {showLang && (
               <div style={{
                 position: 'absolute', top: 'calc(100% + 8px)', right: 0,
-                background: 'rgba(11, 17, 32, 0.95)', backdropFilter: 'blur(20px)',
-                border: '1px solid rgba(192, 38, 211, 0.2)', borderRadius: 16,
-                padding: 6, zIndex: 100, minWidth: 80,
-                boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
-                display: 'flex', flexDirection: 'column', gap: 2,
-                animation: 'fadeIn 0.2s ease'
+                background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+                borderRadius: 10, padding: 4, zIndex: 100, minWidth: 50,
+                boxShadow: '0 10px 20px rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column', gap: 2
               }}>
                 {LANGS.map(l => (
                   <button key={l.code} onClick={() => changeLang(l.code)} style={{
-                    padding: '10px 12px', background: i18n.language === l.code ? 'rgba(192, 38, 211, 0.15)' : 'transparent',
-                    border: 'none', borderRadius: 10, fontSize: 13, cursor: 'pointer',
-                    textAlign: 'left', transition: 'var(--transition)', fontWeight: 700,
-                    color: i18n.language === l.code ? '#fff' : 'var(--text-muted)'
+                    padding: '8px', background: i18n.language === l.code ? 'rgba(255,255,255,0.1)' : 'transparent',
+                    border: 'none', borderRadius: 6, fontSize: 16, cursor: 'pointer'
                   }}>{l.label}</button>
                 ))}
               </div>
@@ -150,173 +131,110 @@ export default function PowerPage() {
         </div>
       </div>
 
-      {/* ── Main Dashboard Hub ── */}
-      <div className="card" style={{ marginBottom: 20, padding: 0, borderRadius: 28, overflow: 'hidden' }}>
-        
-        {/* Top half: Balance & Power */}
-        <div style={{ padding: '24px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-            <div onClick={() => showAdThen(() => setTab('withdraw'))} style={{ cursor: 'pointer' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--secondary)', boxShadow: '0 0 10px var(--secondary)' }} />
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' }}>{t('power.balance')}</div>
-              </div>
-              <div style={{ fontSize: 26, fontWeight: 800, color: '#fff', letterSpacing: -0.5 }}>
-                {fmt(tonBalance, 4)} <span style={{ fontSize: 14, color: 'var(--secondary)' }}>TON</span>
-              </div>
-            </div>
-            
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--primary)', boxShadow: '0 0 10px var(--primary)' }} />
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' }}>POWER</div>
-              </div>
-              <div className="text-gradient" style={{ fontSize: 26, fontWeight: 800, letterSpacing: -0.5 }}>
-                {fmtK(Math.floor(power))} <span style={{ fontSize: 14, color: 'var(--primary-light)' }}>GH/s</span>
-              </div>
-            </div>
+      {/* ── Balance Card ── */}
+      <div className="card" onClick={() => showAdThen(() => setTab('withdraw'))} style={{
+        marginBottom: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '24px 20px'
+      }}>
+        <div>
+          <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 1.5, marginBottom: 4, textTransform: 'uppercase' }}>{t('power.balance')}</div>
+          <div style={{ fontSize: 32, fontWeight: 800, color: '#fff' }}>
+            {fmt(tonBalance, 4)} <span style={{ fontSize: 14, color: 'var(--primary)', fontWeight: 500 }}>TON</span>
           </div>
         </div>
-        
-        {/* Bottom half: Mining Display */}
-        <div style={{ padding: '24px 20px', position: 'relative' }}>
-          {power > 0 && (
-            <div style={{
-              position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-              width: '100%', height: '100%',
-              background: 'radial-gradient(circle at center, rgba(192, 38, 211, 0.08) 0%, transparent 70%)',
-              pointerEvents: 'none'
-            }} />
-          )}
-          
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <div style={{ fontSize: 13, fontWeight: 700 }}>{t('power.mined')}</div>
-            {power > 0 && (
-              <div style={{
-                fontSize: 10, fontWeight: 700, color: 'var(--secondary)',
-                padding: '4px 10px', borderRadius: 12, background: 'rgba(6, 182, 212, 0.1)',
-                border: '1px solid rgba(6, 182, 212, 0.2)', display: 'flex', alignItems: 'center', gap: 6
-              }}>
-                <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--secondary)', animation: 'blink 1.5s infinite' }} />
-                {t('power.mining_active', 'Active')}
-              </div>
-            )}
-          </div>
-          
-          {/* Neon Progress Bar */}
-          <div style={{ marginBottom: 12, position: 'relative' }}>
-            <div style={{ height: 6, background: 'rgba(255,255,255,0.05)', borderRadius: 3, overflow: 'hidden' }}>
-              <div style={{
-                height: '100%', width: `${progressPct}%`,
-                background: 'linear-gradient(90deg, var(--primary), var(--secondary))',
-                borderRadius: 3, boxShadow: '0 0 10px var(--primary)',
-                transition: 'width 1s linear'
-              }} />
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>
-              <span>0</span>
-              <span>{hashesPerDay.toFixed(1)} {t('power.h_per_day')}</span>
-            </div>
-          </div>
-          
-          <div style={{ textAlign: 'center', margin: '24px 0' }}>
-            <div style={{
-              fontSize: 42, fontWeight: 800, fontFamily: "'Plus Jakarta Sans', monospace",
-              color: '#fff', textShadow: '0 0 20px rgba(255,255,255,0.2)', letterSpacing: -1
-            }}>
-              {liveHashes.toFixed(8)}
-            </div>
-            <div style={{ fontSize: 14, color: 'var(--secondary-light)', fontWeight: 600, marginTop: 4 }}>
-              ≈ {(liveHashes * (mining?.ton_per_hash || 0)).toFixed(8)} TON
-            </div>
-          </div>
-
-          {collected !== null && (
-            <div style={{
-              background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)',
-              borderRadius: 12, padding: '12px', marginBottom: 16,
-              color: 'var(--green)', fontWeight: 700, textAlign: 'center', fontSize: 13,
-            }}>
-              {t('power.collected_success', { amount: fmt(collected, 6) })}
-            </div>
-          )}
-          
-          <button
-            className="btn-primary"
-            onClick={handleCollectAndWithdraw}
-            disabled={collecting || (liveHashes <= 0 && tonBalance <= 0)}
-            style={{ borderRadius: 16, padding: '18px', fontSize: 16 }}
-          >
-            {collecting ? t('power.exchanging') : t('power.exchange_btn')}
-          </button>
-        </div>
+        <div style={{
+          width: 44, height: 44, borderRadius: '50%', background: 'rgba(255,255,255,0.03)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, border: '1px solid var(--border)'
+        }}>💰</div>
       </div>
 
-      {/* ── Grid Layout ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
-        
-        {/* Forecast Box */}
-        <div className="card" style={{ gridColumn: '1 / -1', padding: '20px 24px', borderRadius: 24 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 16 }}>
-            Forecast
+      {/* ── Main Action Card ── */}
+      <div className="card" style={{ marginBottom: 20, padding: '24px 20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+          <div style={{
+            width: 40, height: 40, borderRadius: 10, background: 'var(--silver-gradient)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: '#000'
+          }}>⚡</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 14, fontWeight: 700 }}>{t('power.mined', 'Mining Status')}</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{hashesPerDay.toFixed(1)} {t('power.h_per_day')}</div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>{t('power.day')}</div>
-              <div style={{ fontSize: 16, fontWeight: 800, color: '#fff' }}>{fmt(tonPerDay, 5)} <span style={{fontSize:10, color:'var(--text-muted)'}}>TON</span></div>
-            </div>
-            <div style={{ width: 1, height: 30, background: 'rgba(255,255,255,0.1)' }} />
-            <div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>{t('power.month')}</div>
-              <div style={{ fontSize: 16, fontWeight: 800, color: '#fff' }}>{fmt(tonPerMonth, 4)} <span style={{fontSize:10, color:'var(--text-muted)'}}>TON</span></div>
-            </div>
-            <div style={{ width: 1, height: 30, background: 'rgba(255,255,255,0.1)' }} />
-            <div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>{t('power.three_months')}</div>
-              <div style={{ fontSize: 16, fontWeight: 800, color: '#fff' }}>{fmt(mining?.ton_per_3months, 3)} <span style={{fontSize:10, color:'var(--text-muted)'}}>TON</span></div>
-            </div>
+          {power > 0 && (
+            <div style={{
+              fontSize: 10, color: 'var(--green)', background: 'rgba(74, 222, 128, 0.1)',
+              padding: '4px 10px', borderRadius: 20, border: '1px solid rgba(74, 222, 128, 0.2)',
+              fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5
+            }}>• {t('power.mining_active', 'Active')}</div>
+          )}
+        </div>
+
+        <div style={{ textAlign: 'center', marginBottom: 24 }}>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 8 }}>POWER: {fmtK(Math.floor(power))} GH/s</div>
+          <div className="text-silver" style={{
+            fontSize: 40, fontWeight: 900, letterSpacing: -1, fontFamily: 'monospace'
+          }}>
+            {liveHashes.toFixed(8)}
+          </div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+             ≈ {(liveHashes * (mining?.ton_per_hash || 0)).toFixed(8)} TON
           </div>
         </div>
 
-        {/* Shop Button */}
-        <button onClick={() => setTab('shop')} style={{
-          background: 'rgba(192, 38, 211, 0.05)', border: '1px solid rgba(192, 38, 211, 0.2)',
-          borderRadius: 20, padding: '20px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12,
-          cursor: 'pointer', transition: 'var(--transition)'
-        }}>
-          <div style={{ width: 48, height: 48, borderRadius: 16, background: 'linear-gradient(135deg, var(--primary), var(--secondary))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, boxShadow: '0 8px 20px rgba(192,38,211,0.3)' }}>
-            ⚡
+        {collected !== null && (
+          <div style={{
+            background: 'rgba(74, 222, 128, 0.05)', border: '1px solid rgba(74, 222, 128, 0.2)',
+            borderRadius: 10, padding: 12, marginBottom: 16, color: 'var(--green)',
+            fontWeight: 700, textAlign: 'center', fontSize: 13
+          }}>
+            {t('power.collected_success', { amount: fmt(collected, 6) })}
           </div>
-          <div style={{ fontSize: 14, fontWeight: 800, color: '#fff' }}>{t('power.buy_power')}</div>
-        </button>
+        )}
 
-        {/* Tasks Button */}
-        <button onClick={() => setTab('tasks')} style={{
-          background: 'rgba(6, 182, 212, 0.05)', border: '1px solid rgba(6, 182, 212, 0.2)',
-          borderRadius: 20, padding: '20px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12,
-          cursor: 'pointer', transition: 'var(--transition)'
-        }}>
-          <div style={{ width: 48, height: 48, borderRadius: 16, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(6, 182, 212, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>
-            🎁
+        <button
+          className="btn-primary"
+          onClick={handleCollectAndWithdraw}
+          disabled={collecting || (liveHashes <= 0 && tonBalance <= 0)}
+        >
+          {collecting ? t('power.exchanging') : t('power.exchange_btn')}
+        </button>
+      </div>
+
+      {/* ── Forecast Info ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 20 }}>
+        {[
+          { label: t('power.day'), val: fmt(tonPerDay, 4), icon: '🕒' },
+          { label: t('power.month'), val: fmt(tonPerMonth, 3), icon: '📅' },
+          { label: '90D', val: fmt(mining?.ton_per_3months, 2), icon: '📈' }
+        ].map((item, i) => (
+          <div key={i} className="stat-pill">
+            <div style={{ fontSize: 12, marginBottom: 4 }}>{item.icon}</div>
+            <div style={{ fontSize: 14, fontWeight: 800 }}>{item.val}</div>
+            <div style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>{item.label}</div>
           </div>
-          <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--secondary)' }}>{t('power.free_power')}</div>
+        ))}
+      </div>
+
+      {/* ── Quick Actions ── */}
+      <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
+        <button onClick={() => setTab('shop')} className="btn-primary" style={{ flex: 1, padding: '16px' }}>
+          🛒 {t('power.buy_power')}
+        </button>
+        <button onClick={() => setTab('tasks')} className="btn-outline" style={{ flex: 1, padding: '16px' }}>
+          🎁 {t('power.free_power')}
         </button>
       </div>
 
       {ambassadorVisible && (
-        <button onClick={() => setTab('ambassador')} style={{
-          width: '100%', padding: '16px 20px',
-          borderRadius: 20, border: '1px solid rgba(139, 92, 246, 0.2)',
-          background: 'rgba(139, 92, 246, 0.05)',
-          display: 'flex', alignItems: 'center', gap: 16, cursor: 'pointer',
+        <div className="card" onClick={() => setTab('ambassador')} style={{
+          cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, padding: '16px'
         }}>
-          <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(139, 92, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>🤝</div>
-          <div style={{ flex: 1, textAlign: 'left' }}>
-            <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--accent-light)' }}>{t('power.ambassador', 'Амбассадор')}</div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 500, marginTop: 2 }}>{t('power.ambassador_desc', 'Стань партнёром')}</div>
+          <div style={{ fontSize: 20 }}>🤝</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 13, fontWeight: 700 }}>{t('power.ambassador')}</div>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{t('power.ambassador_desc')}</div>
           </div>
-          <span style={{ color: 'var(--text-muted)', fontSize: 18 }}>→</span>
-        </button>
+          <div style={{ color: 'var(--text-muted)' }}>›</div>
+        </div>
       )}
 
     </div>

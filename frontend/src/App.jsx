@@ -78,7 +78,7 @@ export default function App() {
         padding: 32, textAlign: 'center', gap: 16
       }}>
         <div style={{
-          fontSize: 56, filter: 'drop-shadow(0 0 20px rgba(192,38,211,0.4))',
+          fontSize: 56, filter: 'drop-shadow(0 0 20px rgba(192,192,192,0.4))',
           animation: 'pulse 3s ease-in-out infinite'
         }}>📱</div>
         <div style={{

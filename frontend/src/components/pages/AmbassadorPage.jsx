@@ -107,7 +107,7 @@ export default function AmbassadorPage() {
           <button key={tab.id} onClick={() => setSubTab(tab.id)} style={{
             flex: 1, padding: '10px 8px', borderRadius: 12, border: 'none',
             background: subTab === tab.id
-              ? 'linear-gradient(135deg, rgba(192,38,211,0.15), rgba(192,38,211,0.05))'
+              ? 'linear-gradient(135deg, rgba(192,192,192,0.15), rgba(192,192,192,0.05))'
               : 'var(--bg-card)',
             color: subTab === tab.id ? 'var(--primary)' : 'var(--text-muted)',
             fontWeight: 700, fontSize: 12, cursor: 'pointer',
@@ -121,7 +121,7 @@ export default function AmbassadorPage() {
       {msg && (
         <div style={{
           padding: '12px 16px', borderRadius: 12, marginBottom: 14,
-          background: msg.includes('❌') ? 'rgba(248,113,113,0.1)' : 'rgba(192,38,211,0.1)',
+          background: msg.includes('❌') ? 'rgba(248,113,113,0.1)' : 'rgba(192,192,192,0.1)',
           color: msg.includes('❌') ? 'var(--red)' : 'var(--green)',
           fontSize: 13, fontWeight: 600, textAlign: 'center',
           animation: 'fadeIn 0.3s ease',
@@ -149,12 +149,12 @@ export default function AmbassadorPage() {
                 <div key={i} className="card" style={{
                   padding: '14px 16px',
                   animation: `fadeIn 0.3s ease ${i * 0.05}s both`,
-                  border: '1px solid rgba(192,38,211,0.15)',
+                  border: '1px solid rgba(192,192,192,0.15)',
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <div style={{
                       width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
-                      background: 'linear-gradient(135deg, rgba(192,38,211,0.15), rgba(59,130,246,0.1))',
+                      background: 'linear-gradient(135deg, rgba(192,192,192,0.15), rgba(59,130,246,0.1))',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20,
                     }}>📢</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -175,8 +175,8 @@ export default function AmbassadorPage() {
                   {amb.promo_code && (
                     <div style={{
                       marginTop: 10, padding: '8px 12px', borderRadius: 10,
-                      background: 'rgba(192,38,211,0.06)',
-                      border: '1px dashed rgba(192,38,211,0.2)',
+                      background: 'rgba(192,192,192,0.06)',
+                      border: '1px dashed rgba(192,192,192,0.2)',
                       display: 'flex', alignItems: 'center', gap: 8,
                     }}>
                       <span style={{ fontSize: 16 }}>🎟</span>
@@ -212,8 +212,8 @@ export default function AmbassadorPage() {
           {/* Benefits */}
           <div className="card" style={{
             padding: 18, marginBottom: 16,
-            background: 'linear-gradient(135deg, rgba(192,38,211,0.08), rgba(192,38,211,0.04))',
-            border: '1px solid rgba(192,38,211,0.2)',
+            background: 'linear-gradient(135deg, rgba(192,192,192,0.08), rgba(192,192,192,0.04))',
+            border: '1px solid rgba(192,192,192,0.2)',
           }}>
             <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--green)', marginBottom: 12 }}>
               🎁 {t('ambassador.benefits_title', 'Что вы получаете?')}
@@ -228,7 +228,7 @@ export default function AmbassadorPage() {
                 <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                   <div style={{
                     width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
-                    background: 'rgba(192,38,211,0.12)',
+                    background: 'rgba(192,192,192,0.12)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16,
                   }}>{s.icon}</div>
                   <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, paddingTop: 6 }}>
@@ -242,8 +242,8 @@ export default function AmbassadorPage() {
           {/* How it works */}
           <div className="card" style={{
             padding: 18, marginBottom: 16,
-            background: 'linear-gradient(135deg, rgba(192,38,211,0.08), rgba(192,38,211,0.02))',
-            border: '1px solid rgba(192,38,211,0.2)',
+            background: 'linear-gradient(135deg, rgba(192,192,192,0.08), rgba(192,192,192,0.02))',
+            border: '1px solid rgba(192,192,192,0.2)',
           }}>
             <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--primary)', marginBottom: 10 }}>
               ✨ {t('ambassador.how_title', 'Как это работает?')}
@@ -259,7 +259,7 @@ export default function AmbassadorPage() {
                 <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                   <div style={{
                     width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
-                    background: 'rgba(192,38,211,0.12)',
+                    background: 'rgba(192,192,192,0.12)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16,
                   }}>{s.icon}</div>
                   <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, paddingTop: 6 }}>
@@ -354,7 +354,7 @@ export default function AmbassadorPage() {
                     padding: '14px 16px',
                     animation: `fadeIn 0.3s ease ${i * 0.05}s both`,
                     border: ch.status === 'approved'
-                      ? '1px solid rgba(192,38,211,0.3)'
+                      ? '1px solid rgba(192,192,192,0.3)'
                       : ch.status === 'rejected'
                       ? '1px solid rgba(248,113,113,0.3)'
                       : '1px solid var(--border)',
@@ -364,7 +364,7 @@ export default function AmbassadorPage() {
                         <div style={{
                           width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
                           background: ch.status === 'approved'
-                            ? 'rgba(192,38,211,0.12)'
+                            ? 'rgba(192,192,192,0.12)'
                             : ch.status === 'rejected'
                             ? 'rgba(248,113,113,0.12)'
                             : 'rgba(251,191,36,0.12)',
