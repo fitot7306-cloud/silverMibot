@@ -37,6 +37,10 @@
     "creating_order": "⏳ جارٍ إنشاء الطلب...",
     "confirm_buy": "شراء {{power}} POWER بـ {{price}} TON؟",
     "order_error": "خطأ في إنشاء الطلب",
+    "promo_label": "رمز ترويجي",
+    "promo_placeholder": "أدخل الرمز",
+    "promo_applied": "تم تطبيق الخصم",
+    "promo_invalid": "رمز غير صالح",
     "badge_hit": "🔥 رائج",
     "badge_top": "👑 الأفضل"
   },

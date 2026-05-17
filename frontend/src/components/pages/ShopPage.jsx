@@ -9,6 +9,9 @@ export default function ShopPage() {
   const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [paymentData, setPaymentData] = useState(null);
+  const [promoCode, setPromoCode] = useState('');
+  const [promoResult, setPromoResult] = useState(null);
+  const [promoChecking, setPromoChecking] = useState(false);
   const { refreshUser } = useStore();
   const { t } = useTranslation();
 
@@ -28,6 +31,17 @@ export default function ShopPage() {
     } catch (e) {}
   };
 
+  const validatePromo = async () => {
+    if (!promoCode.trim()) return;
+    setPromoChecking(true);
+    try {
+      const { data } = await api.post('/shop/validate-promo', { code: promoCode });
+      setPromoResult(data);
+    } catch (e) {
+      setPromoResult({ valid: false, error: e.response?.data?.error || 'Invalid' });
+    } finally { setPromoChecking(false); }
+  };
+
   const handleBuy = async (pkg) => {
     const tg = window.Telegram?.WebApp;
     const confirmText = t('shop.confirm_buy', { power: fmtK(pkg.power_amount), price: pkg.price_ton });
@@ -38,7 +52,7 @@ export default function ShopPage() {
     if (!confirmed) return;
     setLoading(true);
     try {
-      const { data } = await api.post('/shop/create-order', { package_id: pkg.id });
+      const { data } = await api.post('/shop/create-order', { package_id: pkg.id, promo_code: promoResult?.valid ? promoCode : undefined });
       setPaymentData({ order: data.order, pkg: data.package, wallet: data.wallet, expiresAt: data.expires_at });
     } catch (e) {
       const tg = window.Telegram?.WebApp;
@@ -55,12 +69,48 @@ export default function ShopPage() {
 
   return (
     <div className="page">
-      <div style={{ marginBottom: 22 }}>
+      <div style={{ marginBottom: 14 }}>
         <div className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ fontSize: 22, filter: 'drop-shadow(0 0 6px rgba(192,192,192,0.3))' }}>⚡</span>
           {t('shop.title')}
         </div>
         <div className="page-subtitle">{t('shop.subtitle')}</div>
+      </div>
+
+      {/* Promo Code */}
+      <div className="card" style={{ marginBottom: 14, padding: '16px' }}>
+        <div style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8, fontWeight: 600 }}>
+          {t('shop.promo_label', 'ПРОМОКОД')}
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <input
+            type="text" value={promoCode}
+            onChange={e => { setPromoCode(e.target.value.toUpperCase()); setPromoResult(null); }}
+            placeholder={t('shop.promo_placeholder', 'Введите код')}
+            style={{ flex: 1, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 700, fontSize: 14 }}
+          />
+          <button onClick={validatePromo} disabled={promoChecking || !promoCode.trim()} style={{
+            background: 'var(--silver-gradient)', border: 'none', borderRadius: 10,
+            padding: '0 18px', fontWeight: 800, fontSize: 12, color: '#0a0c10',
+            cursor: 'pointer', flexShrink: 0, letterSpacing: 0.5,
+            opacity: promoChecking || !promoCode.trim() ? 0.5 : 1
+          }}>
+            {promoChecking ? '⏳' : '✓'}
+          </button>
+        </div>
+        {promoResult && (
+          <div style={{
+            marginTop: 8, fontSize: 12, fontWeight: 700, padding: '6px 12px', borderRadius: 8,
+            background: promoResult.valid ? 'rgba(74,222,128,0.1)' : 'rgba(239,68,68,0.1)',
+            color: promoResult.valid ? '#4ade80' : '#ef4444',
+            border: `1px solid ${promoResult.valid ? 'rgba(74,222,128,0.2)' : 'rgba(239,68,68,0.2)'}`
+          }}>
+            {promoResult.valid
+              ? `✅ -${promoResult.discount_pct}% ${t('shop.promo_applied', 'скидка применена')}`
+              : `❌ ${promoResult.error || t('shop.promo_invalid', 'Неверный код')}`
+            }
+          </div>
+        )}
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>

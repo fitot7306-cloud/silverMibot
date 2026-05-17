@@ -37,6 +37,10 @@
     "creating_order": "⏳ Создаём заказ...",
     "confirm_buy": "Купить {{power}} POWER за {{price}} TON?",
     "order_error": "Ошибка создания заказа",
+    "promo_label": "ПРОМОКОД",
+    "promo_placeholder": "Введите код",
+    "promo_applied": "скидка применена",
+    "promo_invalid": "Неверный код",
     "badge_hit": "🔥 Хит",
     "badge_top": "👑 Топ"
   },

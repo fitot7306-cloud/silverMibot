@@ -5,13 +5,13 @@ import { useTranslation } from 'react-i18next';
 export default function BottomNav() {
   const { activeTab, setTab } = useStore();
   const { t } = useTranslation();
-  const isHidden = activeTab === 'withdraw' || activeTab === 'admin' || activeTab === 'ambassador';
+  const isHidden = activeTab === 'withdraw' || activeTab === 'admin';
 
   if (isHidden) return null;
 
   const tabs = [
     { id: 'shop', label: t('nav.shop', 'Магазин'), icon: '🛒' },
-    { id: 'rating', label: t('nav.rating', 'Рейтинг'), icon: '🏆' },
+    { id: 'ambassador', label: t('nav.ambassador', 'Партнёр'), icon: '🤝' },
     { id: 'power', label: t('nav.mining', 'Майнинг'), icon: '⚡' },
     { id: 'team', label: t('nav.team', 'Команда'), icon: '👥' },
     { id: 'tasks', label: t('nav.tasks', 'Задания'), icon: '📋' },

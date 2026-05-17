@@ -37,6 +37,10 @@
     "creating_order": "⏳ Creating order...",
     "confirm_buy": "Buy {{power}} POWER for {{price}} TON?",
     "order_error": "Error creating order",
+    "promo_label": "PROMO CODE",
+    "promo_placeholder": "Enter code",
+    "promo_applied": "discount applied",
+    "promo_invalid": "Invalid code",
     "badge_hit": "🔥 Hot",
     "badge_top": "👑 Top"
   },
