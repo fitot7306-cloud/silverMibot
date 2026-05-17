@@ -124,8 +124,6 @@ router.post('/verify-pin', async (req, res) => {
   const { pin } = req.body || {};
   const correctPin = process.env.ADMIN_PIN || '1234';
 
-  console.log(`[Admin] PIN attempt: received="${pin}" expected="${correctPin}" match=${String(pin) === String(correctPin)} tg:${tgId}`);
-
   if (!pin || String(pin) !== String(correctPin)) {
     // Track failed attempt
     const current = pinAttempts.get(tgId) || { count: 0 };
