@@ -9,7 +9,7 @@ export default function PowerPage() {
   const { user, mining, fetchMining, collect, setTab } = useStore();
   const { t, i18n } = useTranslation();
   const { showAdThen: monetagShowAd } = useInterstitialAd();
-  const [gestureHint, setGestureHint] = useState(null);
+
 
   // Secret admin access: tap logo 5 times quickly (like Android dev mode)
   const tapCountRef = React.useRef(0);
@@ -26,26 +26,13 @@ export default function PowerPage() {
     if (tapCountRef.current >= 5) {
       tapCountRef.current = 0;
       checkingRef.current = true;
-      setGestureHint('🔍');
       try {
         const { data } = await api.get('/admin/check-admin');
         if (data.isAdmin) {
-          setGestureHint('✅');
-          setTimeout(() => { setGestureHint(null); setTab('admin'); }, 400);
-        } else {
-          setGestureHint('❌');
-          setTimeout(() => setGestureHint(null), 1200);
+          setTab('admin');
         }
-      } catch (e) {
-        setGestureHint('❌');
-        setTimeout(() => setGestureHint(null), 1200);
-      } finally {
-        checkingRef.current = false;
-      }
-    } else if (tapCountRef.current >= 3) {
-      // Subtle hint after 3 taps
-      setGestureHint(`${5 - tapCountRef.current}`);
-      setTimeout(() => setGestureHint(null), 800);
+      } catch (e) {}
+      finally { checkingRef.current = false; }
     }
   }, [setTab]);
 
@@ -99,15 +86,6 @@ export default function PowerPage() {
           <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 0.5 }}>Cloud Mining</div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          {/* Gesture hint indicator */}
-          {gestureHint && (
-            <div style={{
-              width: 38, height: 38, borderRadius: 10,
-              background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 16, animation: 'fadeIn 0.2s ease',
-            }}>{gestureHint}</div>
-          )}
           <button onClick={() => {
             const langs = ['ru', 'en', 'uk', 'ar'];
             const flags = { ru: '🇷🇺', en: '🇬🇧', uk: '🇺🇦', ar: '🇸🇦' };
