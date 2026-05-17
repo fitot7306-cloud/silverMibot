@@ -31,6 +31,21 @@ export default function AdminPage() {
   const [pinError, setPinError] = useState(false);
   const [pinLoading, setPinLoading] = useState(false);
 
+  // Filter tabs by permissions (must be before conditional return for hooks)
+  const visibleTabs = adminPerms === '*'
+    ? ALL_TABS
+    : ALL_TABS.filter(t => {
+        if (t.id === 'admins') return false;
+        if (t.id === 'dashboard') return true;
+        return Array.isArray(adminPerms) && adminPerms.includes(t.id);
+      });
+
+  const [tab, _setTab] = useState(visibleTabs[0]?.id || 'dashboard');
+  const setTab = (t) => { _setTab(t); try { api.post('/admin/log-action', { action: 'view_tab', details: t }); } catch(e){} };
+
+  // Dynamic grid columns based on tab count
+  const cols = visibleTabs.length <= 4 ? visibleTabs.length : visibleTabs.length <= 6 ? 3 : 3;
+
   const handlePinSubmit = async () => {
     if (pin.length !== 4) return;
     setPinLoading(true);
@@ -114,23 +129,6 @@ export default function AdminPage() {
       </div>
     );
   }
-
-  // Filter tabs by permissions
-  const visibleTabs = adminPerms === '*'
-    ? ALL_TABS
-    : ALL_TABS.filter(t => {
-        // 'admins' tab only for super admins
-        if (t.id === 'admins') return false;
-        // Dashboard always visible
-        if (t.id === 'dashboard') return true;
-        return Array.isArray(adminPerms) && adminPerms.includes(t.id);
-      });
-
-  const [tab, _setTab] = useState(visibleTabs[0]?.id || 'dashboard');
-  const setTab = (t) => { _setTab(t); try { api.post('/admin/log-action', { action: 'view_tab', details: t }); } catch(e){} };
-
-  // Dynamic grid columns based on tab count
-  const cols = visibleTabs.length <= 4 ? visibleTabs.length : visibleTabs.length <= 6 ? 3 : 3;
 
   return (
     <div className="page" style={{ paddingBottom: 20 }}>
