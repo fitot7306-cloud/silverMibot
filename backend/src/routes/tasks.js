@@ -192,90 +192,126 @@ router.post('/:id/complete', authMiddleware, async (req, res) => {
   }
 });
 
+// ── Ad tokens for proof-of-watch ──
+const adTokens = new Map(); // userId -> { token, createdAt }
+const adLocks = new Set();  // per-user lock to prevent race conditions
+
+// Cleanup expired tokens every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [k, v] of adTokens) { if (now - v.createdAt > 120000) adTokens.delete(k); }
+}, 5 * 60 * 1000);
+
+// Generate a one-time token before showing ad
+router.post('/ad-token', authMiddleware, async (req, res) => {
+  const userId = req.user.id;
+  const crypto = await import('crypto');
+  const token = crypto.default.randomBytes(16).toString('hex');
+  adTokens.set(userId, { token, createdAt: Date.now() });
+  res.json({ token });
+});
+
 // ── Adsgram: Ad reward ──
 router.post('/ad-reward', authMiddleware, async (req, res) => {
   const userId = req.user.id;
 
-  // Get all ad settings from DB
-  const { rows: settingsRows } = await pool.query(
-    `SELECT key, value FROM app_settings WHERE key IN ('ad_reward_power', 'ad_cooldown_seconds', 'ad_daily_limit', 'ref_power_premium', 'ref_power_normal')`
-  );
-  const settings = {};
-  for (const r of settingsRows) settings[r.key] = parseFloat(r.value);
-  const rewardPower = settings.ad_reward_power || 500;
-  const cooldownSec = settings.ad_cooldown_seconds || 60;
-  const dailyLimit = settings.ad_daily_limit || 50;
+  // Per-user lock to prevent race condition
+  if (adLocks.has(userId)) return res.status(429).json({ error: 'Processing' });
+  adLocks.add(userId);
 
-  // Check cooldown
-  const lastWatch = adCooldowns.get(userId);
-  const now = Date.now();
-  if (lastWatch && (now - lastWatch) < cooldownSec * 1000) {
-    const remaining = Math.ceil((cooldownSec * 1000 - (now - lastWatch)) / 1000);
-    return res.status(429).json({ error: 'Cooldown', cooldown: remaining });
-  }
+  try {
+    // Verify token (proof that frontend initiated ad display)
+    const storedToken = adTokens.get(userId);
+    const { token } = req.body || {};
+    if (!storedToken || !token || storedToken.token !== token) {
+      return res.status(400).json({ error: 'Invalid or expired ad token' });
+    }
+    // Consume token (one-time use)
+    adTokens.delete(userId);
 
-  // Check daily limit
-  const today = new Date().toISOString().slice(0, 10);
-  const daily = adDailyCounts.get(userId);
-  if (daily && daily.date === today && daily.count >= dailyLimit) {
-    return res.status(429).json({ error: 'Daily limit reached', daily_limit: dailyLimit });
-  }
-
-  // Give ad reward to user + increment ads_watched
-  await pool.query(
-    `UPDATE users SET power = power + $1, ads_watched = COALESCE(ads_watched, 0) + 1 WHERE id = $2`,
-    [rewardPower, userId]
-  );
-
-  // ── Activate referral on first ad watch ──
-  const { rows: pendingRef } = await pool.query(
-    `SELECT r.id, r.referrer_id FROM referrals r WHERE r.referee_id = $1 AND r.is_confirmed = FALSE`,
-    [userId]
-  );
-
-  let refActivated = false;
-  if (pendingRef.length > 0) {
-    const ref = pendingRef[0];
-    const referrerId = ref.referrer_id;
-
-    // Check if referrer is premium
-    const { rows: referrerRows } = await pool.query(
-      `SELECT is_premium FROM users WHERE id = $1`, [referrerId]
+    // Get all ad settings from DB
+    const { rows: settingsRows } = await pool.query(
+      `SELECT key, value FROM app_settings WHERE key IN ('ad_reward_power', 'ad_cooldown_seconds', 'ad_daily_limit', 'ref_power_premium', 'ref_power_normal')`
     );
-    const isPremium = referrerRows[0]?.is_premium;
-    const refReward = isPremium
-      ? (settings.ref_power_premium || 6000)
-      : (settings.ref_power_normal || 3000);
+    const settings = {};
+    for (const r of settingsRows) settings[r.key] = parseFloat(r.value);
+    const rewardPower = settings.ad_reward_power || 500;
+    const cooldownSec = settings.ad_cooldown_seconds || 60;
+    const dailyLimit = settings.ad_daily_limit || 50;
 
-    // Confirm referral
-    await pool.query(`UPDATE referrals SET is_confirmed = TRUE WHERE id = $1`, [ref.id]);
+    // Check cooldown
+    const lastWatch = adCooldowns.get(userId);
+    const now = Date.now();
+    if (lastWatch && (now - lastWatch) < cooldownSec * 1000) {
+      const remaining = Math.ceil((cooldownSec * 1000 - (now - lastWatch)) / 1000);
+      return res.status(429).json({ error: 'Cooldown', cooldown: remaining });
+    }
 
-    // Give referrer their reward
-    await pool.query(`UPDATE users SET power = power + $1 WHERE id = $2`, [refReward, referrerId]);
+    // Check daily limit
+    const today = new Date().toISOString().slice(0, 10);
+    const daily = adDailyCounts.get(userId);
+    if (daily && daily.date === today && daily.count >= dailyLimit) {
+      return res.status(429).json({ error: 'Daily limit reached', daily_limit: dailyLimit });
+    }
 
-    // Log reward
+    // Give ad reward to user + increment ads_watched
     await pool.query(
-      `INSERT INTO referral_rewards (referrer_id, referee_id, reward_type, power_amount) VALUES ($1, $2, 'signup', $3)`,
-      [referrerId, userId, refReward]
+      `UPDATE users SET power = power + $1, ads_watched = COALESCE(ads_watched, 0) + 1 WHERE id = $2`,
+      [rewardPower, userId]
     );
 
-    refActivated = true;
-    console.log(`✅ Referral activated: referrer=${referrerId} +${refReward} POWER (user ${userId} watched first ad)`);
+    // ── Activate referral on first ad watch ──
+    const { rows: pendingRef } = await pool.query(
+      `SELECT r.id, r.referrer_id FROM referrals r WHERE r.referee_id = $1 AND r.is_confirmed = FALSE`,
+      [userId]
+    );
+
+    let refActivated = false;
+    if (pendingRef.length > 0) {
+      const ref = pendingRef[0];
+      const referrerId = ref.referrer_id;
+
+      // Check if referrer is premium
+      const { rows: referrerRows } = await pool.query(
+        `SELECT is_premium FROM users WHERE id = $1`, [referrerId]
+      );
+      const isPremium = referrerRows[0]?.is_premium;
+      const refReward = isPremium
+        ? (settings.ref_power_premium || 6000)
+        : (settings.ref_power_normal || 3000);
+
+      // Confirm referral
+      await pool.query(`UPDATE referrals SET is_confirmed = TRUE WHERE id = $1`, [ref.id]);
+
+      // Give referrer their reward
+      await pool.query(`UPDATE users SET power = power + $1 WHERE id = $2`, [refReward, referrerId]);
+
+      // Log reward
+      await pool.query(
+        `INSERT INTO referral_rewards (referrer_id, referee_id, reward_type, power_amount) VALUES ($1, $2, 'signup', $3)`,
+        [referrerId, userId, refReward]
+      );
+
+      refActivated = true;
+      console.log(`✅ Referral activated: referrer=${referrerId} +${refReward} POWER (user ${userId} watched first ad)`);
+    }
+
+    // Set cooldown
+    adCooldowns.set(userId, now);
+
+    // Update daily count
+    if (daily && daily.date === today) {
+      daily.count++;
+    } else {
+      adDailyCounts.set(userId, { date: today, count: 1 });
+    }
+
+    const dailyCurrent = adDailyCounts.get(userId);
+    console.log(`[Ad] User ${userId} watched ad, +${rewardPower} POWER (${dailyCurrent.count}/${dailyLimit} today)`);
+    res.json({ success: true, reward: rewardPower, cooldown: cooldownSec, ref_activated: refActivated, daily_count: dailyCurrent.count, daily_limit: dailyLimit });
+  } finally {
+    adLocks.delete(userId);
   }
-
-  // Set cooldown
-  adCooldowns.set(userId, now);
-
-  // Update daily count
-  if (daily && daily.date === today) {
-    daily.count++;
-  } else {
-    adDailyCounts.set(userId, { date: today, count: 1 });
-  }
-
-  const dailyCurrent = adDailyCounts.get(userId);
-  console.log(`[Ad] User ${userId} watched ad, +${rewardPower} POWER (${dailyCurrent.count}/${dailyLimit} today)`);
-  res.json({ success: true, reward: rewardPower, cooldown: cooldownSec, ref_activated: refActivated, daily_count: dailyCurrent.count, daily_limit: dailyLimit });
 });
 
 // ── Adsgram: Check ad cooldown ──
@@ -313,15 +349,28 @@ setInterval(() => {
 router.post('/monetag-reward', authMiddleware, async (req, res) => {
   const userId = req.user.id;
 
-  // Get ad settings from DB
-  const { rows: settingsRows } = await pool.query(
-    `SELECT key, value FROM app_settings WHERE key IN ('monetag_reward_power', 'ad_reward_power', 'ad_cooldown_seconds', 'ad_daily_limit', 'ref_power_premium', 'ref_power_normal')`
-  );
-  const settings = {};
-  for (const r of settingsRows) settings[r.key] = parseFloat(r.value);
-  const rewardPower = settings.monetag_reward_power || 5;
-  const cooldownSec = settings.ad_cooldown_seconds || 60;
-  const dailyLimit = settings.ad_daily_limit || 50;
+  // Per-user lock to prevent race condition
+  if (adLocks.has(userId)) return res.status(429).json({ error: 'Processing' });
+  adLocks.add(userId);
+
+  try {
+    // Verify token (proof that frontend initiated ad display)
+    const storedToken = adTokens.get(userId);
+    const { token } = req.body || {};
+    if (!storedToken || !token || storedToken.token !== token) {
+      return res.status(400).json({ error: 'Invalid or expired ad token' });
+    }
+    adTokens.delete(userId);
+
+    // Get ad settings from DB
+    const { rows: settingsRows } = await pool.query(
+      `SELECT key, value FROM app_settings WHERE key IN ('monetag_reward_power', 'ad_reward_power', 'ad_cooldown_seconds', 'ad_daily_limit', 'ref_power_premium', 'ref_power_normal')`
+    );
+    const settings = {};
+    for (const r of settingsRows) settings[r.key] = parseFloat(r.value);
+    const rewardPower = settings.monetag_reward_power || 5;
+    const cooldownSec = settings.ad_cooldown_seconds || 60;
+    const dailyLimit = settings.ad_daily_limit || 50;
 
   // Check cooldown
   const lastWatch = monetagCooldowns.get(userId);
@@ -387,6 +436,9 @@ router.post('/monetag-reward', authMiddleware, async (req, res) => {
   const dailyCurrent = monetagDailyCounts.get(userId);
   console.log(`[Monetag] User ${userId} watched ad, +${rewardPower} POWER (${dailyCurrent.count}/${dailyLimit} today)`);
   res.json({ success: true, reward: rewardPower, cooldown: cooldownSec, ref_activated: refActivated, daily_count: dailyCurrent.count, daily_limit: dailyLimit });
+  } finally {
+    adLocks.delete(userId);
+  }
 });
 
 router.get('/monetag-status', authMiddleware, async (req, res) => {

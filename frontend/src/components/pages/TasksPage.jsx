@@ -166,9 +166,11 @@ export default function TasksPage() {
     if (!adControllerRef.current) return;
     setAdWatching(true);
     try {
+      // Get one-time token before showing ad
+      const { data: tokenData } = await api.post('/tasks/ad-token');
       const result = await adControllerRef.current.show();
       if (result.done) {
-        const { data } = await api.post('/tasks/ad-reward');
+        const { data } = await api.post('/tasks/ad-reward', { token: tokenData.token });
         setAdMsg(t('tasks.ad_reward_msg', { reward: fmtK(data.reward) }));
         setAdCooldown(data.cooldown || 60);
         await refreshUser();
@@ -182,8 +184,10 @@ export default function TasksPage() {
     if (!monetagHandlerRef.current) return;
     setMonetagWatching(true);
     try {
+      // Get one-time token before showing ad
+      const { data: tokenData } = await api.post('/tasks/ad-token');
       await monetagHandlerRef.current();
-      const { data } = await api.post('/tasks/monetag-reward');
+      const { data } = await api.post('/tasks/monetag-reward', { token: tokenData.token });
       setMonetagMsg(t('tasks.ad_reward_msg', { reward: fmtK(data.reward) }));
       setMonetagCooldown(data.cooldown || 60);
       await refreshUser();
