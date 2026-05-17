@@ -4,6 +4,7 @@ import { fmt } from '../../utils/format.js';
 import { useTranslation } from 'react-i18next';
 import { useInterstitialAd } from '../../hooks/useInterstitialAd.js';
 import api from '../../utils/api.js';
+import boltImg from '../../assets/bolt.png';
 
 export default function PowerPage() {
   const { user, mining, fetchMining, collect, setTab } = useStore();
@@ -139,7 +140,7 @@ export default function PowerPage() {
               strokeDasharray="239" strokeDashoffset={239 - (power > 0 ? 130 : 10)} strokeLinecap="round"
               style={{ filter: 'drop-shadow(0 0 4px rgba(192,192,192,0.4))' }} />
           </svg>
-          <div style={{ fontSize: 30, filter: 'drop-shadow(0 0 10px rgba(192,192,192,0.5))' }}>⚡</div>
+          <img src={boltImg} alt="" style={{ width: 48, height: 48, borderRadius: '50%', filter: 'drop-shadow(0 0 10px rgba(192,192,192,0.5))' }} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6, fontWeight: 600 }}>{t('power.mined_today')}</div>
