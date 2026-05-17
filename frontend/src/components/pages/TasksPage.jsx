@@ -208,16 +208,16 @@ export default function TasksPage() {
     const needsVerify = task.type === 'subscribe_channel';
 
     if (needsVerify) {
-      if (!isOpened) return { label: 'ВЫПОЛНИТЬ', action: () => openTask(task), icon: '▶' };
-      return { label: completing === task.id ? '⏳' : 'ПРОВЕРИТЬ', action: () => complete(task), icon: '✓' };
+      if (!isOpened) return { label: t('tasks.go', 'GO'), action: () => openTask(task), icon: '▶' };
+      return { label: completing === task.id ? '⏳' : t('tasks.check', '✓'), action: () => complete(task), icon: '✓' };
     }
 
     if (task.link && !isOpened) {
-      return { label: 'ВЫПОЛНИТЬ', action: () => openTask(task), icon: '▶' };
+      return { label: t('tasks.go', 'GO'), action: () => openTask(task), icon: '▶' };
     }
 
     return {
-      label: completing === task.id ? '⏳' : 'ВЫПОЛНИТЬ',
+      label: completing === task.id ? '⏳' : t('tasks.start', 'START'),
       action: () => {
         if (task.link && !isOpened) openTask(task);
         complete(task);
@@ -246,16 +246,16 @@ export default function TasksPage() {
                 background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22
               }}>💎</div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>Смотреть Monetag</div>
-                <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 6 }}>Посмотри рекламу Monetag и получи POWER</div>
-                <div style={{ fontSize: 12, color: 'var(--text-primary)', fontWeight: 700 }}>+POWER награда</div>
+                <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>{t('tasks.monetag_title')}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 6 }}>{t('tasks.monetag_desc')}</div>
+                <div style={{ fontSize: 12, color: 'var(--text-primary)', fontWeight: 700 }}>{t('tasks.monetag_reward')}</div>
               </div>
               <button onClick={watchMonetagAd} disabled={monetagWatching || monetagCooldown > 0} style={{
                 background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 14px',
                 color: 'var(--text-primary)', fontSize: 10, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
                 alignSelf: 'center', letterSpacing: 0.3, transition: 'var(--transition)'
               }}>
-                {monetagWatching ? '⏳' : monetagCooldown > 0 ? formatCooldown(monetagCooldown) : <>▶ СМОТРЕТЬ</>}
+                {monetagWatching ? '⏳' : monetagCooldown > 0 ? formatCooldown(monetagCooldown) : <>{t('tasks.watch_btn')}</>}
               </button>
             </div>
           </div>
@@ -270,16 +270,16 @@ export default function TasksPage() {
                 background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22
               }}>🎬</div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>Смотреть Adsgram</div>
-                <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 6 }}>Посмотри видео и получи бонус</div>
-                <div style={{ fontSize: 12, color: 'var(--text-primary)', fontWeight: 700 }}>+POWER награда</div>
+                <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>{t('tasks.watch_ad')}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 6 }}>{t('tasks.watch_desc')}</div>
+                <div style={{ fontSize: 12, color: 'var(--text-primary)', fontWeight: 700 }}>{t('tasks.watch_reward')}</div>
               </div>
               <button onClick={watchAd} disabled={adWatching || adCooldown > 0} style={{
                 background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 14px',
                 color: 'var(--text-primary)', fontSize: 10, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
                 alignSelf: 'center', letterSpacing: 0.3, transition: 'var(--transition)'
               }}>
-                {adWatching ? '⏳' : adCooldown > 0 ? formatCooldown(adCooldown) : <>▶ СМОТРЕТЬ</>}
+                {adWatching ? '⏳' : adCooldown > 0 ? formatCooldown(adCooldown) : <>{t('tasks.watch_btn')}</>}
               </button>
             </div>
           </div>
@@ -320,7 +320,7 @@ export default function TasksPage() {
         {orderConfig && (
           <div style={{ marginTop: 8 }}>
             <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
-              👤 РЕКЛАМА
+              👤 {t('tasks.order_section')}
             </div>
             <div className="card" style={{ padding: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
@@ -329,15 +329,15 @@ export default function TasksPage() {
                   background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24
                 }}>📣</div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>Заказать рекламу</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>Продвигайте канал, бота или ссылку</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>{t('tasks.order_title')}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{t('tasks.order_desc')}</div>
                 </div>
                 <button onClick={() => setShowOrder(!showOrder)} style={{
                   background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: 8, padding: '8px 12px',
                   color: '#fff', fontSize: 10, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
                   alignSelf: 'center'
                 }}>
-                  {showOrder ? '✕ ЗАКРЫТЬ' : '+ ЗАКАЗАТЬ'}
+                  {showOrder ? '✕ ' + t('tasks.close_payment', 'CLOSE') : '+ ' + t('tasks.order_btn')}
                 </button>
               </div>
 
@@ -358,14 +358,14 @@ export default function TasksPage() {
                     </div>
 
                     <input type="text" value={orderForm.title} onChange={e => setOrderForm({ ...orderForm, title: e.target.value })}
-                      placeholder="Название" style={{ marginBottom: 8 }} />
+                      placeholder={t('tasks.order_name_placeholder')} style={{ marginBottom: 8 }} />
 
                     <input type="text" value={orderForm.link} onChange={e => setOrderForm({ ...orderForm, link: e.target.value })}
                       placeholder={selectedType.placeholder} style={{ marginBottom: 12 }} />
 
                     <div style={{ marginBottom: 16 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Количество</span>
+                        <span style={{ color: 'var(--text-muted)' }}>{t('tasks.order_count')}</span>
                         <span style={{ fontWeight: 700 }}>{orderForm.count}</span>
                       </div>
                       <input type="range" min="50" max="1000" step="10" value={orderForm.count}
@@ -383,7 +383,7 @@ export default function TasksPage() {
                       } catch (e) {
                       } finally { setOrdering(false); }
                     }} disabled={ordering || !orderForm.link} className="btn-primary" style={{ background: 'var(--silver-gradient)', color: '#000' }}>
-                      {ordering ? '⏳...' : `ОПЛАТИТЬ ${totalPrice} TON`}
+                      {ordering ? '⏳...' : `${t('tasks.order_pay')} ${totalPrice} TON`}
                     </button>
                   </div>
                 );
@@ -393,12 +393,12 @@ export default function TasksPage() {
             {orderPayment && (
               <div className="card" style={{ marginTop: 12, padding: '16px' }}>
                 <div style={{ textAlign: 'center', marginBottom: 12 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700 }}>Оплата заказа</div>
+                  <div style={{ fontSize: 14, fontWeight: 700 }}>{t('tasks.send_ton')}</div>
                   <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--primary)' }}>{orderPayment.amount} TON</div>
                 </div>
-                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>Кошелек:</div>
+                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>{t('tasks.wallet_address')}:</div>
                 <div style={{ fontSize: 11, fontFamily: 'monospace', wordBreak: 'break-all', marginBottom: 12 }}>{orderPayment.wallet}</div>
-                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>MEMO (Обязательно):</div>
+                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>MEMO ({t('tasks.memo_important')}):</div>
                 <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--orange)' }}>{orderPayment.memo}</div>
               </div>
             )}

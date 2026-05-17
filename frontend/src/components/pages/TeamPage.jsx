@@ -23,7 +23,7 @@ export default function TeamPage() {
   const copyLink = () => {
     if (!data?.ref_link) return;
     navigator.clipboard.writeText(data.ref_link);
-    window.Telegram?.WebApp?.showAlert('Скопировано!');
+    window.Telegram?.WebApp?.showAlert(t('team.link_copied'));
   };
 
   const share = () => {
