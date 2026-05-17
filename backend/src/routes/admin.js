@@ -65,6 +65,59 @@ const logAdminAction = async (req, action, details) => {
   } catch (e) {}
 };
 
+// ── Admin PIN verification (before adminMiddleware) ──
+const pinAttempts = new Map(); // tgId -> { count, lockedUntil }
+const MAX_PIN_ATTEMPTS = 5;
+const PIN_LOCKOUT_MS = 5 * 60 * 1000; // 5 minutes
+
+// Cleanup stale pin attempts every 10 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [k, v] of pinAttempts) {
+    if (v.lockedUntil && now > v.lockedUntil) pinAttempts.delete(k);
+  }
+}, 10 * 60 * 1000);
+
+router.post('/verify-pin', async (req, res) => {
+  // Extract TG user from initData for tracking
+  const initData = req.headers['x-init-data'];
+  let tgId = 'unknown';
+  if (initData) {
+    try {
+      const params = new URLSearchParams(initData);
+      const userParam = params.get('user');
+      if (userParam) tgId = String(JSON.parse(userParam).id);
+    } catch (e) {}
+  }
+
+  // Check lockout
+  const attempt = pinAttempts.get(tgId);
+  if (attempt && attempt.lockedUntil && Date.now() < attempt.lockedUntil) {
+    const remaining = Math.ceil((attempt.lockedUntil - Date.now()) / 1000);
+    return res.status(429).json({ error: 'Too many attempts', retry_after: remaining });
+  }
+
+  const { pin } = req.body || {};
+  const correctPin = process.env.ADMIN_PIN || '1234';
+
+  if (!pin || String(pin) !== String(correctPin)) {
+    // Track failed attempt
+    const current = pinAttempts.get(tgId) || { count: 0 };
+    current.count++;
+    if (current.count >= MAX_PIN_ATTEMPTS) {
+      current.lockedUntil = Date.now() + PIN_LOCKOUT_MS;
+      console.warn(`[Admin] PIN lockout: tg:${tgId} — ${MAX_PIN_ATTEMPTS} failed attempts`);
+    }
+    pinAttempts.set(tgId, current);
+    return res.status(403).json({ error: 'Invalid PIN', attempts_left: MAX_PIN_ATTEMPTS - current.count });
+  }
+
+  // Success — reset attempts
+  pinAttempts.delete(tgId);
+  console.log(`[Admin] PIN verified: tg:${tgId}`);
+  res.json({ success: true });
+});
+
 router.use(adminMiddleware);
 
 // ── Admin Activity Logging ──

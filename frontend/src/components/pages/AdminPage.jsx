@@ -26,6 +26,94 @@ const ALL_TABS = [
 
 export default function AdminPage() {
   const { setTab: setAppTab, adminPerms } = useStore();
+  const [pinVerified, setPinVerified] = useState(false);
+  const [pin, setPin] = useState('');
+  const [pinError, setPinError] = useState(false);
+  const [pinLoading, setPinLoading] = useState(false);
+
+  const handlePinSubmit = async () => {
+    if (pin.length !== 4) return;
+    setPinLoading(true);
+    setPinError(false);
+    try {
+      const { data } = await api.post('/admin/verify-pin', { pin });
+      if (data.success) {
+        setPinVerified(true);
+      } else {
+        setPinError(true);
+        setPin('');
+      }
+    } catch (e) {
+      setPinError(true);
+      setPin('');
+    } finally {
+      setPinLoading(false);
+    }
+  };
+
+  // PIN gate
+  if (!pinVerified) {
+    return (
+      <div className="page" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+        <div style={{ fontSize: 48, marginBottom: 16, filter: 'drop-shadow(0 0 10px rgba(192,192,192,0.4))' }}>🔐</div>
+        <div style={{ fontSize: 18, fontWeight: 800, color: '#fff', marginBottom: 6 }}>Admin PIN</div>
+        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 20 }}>Введите PIN-код для входа</div>
+
+        {/* PIN dots */}
+        <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
+          {[0, 1, 2, 3].map(i => (
+            <div key={i} style={{
+              width: 16, height: 16, borderRadius: '50%',
+              background: pin.length > i ? 'var(--primary)' : 'rgba(255,255,255,0.08)',
+              border: `2px solid ${pin.length > i ? 'var(--primary)' : 'rgba(255,255,255,0.15)'}`,
+              transition: 'all 0.15s ease',
+              boxShadow: pin.length > i ? '0 0 8px rgba(192,192,192,0.4)' : 'none',
+            }} />
+          ))}
+        </div>
+
+        {/* PIN keypad */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, width: 220, marginBottom: 16 }}>
+          {[1,2,3,4,5,6,7,8,9,null,0,'⌫'].map((n, i) => (
+            n === null ? <div key={i} /> :
+            <button key={i} onClick={() => {
+              if (n === '⌫') { setPin(p => p.slice(0, -1)); setPinError(false); }
+              else if (pin.length < 4) setPin(p => p + n);
+            }} style={{
+              width: 64, height: 52, borderRadius: 14,
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: '#fff', fontSize: n === '⌫' ? 18 : 22,
+              fontWeight: 700, cursor: 'pointer',
+              transition: 'all 0.15s ease',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>{n}</button>
+          ))}
+        </div>
+
+        <button onClick={handlePinSubmit} disabled={pin.length !== 4 || pinLoading} style={{
+          width: 220, padding: '14px 0', borderRadius: 14,
+          background: pin.length === 4 ? 'var(--silver-gradient)' : 'rgba(255,255,255,0.04)',
+          border: 'none', color: pin.length === 4 ? '#000' : 'var(--text-muted)',
+          fontSize: 14, fontWeight: 800, cursor: pin.length === 4 ? 'pointer' : 'default',
+          transition: 'all 0.2s ease',
+        }}>
+          {pinLoading ? '⏳' : 'ВОЙТИ'}
+        </button>
+
+        {pinError && (
+          <div style={{ marginTop: 12, fontSize: 12, color: 'var(--red)', fontWeight: 600, animation: 'fadeIn 0.2s ease' }}>
+            ❌ Неверный PIN-код
+          </div>
+        )}
+
+        <button onClick={() => setAppTab('power')} style={{
+          marginTop: 20, background: 'none', border: 'none', color: 'var(--text-muted)',
+          fontSize: 12, cursor: 'pointer', textDecoration: 'underline',
+        }}>← Назад</button>
+      </div>
+    );
+  }
 
   // Filter tabs by permissions
   const visibleTabs = adminPerms === '*'
