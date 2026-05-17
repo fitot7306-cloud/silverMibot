@@ -520,7 +520,7 @@ function Dashboard() {
             <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--primary)', marginBottom: 8 }}>⚡ Прогноз майнинга (по текущему Power)</div>
             <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 10 }}>
               Активный Power: <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{fmtK(stats.finance.active_power)} GH/s</span>
-              {' '}(100K = 0.036 TON/день)
+              {' '}(100K = 0.020 TON/день)
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, marginBottom: 10 }}>
               {[

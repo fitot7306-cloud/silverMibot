@@ -284,8 +284,8 @@ router.get('/stats', async (req, res) => {
     ]);
 
     // Power forecast — how much TON will be mined
-    // Formula: 100K power = 2500 hashes/day = 0.036 TON/day
-    const TON_PER_DAY_PER_100K = 0.036;
+    // Formula: 100K power = 2500 hashes/day = 0.020 TON/day
+    const TON_PER_DAY_PER_100K = 0.020;
     const activePowerRes = await pool.query(`SELECT COALESCE(SUM(power), 0) as total FROM users WHERE is_blocked = false`);
     const totalPowerRes = await pool.query(`SELECT COALESCE(SUM(power), 0) as total FROM users`);
     const activePower = parseFloat(activePowerRes.rows[0].total);

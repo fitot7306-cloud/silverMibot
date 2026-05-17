@@ -2,8 +2,8 @@ import { pool } from '../db.js';
 
 // Constants
 export const HASHES_PER_DAY_PER_100K = 2500;
-export const TON_PER_HASH = 0.036 / 2500; // 0.0000144
-export const MIN_WITHDRAW = 0.1; // TON
+export const TON_PER_HASH = 0.020 / 2500; // = 0.000008 (маржа ~35%)
+export const MIN_WITHDRAW = 0.05; // TON
 
 export const getHashesPerMinute = (power) => {
   return (power / 100000) * (HASHES_PER_DAY_PER_100K / 1440);

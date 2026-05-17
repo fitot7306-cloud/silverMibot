@@ -66,7 +66,7 @@ export default function ShopPage() {
     return <PaymentPage {...paymentData} onCancel={() => setPaymentData(null)} onSuccess={async () => { await refreshUser(); setPaymentData(null); }} />;
   }
 
-  const tonPerDay = (power) => ((power / 100000) * 0.036).toFixed(4);
+  const tonPerDay = (power) => ((power / 100000) * 0.020).toFixed(4);
   const payback = (power, price) => Math.ceil(price / tonPerDay(power));
 
   return (
