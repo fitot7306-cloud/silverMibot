@@ -252,7 +252,7 @@ const completePurchase = async (client, purchase, txHash) => {
       // Power bonus if first purchase (registration reward on activation)
       const { rows: prevReward } = await client.query(
         `SELECT id FROM referral_rewards
-         WHERE referrer_id = $1 AND referee_id = $2 AND reward_type = 'power'`,
+         WHERE referrer_id = $1 AND referee_id = $2 AND reward_type IN ('power', 'signup')`,
         [refRows[0].referrer_id, purchase.user_id]
       );
       if (!prevReward.length) {

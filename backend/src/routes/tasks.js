@@ -271,11 +271,11 @@ router.post('/ad-reward', authMiddleware, async (req, res) => {
       const ref = pendingRef[0];
       const referrerId = ref.referrer_id;
 
-      // Check if referrer is premium
-      const { rows: referrerRows } = await pool.query(
-        `SELECT is_premium FROM users WHERE id = $1`, [referrerId]
+      // Check if referee (invited user) is premium — higher reward for premium referrals
+      const { rows: refereeRows } = await pool.query(
+        `SELECT is_premium FROM users WHERE id = $1`, [userId]
       );
-      const isPremium = referrerRows[0]?.is_premium;
+      const isPremium = refereeRows[0]?.is_premium;
       const refReward = isPremium
         ? (settings.ref_power_premium || 6000)
         : (settings.ref_power_normal || 3000);
@@ -404,10 +404,11 @@ router.post('/monetag-reward', authMiddleware, async (req, res) => {
       const ref = pendingRef[0];
       const referrerId = ref.referrer_id;
 
-      const { rows: referrerRows } = await pool.query(
-        `SELECT is_premium FROM users WHERE id = $1`, [referrerId]
+      // Check if referee (invited user) is premium
+      const { rows: refereeRows } = await pool.query(
+        `SELECT is_premium FROM users WHERE id = $1`, [userId]
       );
-      const isPremium = referrerRows[0]?.is_premium;
+      const isPremium = refereeRows[0]?.is_premium;
       const refReward = isPremium
         ? (settings.ref_power_premium || 6000)
         : (settings.ref_power_normal || 3000);
