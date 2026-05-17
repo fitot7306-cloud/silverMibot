@@ -52,69 +52,58 @@ export default function ShopPage() {
 
   const tonPerDay = (power) => ((power / 100000) * 0.036).toFixed(4);
   const payback = (power, price) => Math.ceil(price / tonPerDay(power));
-  const badges = ['', '', t('shop.badge_hit'), t('shop.badge_top')];
 
   return (
     <div className="page">
-      <div style={{ marginBottom: 24 }}>
-        <div className="page-title" style={{ color: 'var(--primary)' }}>{t('shop.title')}</div>
-        <div className="page-subtitle">{t('shop.subtitle')}</div>
+      <div style={{ marginBottom: 20 }}>
+        <div className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 24, textShadow: '0 0 10px rgba(255,255,255,0.4)' }}>⚡</span>
+          МАГАЗИН
+        </div>
+        <div className="page-subtitle" style={{ fontSize: 12, marginTop: 4 }}>Выбери пакет мощности для майнинга</div>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {packages.map((pkg, i) => {
           const perDay = tonPerDay(pkg.power_amount);
           const pb = payback(pkg.power_amount, pkg.price_ton);
-          const badge = badges[i];
+          
           return (
-            <div key={pkg.id} className="card" style={{
-              position: 'relative', overflow: 'hidden',
-              border: i >= 2 ? '1px solid var(--border)' : '1px solid var(--border)',
-              animation: `fadeIn 0.3s ease ${i * 0.08}s both`
-            }}>
-              {/* Badge */}
-              {badge && (
-                <div style={{
-                  position: 'absolute', top: 12, right: 12,
-                  background: 'linear-gradient(135deg, var(--primary-dark), var(--primary))',
-                  borderRadius: 8, padding: '3px 10px',
-                  fontSize: 11, fontWeight: 700, color: '#000'
-                }}>{badge}</div>
-              )}
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
+            <div key={pkg.id} className="card" style={{ padding: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
                 <div>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4, fontWeight: 500 }}>{pkg.name}</div>
-                  <div style={{ fontSize: 32, fontWeight: 900, color: 'var(--primary-light)', lineHeight: 1 }}>
+                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 6 }}>{pkg.name}</div>
+                  <div style={{ fontSize: 32, fontWeight: 800, color: '#fff', lineHeight: 1 }}>
                     {fmtK(pkg.power_amount)}
                   </div>
-                  <div style={{ fontSize: 11, color: 'var(--primary)', letterSpacing: 2, fontWeight: 600 }}>POWER</div>
+                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', letterSpacing: 1, marginTop: 4 }}>POWER</div>
                 </div>
                 <div style={{
-                  background: 'linear-gradient(135deg, var(--primary-dark), var(--primary))',
-                  borderRadius: 12, padding: '8px 16px', marginTop: 4,
-                  fontSize: 16, fontWeight: 800, color: '#000'
+                  background: 'linear-gradient(135deg, #f0f0f0, #c0c0c0)',
+                  borderRadius: 10, padding: '8px 14px',
+                  fontSize: 14, fontWeight: 800, color: '#000', boxShadow: '0 4px 10px rgba(192,192,192,0.1)'
                 }}>
                   {pkg.price_ton} TON
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 14 }}>
-                {[
-                  { label: t('shop.daily'), val: `${perDay}`, unit: 'TON' },
-                  { label: t('shop.thirty_days'), val: `${(perDay * 30).toFixed(3)}`, unit: 'TON' },
-                  { label: t('shop.payback'), val: t('shop.payback_days', { days: pb }), color: 'var(--green)' },
-                ].map(item => (
-                  <div key={item.label} className="stat-pill">
-                    <div className="label">{item.label}</div>
-                    <div className="value" style={{ color: item.color || 'var(--primary-light)', fontSize: 13 }}>{item.val}</div>
-                    {item.unit && <div className="sub">{item.unit}</div>}
-                  </div>
-                ))}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 20 }}>
+                <div className="stat-pill" style={{ padding: '14px 8px' }}>
+                  <div className="label">ЕЖЕДНЕВНО</div>
+                  <div className="value">{perDay} <span style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 500 }}>TON</span></div>
+                </div>
+                <div className="stat-pill" style={{ padding: '14px 8px' }}>
+                  <div className="label">30 ДНЕЙ</div>
+                  <div className="value">{(perDay * 30).toFixed(3)} <span style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 500 }}>TON</span></div>
+                </div>
+                <div className="stat-pill" style={{ padding: '14px 8px' }}>
+                  <div className="label">ОКУПНОСТЬ</div>
+                  <div className="value">{pb} ДНЕЙ</div>
+                </div>
               </div>
 
-              <button className="btn-gold" onClick={() => handleBuy(pkg)} disabled={loading}>
-                {loading ? t('shop.creating_order') : t('shop.buy_for', { price: pkg.price_ton })}
+              <button className="btn-primary" onClick={() => handleBuy(pkg)} disabled={loading} style={{ letterSpacing: 0.5 }}>
+                {loading ? 'ПОДОЖДИТЕ...' : `КУПИТЬ ЗА ${pkg.price_ton} TON`}
               </button>
             </div>
           );

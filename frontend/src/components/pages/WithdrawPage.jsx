@@ -99,7 +99,7 @@ export default function WithdrawPage() {
           borderRadius: 12, color: '#fff', padding: '10px 14px', fontSize: 16, cursor: 'pointer'
         }}>←</button>
         <div>
-          <div className="page-title" style={{ color: 'var(--primary)', fontSize: 20 }}>{t('withdraw.title')}</div>
+          <div className="page-title" style={{ fontSize: 20 }}>{t('withdraw.title')}</div>
           <div className="page-subtitle">{t('withdraw.subtitle')}</div>
         </div>
       </div>
@@ -107,20 +107,20 @@ export default function WithdrawPage() {
       {/* Balance */}
       <div className="card" style={{
         border: '1px solid var(--border)', marginBottom: 16, textAlign: 'center',
-        background: 'linear-gradient(135deg, rgba(192,192,192,0.06), rgba(192,192,192,0.02))'
+        background: 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))'
       }}>
-        <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 6 }}>{t('withdraw.available')}</div>
-        <div style={{ fontSize: 34, fontWeight: 900, color: 'var(--primary-light)' }}>
-          {fmt(balance, 4)} <span style={{ fontSize: 16, color: 'var(--primary)' }}>TON</span>
+        <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 6, textTransform: 'uppercase' }}>{t('withdraw.available')}</div>
+        <div style={{ fontSize: 34, fontWeight: 900, color: '#fff' }}>
+          {fmt(balance, 4)} <span style={{ fontSize: 16, color: 'var(--text-secondary)' }}>TON</span>
         </div>
       </div>
 
       {/* Alerts */}
       {success !== null && (
         <div style={{
-          background: 'var(--green-bg)', border: '1px solid rgba(192,192,192,0.3)',
+          background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.2)',
           borderRadius: 14, padding: '14px', marginBottom: 14, textAlign: 'center',
-          color: 'var(--green)', fontWeight: 600, animation: 'fadeIn 0.3s ease'
+          color: '#fff', fontWeight: 600, animation: 'fadeIn 0.3s ease'
         }}>{t('withdraw.request_created', { amount: fmt(success, 4) })}</div>
       )}
       {error && (
@@ -132,16 +132,16 @@ export default function WithdrawPage() {
       )}
 
       {/* Form */}
-      <div className="card" style={{ marginBottom: 16 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>{t('withdraw.wallet_address')}</div>
+      <div className="card" style={{ marginBottom: 16, padding: '20px' }}>
+        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10, textTransform: 'uppercase', color: 'var(--text-secondary)' }}>{t('withdraw.wallet_address')}</div>
         <input type="text" value={wallet} onChange={e => setWallet(e.target.value.trim())}
           placeholder="UQ... or EQ..." style={{ marginBottom: 16, fontFamily: "'Inter', monospace", fontSize: 13 }} />
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-          <span style={{ fontSize: 13, fontWeight: 700 }}>{t('withdraw.amount')}</span>
+          <span style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary)' }}>{t('withdraw.amount')}</span>
           <button onClick={() => setAmount(String(fmt(balance, 8)))} style={{
-            background: 'rgba(192,192,192,0.1)', border: '1px solid var(--border)',
-            borderRadius: 8, color: 'var(--primary)', padding: '4px 12px',
+            background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)',
+            borderRadius: 8, color: '#fff', padding: '4px 12px',
             fontSize: 11, fontWeight: 700, cursor: 'pointer'
           }}>MAX</button>
         </div>
@@ -152,16 +152,16 @@ export default function WithdrawPage() {
         {/* Fee preview */}
         {hasFee && amt > 0 && (
           <div style={{
-            background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.15)',
+            background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
             borderRadius: 10, padding: '10px 12px', marginBottom: 10, animation: 'fadeIn 0.2s ease'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
               <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{feeLabel}</span>
-              <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--orange)' }}>−{fmt(fee, 4)} TON</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)' }}>−{fmt(fee, 4)} TON</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t('withdraw.you_receive')}</span>
-              <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--green)' }}>{fmt(netAmount, 4)} TON</span>
+              <span style={{ fontSize: 14, fontWeight: 800, color: '#fff' }}>{fmt(netAmount, 4)} TON</span>
             </div>
           </div>
         )}
@@ -170,7 +170,7 @@ export default function WithdrawPage() {
           {t('withdraw.processing_time', { min: MIN_WITHDRAW, hours: appSettings?.withdraw_processing_hours || '1-24' })}
         </div>
 
-        <button className="btn-gold" onClick={() => showAdThen(handleSubmit)}
+        <button className="btn-primary" onClick={() => showAdThen(handleSubmit)}
           disabled={loading || balance < MIN_WITHDRAW}
         >
           {loading ? t('withdraw.processing') : t('withdraw.withdraw_btn')}
@@ -180,24 +180,24 @@ export default function WithdrawPage() {
       {/* History */}
       {history.length > 0 && (
         <div>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 10, fontWeight: 600 }}>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 10, fontWeight: 600, textTransform: 'uppercase' }}>
             {t('withdraw.history', { count: history.length })}
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {history.map((w, i) => {
               const cfg = statusConfig[w.status] || statusConfig.pending;
               const wFee = parseFloat(w.fee_amount || 0);
               return (
                 <div key={w.id} className="card" style={{
                   display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  padding: '12px 16px', animation: `fadeIn 0.3s ease ${i * 0.05}s both`
+                  padding: '14px 16px', animation: `fadeIn 0.3s ease ${i * 0.05}s both`
                 }}>
                   <div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--primary-light)' }}>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: '#fff' }}>
                       {fmt(w.ton_amount, 4)} TON
                     </div>
                     {wFee > 0 && (
-                      <div style={{ fontSize: 10, color: 'var(--orange)' }}>
+                      <div style={{ fontSize: 10, color: 'var(--text-secondary)' }}>
                         {t('withdraw.fee_label')}: {fmt(wFee, 4)} TON
                       </div>
                     )}

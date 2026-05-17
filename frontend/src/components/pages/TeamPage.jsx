@@ -23,7 +23,7 @@ export default function TeamPage() {
   const copyLink = () => {
     if (!data?.ref_link) return;
     navigator.clipboard.writeText(data.ref_link);
-    window.Telegram?.WebApp?.showAlert(t('team.link_copied'));
+    window.Telegram?.WebApp?.showAlert(t('team.link_copied', 'Скопировано!'));
   };
 
   const share = () => {
@@ -33,140 +33,101 @@ export default function TeamPage() {
     );
   };
 
-  if (!data) return <div className="page" style={{ color: 'var(--text-muted)', textAlign: 'center', paddingTop: 60 }}>{t('common.loading')}</div>;
+  if (!data) return <div className="page" style={{ color: 'var(--text-muted)', textAlign: 'center', paddingTop: 60 }}>...</div>;
 
   const s = data.settings || {};
   const powerPremium = s.power_premium || 6000;
   const powerNormal = s.power_normal || 3000;
   const commissionPct = s.commission_pct || 15;
-  const isAmbassador = s.is_ambassador || false;
 
   return (
     <div className="page">
-      <div style={{ marginBottom: 24 }}>
-        <div className="page-title" style={{ color: 'var(--primary)' }}>{t('team.title')}</div>
-        <div className="page-subtitle">{t('team.subtitle')}</div>
+      <div style={{ marginBottom: 20 }}>
+        <div className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 24, textShadow: '0 0 10px rgba(255,255,255,0.4)' }}>📋</span>
+          КОМАНДА
+        </div>
+        <div className="page-subtitle" style={{ fontSize: 12, marginTop: 4 }}>Приглашай друзей и зарабатывай</div>
       </div>
 
-      {/* Ambassador badge */}
-      {isAmbassador && (
-        <div className="card" style={{
-          marginBottom: 16, padding: '14px 16px',
-          background: 'linear-gradient(135deg, rgba(192,192,192,0.08), rgba(192,192,192,0.08))',
-          border: '1px solid rgba(192,192,192,0.25)',
-          animation: 'fadeIn 0.4s ease',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 28 }}>🤝</span>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--green)' }}>
-                {t('team.ambassador_badge', 'Партнёр-Амбассадор')}
-              </div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5 }}>
-                {t('team.ambassador_desc', 'Повышенная комиссия от покупок рефералов')}:
-                <span style={{ color: 'var(--text-muted)', textDecoration: 'line-through', marginLeft: 4 }}>{s.standard_commission_pct || 15}%</span>
-                <span style={{ color: 'var(--green)', fontWeight: 800, marginLeft: 4 }}>→ {commissionPct}%</span>
-              </div>
-            </div>
-          </div>
+      {/* ── Referral Link Card ── */}
+      <div className="card" style={{ marginBottom: 16, padding: '16px' }}>
+        <div style={{ fontSize: 10, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>
+          МОЯ РЕФЕРАЛЬНАЯ ССЫЛКА
         </div>
-      )}
-
-      {/* Reward cards — dynamic values from admin settings */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 16 }}>
-        {[
-          { icon: '⭐', val: `+${(powerPremium / 1000).toFixed(0)}K`, sub: 'POWER', label: t('team.premium') },
-          { icon: '👤', val: `+${(powerNormal / 1000).toFixed(0)}K`, sub: 'POWER', label: t('team.normal') },
-          { icon: '💰', val: `${commissionPct}%`, sub: t('team.commission'), label: t('team.from_purchases') },
-        ].map((item, i) => (
-          <div key={item.label} className="card" style={{
-            textAlign: 'center', padding: 14,
-            border: '1px solid var(--border)',
-            animation: `fadeIn 0.3s ease ${i * 0.1}s both`
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ flex: 1, fontSize: 14, color: '#fff', wordBreak: 'break-all' }}>
+            {data.ref_link || 'silvermibot.com/ref/yourname'}
+          </div>
+          <button onClick={copyLink} style={{
+            width: 36, height: 36, borderRadius: 8, background: 'rgba(255,255,255,0.05)',
+            border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'var(--text-secondary)', cursor: 'pointer'
           }}>
-            <div style={{ fontSize: 22, marginBottom: 6 }}>{item.icon}</div>
-            <div style={{ fontSize: 18, fontWeight: 900, color: 'var(--primary-light)' }}>{item.val}</div>
-            <div style={{ fontSize: 10, color: 'var(--primary)', letterSpacing: 1 }}>{item.sub}</div>
-            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>{item.label}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Stats row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 6, marginBottom: 16 }}>
-        {[
-          { val: data.stats.total, label: t('team.total') },
-          { val: data.stats.confirmed, label: t('team.active') },
-          { val: `${Math.floor(data.rewards.total_power / 1000)}K`, label: 'POWER', gold: true },
-          { val: fmt(data.rewards.total_ton, 4), label: 'TON', gold: true },
-        ].map(item => (
-          <div key={item.label} className="stat-pill">
-            <div className="value" style={{ color: item.gold ? 'var(--primary)' : 'var(--text)', fontSize: 18 }}>{item.val}</div>
-            <div className="label" style={{ marginTop: 2, marginBottom: 0 }}>{item.label}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* How it works hint */}
-      <div className="card" style={{ marginBottom: 16, padding: '12px 14px', border: '1px solid rgba(192,192,192,0.15)' }}>
-        <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5 }}>
-          💡 <span style={{ color: 'var(--primary)', fontWeight: 600 }}>{t('team.how_it_works')}</span>{' '}
-          {t('team.how_it_works_text', { power: (powerNormal / 1000).toFixed(0), pct: commissionPct })}
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+          </button>
         </div>
       </div>
 
-      {/* Action buttons */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
-        <button className="btn-gold" onClick={share}>{t('team.invite_friends')}</button>
-        <button className="btn-outline" onClick={copyLink}>{t('team.copy_link')}</button>
+      {/* ── Stats Row ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 16 }}>
+        <div className="card" style={{ padding: '14px 8px', textAlign: 'center' }}>
+          <div style={{ fontSize: 9, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: 4 }}>РЕФЕРАЛОВ</div>
+          <div style={{ fontSize: 16, fontWeight: 800, color: '#fff' }}>{data.stats.total}</div>
+        </div>
+        <div className="card" style={{ padding: '14px 8px', textAlign: 'center' }}>
+          <div style={{ fontSize: 9, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: 4 }}>ДОХОД (TON)</div>
+          <div style={{ fontSize: 16, fontWeight: 800, color: '#fff' }}>{fmt(data.rewards.total_ton, 8)}</div>
+        </div>
+        <div className="card" style={{ padding: '14px 8px', textAlign: 'center' }}>
+          <div style={{ fontSize: 9, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: 4 }}>ВЫПЛАЧЕНО</div>
+          <div style={{ fontSize: 16, fontWeight: 800, color: '#fff' }}>0.00000000</div>
+        </div>
       </div>
 
-      {/* Team list */}
-      {data.team.length > 0 && (
-        <div>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 10, fontWeight: 600 }}>{t('team.your_team')}</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {data.team.map((member, i) => (
-              <div key={member.id} className="card" style={{
-                display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px',
-                animation: `fadeIn 0.3s ease ${i * 0.05}s both`
-              }}>
-                <div style={{
-                  width: 38, height: 38, borderRadius: '50%', flexShrink: 0,
-                  background: 'linear-gradient(135deg, var(--primary-dark), var(--primary))',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 14, fontWeight: 700, color: '#000'
-                }}>
-                  {(member.first_name || member.username || '?')[0].toUpperCase()}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {member.first_name || member.username || 'User'}
-                    {member.is_premium && <span style={{ color: 'var(--primary)', marginLeft: 6, fontSize: 12 }}>★</span>}
-                  </div>
-                  <div style={{ fontSize: 11, color: member.is_confirmed ? 'var(--green)' : 'var(--text-muted)' }}>
-                    {member.is_confirmed ? t('team.active_status') : t('team.pending_status')}
-                  </div>
-                </div>
-                <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <div style={{ fontSize: 13, color: 'var(--primary)', fontWeight: 700 }}>
-                    {(parseFloat(member.power) / 1000).toFixed(1)}K
-                  </div>
-                  <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>POWER</div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Load more */}
-          {data.has_more && (
-            <button onClick={() => load(page + 1)} className="btn-outline"
-              style={{ marginTop: 12, padding: 10, fontSize: 12 }}>
-              {t('team.load_more')}
-            </button>
-          )}
+      {/* ── Rewards Cards ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 20 }}>
+        <div className="card" style={{ padding: '16px 8px', textAlign: 'center' }}>
+          <div style={{ fontSize: 24, marginBottom: 8 }}>⭐</div>
+          <div style={{ fontSize: 18, fontWeight: 800, color: '#fff' }}>+{powerPremium / 1000}K</div>
+          <div style={{ fontSize: 10, color: 'var(--text-secondary)', marginTop: 2 }}>POWER</div>
+          <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>Premium</div>
         </div>
-      )}
+        <div className="card" style={{ padding: '16px 8px', textAlign: 'center' }}>
+          <div style={{ fontSize: 24, marginBottom: 8 }}>👤</div>
+          <div style={{ fontSize: 18, fontWeight: 800, color: '#fff' }}>+{powerNormal / 1000}K</div>
+          <div style={{ fontSize: 10, color: 'var(--text-secondary)', marginTop: 2 }}>POWER</div>
+          <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>Обычный</div>
+        </div>
+        <div className="card" style={{ padding: '16px 8px', textAlign: 'center' }}>
+          <div style={{ fontSize: 24, marginBottom: 8 }}>💰</div>
+          <div style={{ fontSize: 18, fontWeight: 800, color: '#fff' }}>{commissionPct}%</div>
+          <div style={{ fontSize: 10, color: 'var(--text-secondary)', marginTop: 2 }}>КОМИССИЯ</div>
+          <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>С покупок</div>
+        </div>
+      </div>
+
+      {/* ── Actions ── */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <button className="btn-primary" onClick={share}>
+          🤝 ПРИГЛАСИТЬ ДРУЗЕЙ
+        </button>
+        <button onClick={copyLink} style={{
+          width: '100%', padding: '16px', background: 'var(--bg-card)', border: '1px solid var(--border)',
+          borderRadius: '8px', color: '#fff', fontSize: 13, fontWeight: 700,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, cursor: 'pointer'
+        }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          КОПИРОВАТЬ ССЫЛКУ
+        </button>
+      </div>
+      
     </div>
   );
 }
