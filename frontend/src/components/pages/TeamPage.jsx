@@ -45,15 +45,15 @@ export default function TeamPage() {
       <div style={{ marginBottom: 22 }}>
         <div className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ fontSize: 22, filter: 'drop-shadow(0 0 6px rgba(192,192,192,0.3))' }}>👥</span>
-          КОМАНДА
+          {t('team.title')}
         </div>
-        <div className="page-subtitle">Приглашай друзей и зарабатывай</div>
+        <div className="page-subtitle">{t('team.subtitle')}</div>
       </div>
 
       {/* ── Referral Link Card ── */}
       <div className="card" style={{ marginBottom: 14, padding: '18px' }}>
         <div style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10, fontWeight: 600 }}>
-          МОЯ РЕФЕРАЛЬНАЯ ССЫЛКА
+          {t('team.ref_link_label')}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
@@ -79,9 +79,9 @@ export default function TeamPage() {
       {/* ── Stats Row ── */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 14 }}>
         {[
-          { label: 'РЕФЕРАЛОВ', val: data.stats.total },
-          { label: 'ДОХОД (TON)', val: fmt(data.rewards.total_ton, 8) },
-          { label: 'ВЫПЛАЧЕНО', val: '0.00000000' }
+          { label: t('team.referrals_count'), val: data.stats.total },
+          { label: t('team.income_ton'), val: fmt(data.rewards.total_ton, 8) },
+          { label: t('team.paid_out'), val: '0.00000000' }
         ].map((item, i) => (
           <div key={i} className="card" style={{
             padding: '14px 8px', textAlign: 'center',
@@ -96,9 +96,9 @@ export default function TeamPage() {
       {/* ── Rewards Cards ── */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 20 }}>
         {[
-          { icon: '⭐', val: `+${powerPremium / 1000}K`, sub: 'POWER', label: 'Premium' },
-          { icon: '👤', val: `+${powerNormal / 1000}K`, sub: 'POWER', label: 'Обычный' },
-          { icon: '💰', val: `${commissionPct}%`, sub: 'КОМИССИЯ', label: 'С покупок' }
+          { icon: '⭐', val: `+${powerPremium / 1000}K`, sub: t('power.power_label', 'POWER'), label: t('team.premium') },
+          { icon: '👤', val: `+${powerNormal / 1000}K`, sub: t('power.power_label', 'POWER'), label: t('team.normal') },
+          { icon: '💰', val: `${commissionPct}%`, sub: t('team.commission'), label: t('team.from_purchases') }
         ].map((item, i) => (
           <div key={i} className="card" style={{
             padding: '18px 8px', textAlign: 'center',
@@ -115,14 +115,14 @@ export default function TeamPage() {
       {/* ── Actions ── */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <button className="btn-primary" onClick={share}>
-          🤝 ПРИГЛАСИТЬ ДРУЗЕЙ
+          {t('team.invite_friends')}
         </button>
         <button className="btn-outline" onClick={copyLink}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <rect x="9" y="9" width="13" height="13" rx="2"></rect>
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
           </svg>
-          КОПИРОВАТЬ ССЫЛКУ
+          {t('team.copy_link')}
         </button>
       </div>
     </div>

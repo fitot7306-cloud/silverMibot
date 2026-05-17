@@ -18,10 +18,10 @@ export default function RatingPage() {
       <div style={{ marginBottom: 22 }}>
         <div className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ fontSize: 22, filter: 'drop-shadow(0 0 6px rgba(192,192,192,0.3))' }}>🏆</span>
-          РЕЙТИНГ
+          {t('rating.title')}
         </div>
         {data.my_rank && (
-          <div className="page-subtitle">Твоя позиция: #{data.my_rank}</div>
+          <div className="page-subtitle">{t('rating.your_position', { rank: data.my_rank })}</div>
         )}
       </div>
 

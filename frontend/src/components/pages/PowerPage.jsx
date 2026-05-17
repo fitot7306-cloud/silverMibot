@@ -119,7 +119,7 @@ export default function PowerPage() {
         padding: '20px 22px'
       }}>
         <div>
-          <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase', fontWeight: 600 }}>БАЛАНС</div>
+          <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase', fontWeight: 600 }}>{t('power.balance')}</div>
           <div style={{ fontSize: 28, fontWeight: 800, color: '#fff', letterSpacing: -0.5 }}>
             {fmt(tonBalance, 8)}
           </div>
@@ -150,9 +150,9 @@ export default function PowerPage() {
           <div style={{ fontSize: 30, filter: 'drop-shadow(0 0 10px rgba(192,192,192,0.5))' }}>⚡</div>
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6, fontWeight: 600 }}>ДОБЫТО СЕГОДНЯ</div>
+          <div style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6, fontWeight: 600 }}>{t('power.mined_today')}</div>
           <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.5, fontFamily: 'monospace' }}>{liveHashes.toFixed(8)}</div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>HASHES</div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>{t('power.hashes')}</div>
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 8,
             background: 'rgba(255,255,255,0.04)', padding: '5px 12px', borderRadius: 20, fontSize: 11
@@ -192,13 +192,13 @@ export default function PowerPage() {
                 boxShadow: '0 0 6px rgba(74,222,128,0.6)',
                 animation: 'pulse 2s ease-in-out infinite'
               }}></div>
-              ОНЛАЙН
+              {t('power.online')}
             </div>
           </div>
         </div>
         <div style={{ padding: '14px 22px', borderTop: '1px solid var(--border)' }}>
           <button className="btn-primary" onClick={handleCollectAndWithdraw} disabled={collecting || (liveHashes <= 0 && tonBalance <= 0)}>
-            💎 ОБМЕНЯТЬ И ВЫВЕСТИ
+            {t('power.exchange_btn')}
           </button>
         </div>
       </div>
@@ -206,9 +206,9 @@ export default function PowerPage() {
       {/* ── Stats Row ── */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 14 }}>
         {[
-          { label: 'ДЕНЬ', val: fmt(tonPerDay, 4), icon: '🕒' },
-          { label: 'МЕСЯЦ', val: fmt(tonPerMonth, 3), icon: '📅' },
-          { label: 'ГОД', val: fmt(tonPerYear, 2), icon: '📈' }
+          { label: t('power.day'), val: fmt(tonPerDay, 4), icon: '🕒' },
+          { label: t('power.month'), val: fmt(tonPerMonth, 3), icon: '📅' },
+          { label: t('power.year'), val: fmt(tonPerYear, 2), icon: '📈' }
         ].map((item, i) => (
           <div key={i} className="card" style={{
             padding: '16px 8px', textAlign: 'center',
@@ -232,8 +232,8 @@ export default function PowerPage() {
           fontFamily: 'inherit', transition: 'var(--transition)'
         }}>
           <div style={{ fontSize: 30, filter: 'drop-shadow(0 0 6px rgba(192,192,192,0.3))' }}>⚡</div>
-          <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', textAlign: 'center', lineHeight: 1.4 }}>КУПИТЬ<br/>POWER</div>
-          <div style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.3, fontWeight: 500 }}>УВЕЛИЧЬ ДОБЫЧУ</div>
+          <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', textAlign: 'center', lineHeight: 1.4 }}>{t('power.buy_power')}<br/>{t('power.buy_power_sub')}</div>
+          <div style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.3, fontWeight: 500 }}>{t('power.buy_power_desc')}</div>
         </button>
         
         <button onClick={() => setTab('tasks')} style={{
@@ -245,8 +245,8 @@ export default function PowerPage() {
           fontFamily: 'inherit', transition: 'var(--transition)'
         }}>
           <div style={{ fontSize: 30, filter: 'drop-shadow(0 0 6px rgba(192,192,192,0.3))' }}>🎁</div>
-          <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', textAlign: 'center', lineHeight: 1.4 }}>ПОЛУЧИТЬ<br/>БЕСПЛАТНО</div>
-          <div style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.3, fontWeight: 500 }}>ВЫПОЛНИ ЗАДАНИЯ</div>
+          <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', textAlign: 'center', lineHeight: 1.4 }}>{t('power.free_power')}<br/>{t('power.free_power_sub')}</div>
+          <div style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.3, fontWeight: 500 }}>{t('power.free_power_desc')}</div>
         </button>
       </div>
 

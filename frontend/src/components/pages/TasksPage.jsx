@@ -231,9 +231,9 @@ export default function TasksPage() {
       <div style={{ marginBottom: 22 }}>
         <div className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ fontSize: 22, filter: 'drop-shadow(0 0 6px rgba(192,192,192,0.3))' }}>📋</span>
-          ЗАДАНИЯ
+          {t('tasks.title')}
         </div>
-        <div className="page-subtitle">Выполняй задания — получай бесплатный Power</div>
+        <div className="page-subtitle">{t('tasks.subtitle')}</div>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>

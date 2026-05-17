@@ -58,9 +58,9 @@ export default function ShopPage() {
       <div style={{ marginBottom: 22 }}>
         <div className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ fontSize: 22, filter: 'drop-shadow(0 0 6px rgba(192,192,192,0.3))' }}>⚡</span>
-          МАГАЗИН
+          {t('shop.title')}
         </div>
-        <div className="page-subtitle">Выбери пакет мощности для майнинга</div>
+        <div className="page-subtitle">{t('shop.subtitle')}</div>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -95,24 +95,24 @@ export default function ShopPage() {
               {/* Stats row */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 18 }}>
                 <div className="stat-pill">
-                  <div className="label">ЕЖЕДНЕВНО</div>
+                  <div className="label">{t('shop.daily')}</div>
                   <div className="value">{perDay}</div>
                   <div className="sub">TON</div>
                 </div>
                 <div className="stat-pill">
-                  <div className="label">30 ДНЕЙ</div>
+                  <div className="label">{t('shop.thirty_days')}</div>
                   <div className="value">{(perDay * 30).toFixed(3)}</div>
                   <div className="sub">TON</div>
                 </div>
                 <div className="stat-pill">
-                  <div className="label">ОКУПНОСТЬ</div>
+                  <div className="label">{t('shop.payback')}</div>
                   <div className="value">{pb}</div>
-                  <div className="sub">ДНЕЙ</div>
+                  <div className="sub">{t('shop.days_unit', 'ДНЕЙ')}</div>
                 </div>
               </div>
 
               <button className="btn-primary" onClick={() => handleBuy(pkg)} disabled={loading}>
-                {loading ? '⏳ ПОДОЖДИТЕ...' : `КУПИТЬ ЗА ${pkg.price_ton} TON`}
+                {loading ? t('shop.wait', '⏳ ПОДОЖДИТЕ...') : t('shop.buy_for', { price: pkg.price_ton })}
               </button>
             </div>
           );
