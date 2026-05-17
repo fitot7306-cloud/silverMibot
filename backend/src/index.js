@@ -59,12 +59,19 @@ app.use('/api/ambassador', generalLimit, ambassadorRoutes);
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
+// Mutex to prevent overlapping cron runs
+let accruing = false;
+
 // Cron: accrue hashes every minute
 cron.schedule('* * * * *', async () => {
+  if (accruing) { console.warn('[Mining] Skipping — previous accrual still running'); return; }
+  accruing = true;
   try {
     await accrueHashes();
   } catch (e) {
     console.error('Mining cron error:', e.message);
+  } finally {
+    accruing = false;
   }
 });
 
