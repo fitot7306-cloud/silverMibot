@@ -141,6 +141,8 @@
     "referrals_count": "РЕФЕРАЛОВ",
     "income_ton": "ДОХОД (TON)",
     "paid_out": "ВЫПЛАЧЕНО",
+    "confirmed": "АКТИВНЫХ",
+    "members_title": "ВАША КОМАНДА",
     "premium": "Premium",
     "normal": "Обычный",
     "from_purchases": "С покупок",

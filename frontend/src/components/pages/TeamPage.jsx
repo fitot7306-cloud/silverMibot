@@ -81,7 +81,7 @@ export default function TeamPage() {
         {[
           { label: t('team.referrals_count'), val: data.stats.total },
           { label: t('team.income_ton'), val: fmt(data.rewards.total_ton, 8) },
-          { label: t('team.paid_out'), val: '0.00000000' }
+          { label: t('team.confirmed'), val: data.stats.confirmed || 0 }
         ].map((item, i) => (
           <div key={i} className="card" style={{
             padding: '14px 8px', textAlign: 'center',
@@ -113,7 +113,7 @@ export default function TeamPage() {
       </div>
 
       {/* ── Actions ── */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
         <button className="btn-primary" onClick={share}>
           {t('team.invite_friends')}
         </button>
@@ -125,6 +125,54 @@ export default function TeamPage() {
           {t('team.copy_link')}
         </button>
       </div>
+
+      {/* ── Team Members List ── */}
+      {data.team && data.team.length > 0 && (
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10, fontWeight: 600 }}>
+            {t('team.members_title', 'Ваша команда')}
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {data.team.map((m, i) => (
+              <div key={m.id} className="card" style={{
+                padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                animation: `fadeIn 0.3s ease ${i * 0.04}s both`
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{
+                    width: 34, height: 34, borderRadius: '50%',
+                    background: m.is_confirmed ? 'rgba(74,222,128,0.15)' : 'rgba(255,255,255,0.05)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 14, border: `1px solid ${m.is_confirmed ? 'rgba(74,222,128,0.3)' : 'var(--border)'}`
+                  }}>
+                    {m.is_premium ? '⭐' : '👤'}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>
+                      {m.first_name || m.username || `User #${m.id}`}
+                    </div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
+                      {m.is_confirmed
+                        ? <span style={{ color: 'var(--green)' }}>● {t('team.active', 'Активен')}</span>
+                        : <span>○ {t('team.pending', 'Ожидает')}</span>
+                      }
+                    </div>
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)' }}>{fmt(m.power, 0)}</div>
+                  <div style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Power</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          {data.has_more && (
+            <button className="btn-outline" onClick={() => load(page + 1)} style={{ marginTop: 10, width: '100%' }}>
+              {t('team.load_more', 'Загрузить ещё')}
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
