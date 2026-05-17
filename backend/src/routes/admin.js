@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import crypto from 'crypto';
 import { Api } from 'grammy';
 import { pool } from '../db.js';
 
@@ -33,11 +34,34 @@ const adminMiddleware = async (req, res, next) => {
     return next();
   }
 
-  // TG-based admin auth
+  // TG-based admin auth — MUST verify initData signature
   const initData = req.headers['x-init-data'];
   if (initData) {
     try {
       const params = new URLSearchParams(initData);
+      const hash = params.get('hash');
+      params.delete('hash');
+
+      // Verify Telegram signature (same as authMiddleware)
+      const dataCheckString = Array.from(params.entries())
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([k, v]) => `${k}=${v}`)
+        .join('\n');
+
+      const secretKey = crypto
+        .createHmac('sha256', 'WebAppData')
+        .update(process.env.BOT_TOKEN)
+        .digest();
+
+      const expectedHash = crypto
+        .createHmac('sha256', secretKey)
+        .update(dataCheckString)
+        .digest('hex');
+
+      if (expectedHash !== hash) {
+        return res.status(403).json({ error: 'Invalid signature' });
+      }
+
       const userParam = params.get('user');
       if (userParam) {
         const tgUser = JSON.parse(userParam);
@@ -478,11 +502,20 @@ router.post('/users/:id/adjust', async (req, res) => {
   const fields = [];
   const vals = [];
   let idx = 1;
-  if (power !== undefined) { fields.push(`power = $${idx++}`); vals.push(power); }
-  if (ton_balance !== undefined) { fields.push(`ton_balance = $${idx++}`); vals.push(ton_balance); }
+  if (power !== undefined) {
+    const p = parseFloat(power);
+    if (isNaN(p) || p < 0 || p > 1e12) return res.status(400).json({ error: 'Invalid power value' });
+    fields.push(`power = $${idx++}`); vals.push(p);
+  }
+  if (ton_balance !== undefined) {
+    const t = parseFloat(ton_balance);
+    if (isNaN(t) || t < 0 || t > 1e9) return res.status(400).json({ error: 'Invalid ton_balance value' });
+    fields.push(`ton_balance = $${idx++}`); vals.push(t);
+  }
   if (!fields.length) return res.status(400).json({ error: 'Nothing to update' });
   vals.push(req.params.id);
   await pool.query(`UPDATE users SET ${fields.join(', ')} WHERE id = $${idx}`, vals);
+  await logAdminAction(req, 'adjust_user', `user_id=${req.params.id} power=${power} ton=${ton_balance}`);
   res.json({ success: true });
 });
 
@@ -578,6 +611,7 @@ router.post('/users/:id/block', async (req, res) => {
     }
   } catch (e) { console.error('[Block] IP blacklist error:', e.message); }
 
+  await logAdminAction(req, blocked ? 'block_user' : 'unblock_user', `user_id=${userId}`);
   res.json({ success: true, is_blocked: !!blocked });
 });
 
@@ -599,6 +633,7 @@ router.delete('/users/:id', async (req, res) => {
     await client.query(`UPDATE users SET ref_id = NULL WHERE ref_id = $1`, [uid]);
     await client.query(`DELETE FROM users WHERE id = $1`, [uid]);
     await client.query('COMMIT');
+    await logAdminAction(req, 'delete_user', `user_id=${uid}`);
     res.json({ success: true });
   } catch (e) {
     await client.query('ROLLBACK');
@@ -620,10 +655,12 @@ router.get('/withdrawals', async (req, res) => {
 
 router.post('/withdrawals/:id/approve', async (req, res) => {
   const { tx_hash } = req.body;
-  await pool.query(
-    `UPDATE withdrawals SET status = 'completed', tx_hash = $1 WHERE id = $2`,
+  const { rowCount } = await pool.query(
+    `UPDATE withdrawals SET status = 'completed', tx_hash = $1 WHERE id = $2 AND status = 'pending'`,
     [tx_hash || 'manual', req.params.id]
   );
+  if (rowCount === 0) return res.status(404).json({ error: 'Withdrawal not found or already processed' });
+  await logAdminAction(req, 'approve_withdrawal', `withdrawal_id=${req.params.id} tx=${tx_hash || 'manual'}`);
   res.json({ success: true });
 });
 
@@ -637,6 +674,7 @@ router.post('/withdrawals/:id/reject', async (req, res) => {
     await client.query(`UPDATE withdrawals SET status = 'rejected' WHERE id = $1`, [w.id]);
     await client.query(`UPDATE users SET ton_balance = ton_balance + $1 WHERE id = $2`, [w.ton_amount, w.user_id]);
     await client.query('COMMIT');
+    await logAdminAction(req, 'reject_withdrawal', `withdrawal_id=${w.id} refund=${w.ton_amount}`);
     res.json({ success: true });
   } catch (e) {
     await client.query('ROLLBACK');
