@@ -206,15 +206,15 @@ export default function PowerPage() {
       {/* ── Stats Row ── */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 14 }}>
         {[
-          { label: t('power.day'), val: fmt(tonPerDay, 4), icon: '🕒' },
-          { label: t('power.month'), val: fmt(tonPerMonth, 3), icon: '📅' },
-          { label: t('power.year'), val: fmt(tonPerYear, 2), icon: '📈' }
+          { label: t('power.day'), val: fmt(tonPerDay, 4), icon: '◇' },
+          { label: t('power.month'), val: fmt(tonPerMonth, 3), icon: '◈' },
+          { label: t('power.year'), val: fmt(tonPerYear, 2), icon: '❖' }
         ].map((item, i) => (
           <div key={i} className="card" style={{
             padding: '16px 8px', textAlign: 'center',
             animation: `fadeIn 0.35s ease ${i * 0.08}s both`
           }}>
-            <div style={{ fontSize: 18, marginBottom: 6, opacity: 0.75 }}>{item.icon}</div>
+            <div style={{ fontSize: 18, marginBottom: 6, color: 'var(--primary)', textShadow: '0 0 8px rgba(192,192,192,0.4)' }}>{item.icon}</div>
             <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 4 }}>{item.val}</div>
             <div style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }}>{item.label}</div>
           </div>
