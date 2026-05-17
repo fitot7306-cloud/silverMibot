@@ -228,22 +228,22 @@ export default function TasksPage() {
 
   return (
     <div className="page">
-      <div style={{ marginBottom: 20 }}>
+      <div style={{ marginBottom: 22 }}>
         <div className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 24, textShadow: '0 0 10px rgba(255,255,255,0.4)' }}>📋</span>
+          <span style={{ fontSize: 22, filter: 'drop-shadow(0 0 6px rgba(192,192,192,0.3))' }}>📋</span>
           ЗАДАНИЯ
         </div>
-        <div className="page-subtitle" style={{ fontSize: 12, marginTop: 4 }}>Выполняй задания — получай бесплатный Power</div>
+        <div className="page-subtitle">Выполняй задания — получай бесплатный Power</div>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {/* Monetag Ad Task */}
         {monetagAvailable && (
           <div className="card" style={{ padding: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
               <div style={{
                 width: 48, height: 48, borderRadius: 12, flexShrink: 0,
-                background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24
+                background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22
               }}>💎</div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>Смотреть Monetag</div>
@@ -251,9 +251,9 @@ export default function TasksPage() {
                 <div style={{ fontSize: 12, color: 'var(--text-primary)', fontWeight: 700 }}>+POWER награда</div>
               </div>
               <button onClick={watchMonetagAd} disabled={monetagWatching || monetagCooldown > 0} style={{
-                background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: 8, padding: '8px 12px',
-                color: '#fff', fontSize: 10, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
-                alignSelf: 'center'
+                background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 14px',
+                color: 'var(--text-primary)', fontSize: 10, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
+                alignSelf: 'center', letterSpacing: 0.3, transition: 'var(--transition)'
               }}>
                 {monetagWatching ? '⏳' : monetagCooldown > 0 ? formatCooldown(monetagCooldown) : <>▶ СМОТРЕТЬ</>}
               </button>
@@ -267,7 +267,7 @@ export default function TasksPage() {
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
               <div style={{
                 width: 48, height: 48, borderRadius: 12, flexShrink: 0,
-                background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24
+                background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22
               }}>🎬</div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>Смотреть Adsgram</div>
@@ -275,9 +275,9 @@ export default function TasksPage() {
                 <div style={{ fontSize: 12, color: 'var(--text-primary)', fontWeight: 700 }}>+POWER награда</div>
               </div>
               <button onClick={watchAd} disabled={adWatching || adCooldown > 0} style={{
-                background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: 8, padding: '8px 12px',
-                color: '#fff', fontSize: 10, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
-                alignSelf: 'center'
+                background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 14px',
+                color: 'var(--text-primary)', fontSize: 10, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
+                alignSelf: 'center', letterSpacing: 0.3, transition: 'var(--transition)'
               }}>
                 {adWatching ? '⏳' : adCooldown > 0 ? formatCooldown(adCooldown) : <>▶ СМОТРЕТЬ</>}
               </button>

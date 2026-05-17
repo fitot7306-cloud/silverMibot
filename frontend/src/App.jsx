@@ -25,8 +25,8 @@ export default function App() {
     if (tg) {
       tg.ready();
       tg.expand();
-      tg.setHeaderColor('#08080C');
-      tg.setBackgroundColor('#08080C');
+      tg.setHeaderColor('#0a0c10');
+      tg.setBackgroundColor('#0a0c10');
     }
     init();
   }, []);
@@ -38,12 +38,12 @@ export default function App() {
     return (
       <div style={{
         minHeight: '100vh', display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center', background: '#08080C',
+        alignItems: 'center', justifyContent: 'center', background: '#0a0c10',
         padding: 24, gap: 16
       }}>
         <div style={{
           width: 64, height: 64, borderRadius: '50%',
-          background: 'linear-gradient(135deg, #B8860B, #D4AF37)',
+          background: 'var(--silver-gradient)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 28, opacity: 0.4
         }}>⚡</div>
@@ -74,7 +74,7 @@ export default function App() {
     return (
       <div style={{
         minHeight: '100vh', display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center', background: '#08080C',
+        alignItems: 'center', justifyContent: 'center', background: '#0a0c10',
         padding: 32, textAlign: 'center', gap: 16
       }}>
         <div style={{
@@ -103,7 +103,7 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <div style={{ minHeight: '100vh', background: '#08080C' }}>
+      <div style={{ minHeight: '100vh', background: '#0a0c10' }}>
         {activeTab === 'power' && <PowerPage />}
         {activeTab === 'shop' && <ShopPage />}
         {activeTab === 'rating' && <RatingPage />}

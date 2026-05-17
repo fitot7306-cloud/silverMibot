@@ -23,7 +23,7 @@ export default function TeamPage() {
   const copyLink = () => {
     if (!data?.ref_link) return;
     navigator.clipboard.writeText(data.ref_link);
-    window.Telegram?.WebApp?.showAlert(t('team.link_copied', 'Скопировано!'));
+    window.Telegram?.WebApp?.showAlert('Скопировано!');
   };
 
   const share = () => {
@@ -42,30 +42,34 @@ export default function TeamPage() {
 
   return (
     <div className="page">
-      <div style={{ marginBottom: 20 }}>
+      <div style={{ marginBottom: 22 }}>
         <div className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 24, textShadow: '0 0 10px rgba(255,255,255,0.4)' }}>📋</span>
+          <span style={{ fontSize: 22, filter: 'drop-shadow(0 0 6px rgba(192,192,192,0.3))' }}>👥</span>
           КОМАНДА
         </div>
-        <div className="page-subtitle" style={{ fontSize: 12, marginTop: 4 }}>Приглашай друзей и зарабатывай</div>
+        <div className="page-subtitle">Приглашай друзей и зарабатывай</div>
       </div>
 
       {/* ── Referral Link Card ── */}
-      <div className="card" style={{ marginBottom: 16, padding: '16px' }}>
-        <div style={{ fontSize: 10, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>
+      <div className="card" style={{ marginBottom: 14, padding: '18px' }}>
+        <div style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10, fontWeight: 600 }}>
           МОЯ РЕФЕРАЛЬНАЯ ССЫЛКА
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ flex: 1, fontSize: 14, color: '#fff', wordBreak: 'break-all' }}>
-            {data.ref_link || 'silvermibot.com/ref/yourname'}
+          <div style={{
+            flex: 1, fontSize: 12, color: 'var(--text-secondary)', wordBreak: 'break-all',
+            background: 'rgba(0,0,0,0.3)', padding: '10px 14px', borderRadius: 8,
+            border: '1px solid var(--border)', fontFamily: 'monospace'
+          }}>
+            {data.ref_link || 'silvermibot.com/ref/...'}
           </div>
           <button onClick={copyLink} style={{
-            width: 36, height: 36, borderRadius: 8, background: 'rgba(255,255,255,0.05)',
-            border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'var(--text-secondary)', cursor: 'pointer'
+            width: 40, height: 40, borderRadius: 10, background: 'rgba(255,255,255,0.05)',
+            border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'var(--text-secondary)', cursor: 'pointer', flexShrink: 0, transition: 'var(--transition)'
           }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <rect x="9" y="9" width="13" height="13" rx="2"></rect>
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
             </svg>
           </button>
@@ -73,61 +77,54 @@ export default function TeamPage() {
       </div>
 
       {/* ── Stats Row ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 16 }}>
-        <div className="card" style={{ padding: '14px 8px', textAlign: 'center' }}>
-          <div style={{ fontSize: 9, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: 4 }}>РЕФЕРАЛОВ</div>
-          <div style={{ fontSize: 16, fontWeight: 800, color: '#fff' }}>{data.stats.total}</div>
-        </div>
-        <div className="card" style={{ padding: '14px 8px', textAlign: 'center' }}>
-          <div style={{ fontSize: 9, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: 4 }}>ДОХОД (TON)</div>
-          <div style={{ fontSize: 16, fontWeight: 800, color: '#fff' }}>{fmt(data.rewards.total_ton, 8)}</div>
-        </div>
-        <div className="card" style={{ padding: '14px 8px', textAlign: 'center' }}>
-          <div style={{ fontSize: 9, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: 4 }}>ВЫПЛАЧЕНО</div>
-          <div style={{ fontSize: 16, fontWeight: 800, color: '#fff' }}>0.00000000</div>
-        </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 14 }}>
+        {[
+          { label: 'РЕФЕРАЛОВ', val: data.stats.total },
+          { label: 'ДОХОД (TON)', val: fmt(data.rewards.total_ton, 8) },
+          { label: 'ВЫПЛАЧЕНО', val: '0.00000000' }
+        ].map((item, i) => (
+          <div key={i} className="card" style={{
+            padding: '14px 8px', textAlign: 'center',
+            animation: `fadeIn 0.35s ease ${i * 0.08}s both`
+          }}>
+            <div style={{ fontSize: 8, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 6, letterSpacing: 0.5, fontWeight: 600 }}>{item.label}</div>
+            <div style={{ fontSize: 14, fontWeight: 800, color: '#fff' }}>{item.val}</div>
+          </div>
+        ))}
       </div>
 
       {/* ── Rewards Cards ── */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 20 }}>
-        <div className="card" style={{ padding: '16px 8px', textAlign: 'center' }}>
-          <div style={{ fontSize: 24, marginBottom: 8 }}>⭐</div>
-          <div style={{ fontSize: 18, fontWeight: 800, color: '#fff' }}>+{powerPremium / 1000}K</div>
-          <div style={{ fontSize: 10, color: 'var(--text-secondary)', marginTop: 2 }}>POWER</div>
-          <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>Premium</div>
-        </div>
-        <div className="card" style={{ padding: '16px 8px', textAlign: 'center' }}>
-          <div style={{ fontSize: 24, marginBottom: 8 }}>👤</div>
-          <div style={{ fontSize: 18, fontWeight: 800, color: '#fff' }}>+{powerNormal / 1000}K</div>
-          <div style={{ fontSize: 10, color: 'var(--text-secondary)', marginTop: 2 }}>POWER</div>
-          <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>Обычный</div>
-        </div>
-        <div className="card" style={{ padding: '16px 8px', textAlign: 'center' }}>
-          <div style={{ fontSize: 24, marginBottom: 8 }}>💰</div>
-          <div style={{ fontSize: 18, fontWeight: 800, color: '#fff' }}>{commissionPct}%</div>
-          <div style={{ fontSize: 10, color: 'var(--text-secondary)', marginTop: 2 }}>КОМИССИЯ</div>
-          <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>С покупок</div>
-        </div>
+        {[
+          { icon: '⭐', val: `+${powerPremium / 1000}K`, sub: 'POWER', label: 'Premium' },
+          { icon: '👤', val: `+${powerNormal / 1000}K`, sub: 'POWER', label: 'Обычный' },
+          { icon: '💰', val: `${commissionPct}%`, sub: 'КОМИССИЯ', label: 'С покупок' }
+        ].map((item, i) => (
+          <div key={i} className="card" style={{
+            padding: '18px 8px', textAlign: 'center',
+            animation: `fadeIn 0.35s ease ${(i + 3) * 0.08}s both`
+          }}>
+            <div style={{ fontSize: 24, marginBottom: 8, filter: 'drop-shadow(0 0 4px rgba(192,192,192,0.2))' }}>{item.icon}</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: '#fff' }}>{item.val}</div>
+            <div style={{ fontSize: 9, color: 'var(--text-secondary)', marginTop: 3, fontWeight: 600, letterSpacing: 0.5 }}>{item.sub}</div>
+            <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 3 }}>{item.label}</div>
+          </div>
+        ))}
       </div>
 
       {/* ── Actions ── */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <button className="btn-primary" onClick={share}>
           🤝 ПРИГЛАСИТЬ ДРУЗЕЙ
         </button>
-        <button onClick={copyLink} style={{
-          width: '100%', padding: '16px', background: 'var(--bg-card)', border: '1px solid var(--border)',
-          borderRadius: '8px', color: '#fff', fontSize: 13, fontWeight: 700,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, cursor: 'pointer'
-        }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+        <button className="btn-outline" onClick={copyLink}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <rect x="9" y="9" width="13" height="13" rx="2"></rect>
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
           </svg>
           КОПИРОВАТЬ ССЫЛКУ
         </button>
       </div>
-      
     </div>
   );
 }

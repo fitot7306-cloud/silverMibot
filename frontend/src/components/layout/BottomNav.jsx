@@ -20,30 +20,45 @@ export default function BottomNav() {
   return (
     <nav style={{
       position: 'fixed', bottom: 0, left: 0, right: 0,
-      background: '#0d1016', borderTop: '1px solid var(--border)',
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '10px 16px calc(env(safe-area-inset-bottom, 8px) + 10px)',
+      background: 'rgba(10,12,16,0.95)', 
+      backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+      borderTop: '1px solid rgba(255,255,255,0.05)',
+      display: 'flex', alignItems: 'center', justifyContent: 'space-around',
+      padding: '8px 8px calc(env(safe-area-inset-bottom, 6px) + 8px)',
       zIndex: 100
     }}>
       {tabs.map(tab => {
         const active = activeTab === tab.id;
         return (
           <button key={tab.id} onClick={() => setTab(tab.id)} style={{
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
             background: 'none', border: 'none', cursor: 'pointer',
-            flex: 1, color: active ? '#fff' : 'var(--text-muted)'
+            padding: '6px 12px', borderRadius: 10, minWidth: 52,
+            transition: 'all 0.2s ease',
+            color: active ? '#fff' : 'var(--text-muted)'
           }}>
             <div style={{
-              fontSize: 22,
-              filter: active ? 'drop-shadow(0 0 8px rgba(255,255,255,0.3))' : 'grayscale(1)',
-              opacity: active ? 1 : 0.5
+              fontSize: 20,
+              filter: active ? 'drop-shadow(0 0 6px rgba(192,192,192,0.4))' : 'grayscale(1)',
+              opacity: active ? 1 : 0.45,
+              transition: 'all 0.2s ease',
+              transform: active ? 'scale(1.1)' : 'scale(1)'
             }}>
               {tab.icon}
             </div>
             <span style={{
-              fontSize: 10, fontWeight: active ? 700 : 500,
-              color: active ? '#fff' : 'var(--text-muted)',
+              fontSize: 9, fontWeight: active ? 700 : 500,
+              color: active ? '#e0e0e0' : 'var(--text-muted)',
+              letterSpacing: 0.3, transition: 'all 0.2s ease'
             }}>{tab.label}</span>
+            {active && (
+              <div style={{
+                width: 4, height: 4, borderRadius: '50%', 
+                background: 'var(--primary)',
+                boxShadow: '0 0 6px rgba(192,192,192,0.5)',
+                marginTop: -1
+              }} />
+            )}
           </button>
         );
       })}

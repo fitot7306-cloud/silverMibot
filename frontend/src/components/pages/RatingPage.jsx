@@ -4,7 +4,6 @@ import { fmtK } from '../../utils/format.js';
 import { useTranslation } from 'react-i18next';
 
 const medals = ['🥇', '🥈', '🥉'];
-const topColors = ['#fff', '#d4d4d4', '#a3a3a3'];
 
 export default function RatingPage() {
   const [data, setData] = useState(null);
@@ -16,49 +15,59 @@ export default function RatingPage() {
 
   return (
     <div className="page">
-      <div style={{ marginBottom: 20 }}>
+      <div style={{ marginBottom: 22 }}>
         <div className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 24, textShadow: '0 0 10px rgba(255,255,255,0.4)' }}>🏆</span>
+          <span style={{ fontSize: 22, filter: 'drop-shadow(0 0 6px rgba(192,192,192,0.3))' }}>🏆</span>
           РЕЙТИНГ
         </div>
         {data.my_rank && (
-          <div className="page-subtitle" style={{ fontSize: 12, marginTop: 4 }}>
-            Твоя позиция: {data.my_rank}
-          </div>
+          <div className="page-subtitle">Твоя позиция: #{data.my_rank}</div>
         )}
       </div>
 
       {/* Top 3 podium */}
       {data.leaderboard.length >= 3 && (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: 12, marginBottom: 24 }}>
+        <div style={{
+          display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: 14,
+          marginBottom: 28, padding: '10px 0'
+        }}>
           {[1, 0, 2].map(idx => {
             const u = data.leaderboard[idx];
             const isFirst = idx === 0;
+            const sizes = { 0: { avatar: 64, medal: 32, font: 22 }, 1: { avatar: 50, medal: 24, font: 16 }, 2: { avatar: 50, medal: 24, font: 16 } };
+            const s = sizes[idx];
             return (
               <div key={u.id} style={{
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-                animation: `fadeIn 0.4s ease ${idx * 0.15}s both`
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+                animation: `fadeIn 0.4s ease ${idx * 0.12}s both`
               }}>
-                <div style={{ fontSize: isFirst ? 32 : 24, filter: isFirst ? 'drop-shadow(0 0 10px rgba(255,255,255,0.5))' : 'none' }}>
-                  {medals[idx]}
-                </div>
                 <div style={{
-                  width: isFirst ? 60 : 48, height: isFirst ? 60 : 48, borderRadius: '50%',
-                  background: isFirst ? 'var(--silver-gradient)' : 'linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02))',
+                  fontSize: s.medal,
+                  filter: isFirst ? 'drop-shadow(0 0 10px rgba(255,215,0,0.4))' : 'none'
+                }}>{medals[idx]}</div>
+                <div style={{
+                  width: s.avatar, height: s.avatar, borderRadius: '50%',
+                  background: isFirst
+                    ? 'var(--silver-gradient)'
+                    : 'linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: isFirst ? 24 : 18, fontWeight: 800, color: isFirst ? '#000' : '#fff',
-                  boxShadow: isFirst ? '0 0 20px rgba(192,192,192,0.2)' : '0 0 10px rgba(0,0,0,0.5)',
-                  border: isFirst ? 'none' : '1px solid rgba(255,255,255,0.1)'
+                  fontSize: s.font, fontWeight: 800,
+                  color: isFirst ? '#0a0c10' : '#fff',
+                  boxShadow: isFirst ? '0 0 24px rgba(192,192,192,0.2)' : 'none',
+                  border: isFirst ? 'none' : '1px solid rgba(255,255,255,0.08)'
                 }}>
                   {(u.first_name || u.username || '?')[0].toUpperCase()}
                 </div>
-                <div style={{ fontSize: 12, fontWeight: 700, textAlign: 'center', maxWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{
+                  fontSize: 11, fontWeight: 700, textAlign: 'center', maxWidth: 75,
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
+                }}>
                   {u.first_name || u.username || `#${u.id}`}
                 </div>
                 <div style={{
-                  fontSize: 12, fontWeight: 800, color: topColors[idx],
-                  background: 'rgba(255,255,255,0.05)', borderRadius: 8, padding: '4px 10px',
-                  border: '1px solid rgba(255,255,255,0.1)'
+                  fontSize: 11, fontWeight: 800, color: '#fff',
+                  background: 'rgba(255,255,255,0.06)', borderRadius: 8, padding: '4px 10px',
+                  border: '1px solid rgba(255,255,255,0.08)'
                 }}>
                   {fmtK(Math.floor(u.power))}
                 </div>
@@ -77,18 +86,18 @@ export default function RatingPage() {
           }}>
             <div style={{
               width: 32, height: 32, borderRadius: 10, flexShrink: 0,
-              background: 'rgba(255,255,255,0.05)',
+              background: 'rgba(255,255,255,0.04)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)'
+              fontSize: 12, fontWeight: 700, color: 'var(--text-muted)'
             }}>{u.rank}</div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <div style={{ fontSize: 13, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {u.first_name || u.username || `User #${u.id}`}
               </div>
             </div>
             <div style={{ textAlign: 'right', flexShrink: 0 }}>
               <div style={{ fontSize: 14, fontWeight: 800, color: '#fff' }}>{fmtK(Math.floor(u.power))}</div>
-              <div style={{ fontSize: 10, color: 'var(--text-secondary)' }}>POWER</div>
+              <div style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 600 }}>POWER</div>
             </div>
           </div>
         ))}

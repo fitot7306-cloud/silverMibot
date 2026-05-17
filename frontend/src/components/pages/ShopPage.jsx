@@ -55,55 +55,64 @@ export default function ShopPage() {
 
   return (
     <div className="page">
-      <div style={{ marginBottom: 20 }}>
+      <div style={{ marginBottom: 22 }}>
         <div className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 24, textShadow: '0 0 10px rgba(255,255,255,0.4)' }}>⚡</span>
+          <span style={{ fontSize: 22, filter: 'drop-shadow(0 0 6px rgba(192,192,192,0.3))' }}>⚡</span>
           МАГАЗИН
         </div>
-        <div className="page-subtitle" style={{ fontSize: 12, marginTop: 4 }}>Выбери пакет мощности для майнинга</div>
+        <div className="page-subtitle">Выбери пакет мощности для майнинга</div>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         {packages.map((pkg, i) => {
           const perDay = tonPerDay(pkg.power_amount);
           const pb = payback(pkg.power_amount, pkg.price_ton);
           
           return (
-            <div key={pkg.id} className="card" style={{ padding: '20px' }}>
+            <div key={pkg.id} className="card" style={{
+              padding: '22px', animation: `fadeIn 0.35s ease ${i * 0.08}s both`
+            }}>
+              {/* Header: name + price */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
                 <div>
-                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 6 }}>{pkg.name}</div>
-                  <div style={{ fontSize: 32, fontWeight: 800, color: '#fff', lineHeight: 1 }}>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6, fontWeight: 600, letterSpacing: 0.5 }}>{pkg.name}</div>
+                  <div style={{ fontSize: 34, fontWeight: 800, color: '#fff', lineHeight: 1, letterSpacing: -1 }}>
                     {fmtK(pkg.power_amount)}
                   </div>
-                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', letterSpacing: 1, marginTop: 4 }}>POWER</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-secondary)', letterSpacing: 1.5, marginTop: 4, fontWeight: 600 }}>POWER</div>
                 </div>
                 <div style={{
-                  background: 'linear-gradient(135deg, #f0f0f0, #c0c0c0)',
-                  borderRadius: 10, padding: '8px 14px',
-                  fontSize: 14, fontWeight: 800, color: '#000', boxShadow: '0 4px 10px rgba(192,192,192,0.1)'
+                  background: 'var(--silver-gradient)',
+                  borderRadius: 12, padding: '10px 16px',
+                  fontSize: 15, fontWeight: 800, color: '#0a0c10',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                  letterSpacing: 0.5
                 }}>
                   {pkg.price_ton} TON
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 20 }}>
-                <div className="stat-pill" style={{ padding: '14px 8px' }}>
+              {/* Stats row */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 18 }}>
+                <div className="stat-pill">
                   <div className="label">ЕЖЕДНЕВНО</div>
-                  <div className="value">{perDay} <span style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 500 }}>TON</span></div>
+                  <div className="value">{perDay}</div>
+                  <div className="sub">TON</div>
                 </div>
-                <div className="stat-pill" style={{ padding: '14px 8px' }}>
+                <div className="stat-pill">
                   <div className="label">30 ДНЕЙ</div>
-                  <div className="value">{(perDay * 30).toFixed(3)} <span style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 500 }}>TON</span></div>
+                  <div className="value">{(perDay * 30).toFixed(3)}</div>
+                  <div className="sub">TON</div>
                 </div>
-                <div className="stat-pill" style={{ padding: '14px 8px' }}>
+                <div className="stat-pill">
                   <div className="label">ОКУПНОСТЬ</div>
-                  <div className="value">{pb} ДНЕЙ</div>
+                  <div className="value">{pb}</div>
+                  <div className="sub">ДНЕЙ</div>
                 </div>
               </div>
 
-              <button className="btn-primary" onClick={() => handleBuy(pkg)} disabled={loading} style={{ letterSpacing: 0.5 }}>
-                {loading ? 'ПОДОЖДИТЕ...' : `КУПИТЬ ЗА ${pkg.price_ton} TON`}
+              <button className="btn-primary" onClick={() => handleBuy(pkg)} disabled={loading}>
+                {loading ? '⏳ ПОДОЖДИТЕ...' : `КУПИТЬ ЗА ${pkg.price_ton} TON`}
               </button>
             </div>
           );
