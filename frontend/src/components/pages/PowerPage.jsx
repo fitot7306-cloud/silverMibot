@@ -131,7 +131,7 @@ export default function PowerPage() {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 24, boxShadow: '0 6px 16px rgba(0,0,0,0.4)',
           animation: 'glow-pulse 3s ease-in-out infinite'
-        }}>💰</div>
+        }}>💎</div>
       </div>
 
       {/* ── Mined Today Card ── */}
