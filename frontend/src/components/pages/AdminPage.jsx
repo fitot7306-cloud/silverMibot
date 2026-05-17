@@ -745,13 +745,20 @@ function UsersPanel() {
   // ── Detail View ──
   if (detail && detailData) {
     const u = detailData.user;
+    const s = detailData.summary || {};
     const statCards = [
       { icon: '⚡', label: 'POWER', val: fmtK(Math.floor(u.power)), color: 'var(--primary)' },
       { icon: '💰', label: 'TON', val: fmt(u.ton_balance, 4), color: 'var(--primary-light)' },
-      { icon: '🛒', label: 'Покупок', val: detailData.purchases.length, color: 'var(--green)' },
-      { icon: '💵', label: 'Потрачено', val: `${fmt(detailData.purchases_total, 2)}`, color: 'var(--orange)' },
+      { icon: '#️⃣', label: 'Хеши', val: fmt(u.hashes, 4), color: 'var(--text-secondary)' },
+      { icon: '💵', label: 'Депозит', val: `${fmt(s.total_deposited || 0, 2)}`, color: 'var(--green)' },
+      { icon: '💸', label: 'Выведено', val: `${fmt(s.total_withdrawn || 0, 4)}`, color: 'var(--red)' },
+      { icon: '⛏️', label: 'Добыто TON', val: fmt(s.mined_ton || 0, 6), color: 'var(--primary)' },
+      { icon: '🔄', label: 'Сборов', val: s.collections || 0, color: 'var(--text-secondary)' },
+      { icon: '📋', label: 'Заданий', val: s.tasks_done || 0, color: 'var(--orange)' },
+      { icon: '📺', label: 'Реклам', val: s.ads_watched || 0, color: 'var(--primary-light)' },
       { icon: '👥', label: 'Рефералов', val: detailData.referrals.length, color: 'var(--primary)' },
-      { icon: '💸', label: 'Выведено', val: `${fmt(detailData.withdrawals_total, 4)}`, color: 'var(--red)' },
+      { icon: '🎁', label: 'Реф Power', val: fmtK(s.ref_power || 0), color: 'var(--green)' },
+      { icon: '💎', label: 'Реф TON', val: fmt(s.ref_ton || 0, 4), color: 'var(--primary-light)' },
     ];
     return (
       <div>
@@ -768,6 +775,10 @@ function UsersPanel() {
             </div>
             <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
               ID:{u.id} • TG:{u.tg_id} {u.username ? `• @${u.username}` : ''}
+            </div>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
+              Создан: {new Date(u.created_at).toLocaleDateString()} • Онлайн: {u.last_seen_at ? new Date(u.last_seen_at).toLocaleString() : '—'}
+              {u.last_ip && <> • IP: <span style={{ fontFamily: 'monospace' }}>{u.last_ip}</span></>}
             </div>
           </div>
         </div>
@@ -801,6 +812,55 @@ function UsersPanel() {
             <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--primary-light)' }}>💎 {fmt(detailData.referral_rewards?.total_ton || 0, 4)} TON</span>
           </div>
         </div>
+
+        {/* Earnings Summary */}
+        <div className="card" style={{ padding: '12px 14px', marginBottom: 10 }}>
+          <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 8, fontWeight: 600 }}>💰 ИСТОЧНИКИ ЗАРАБОТКА</div>
+          {[
+            { label: '⛏️ Майнинг', val: `${fmt(s.mined_ton || 0, 8)} TON`, sub: `${s.collections || 0} сборов` },
+            { label: '🛒 Покупки', val: `${fmt(s.total_deposited || 0, 4)} TON`, sub: `${detailData.purchases.length} шт` },
+            { label: '👥 Реф.подписки', val: `${fmtK(s.ref_power || 0)} PW`, sub: `${detailData.referrals.length} реф` },
+            { label: '💎 Реф.комиссия', val: `${fmt(s.ref_ton || 0, 8)} TON`, sub: 'от покупок' },
+            { label: '📋 Задания', val: `${fmtK(s.task_power || 0)} PW`, sub: `${s.tasks_done || 0} шт` },
+            { label: '📺 Реклама', val: `${s.ads_watched || 0} просм.`, sub: 'Power бонус' },
+            { label: '💸 Выведено', val: `${fmt(s.total_withdrawn || 0, 8)} TON`, sub: `fee: ${fmt(s.total_fees || 0, 4)}` },
+          ].map(r => (
+            <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+              <div><div style={{ fontSize: 12, fontWeight: 600 }}>{r.label}</div><div style={{ fontSize: 9, color: 'var(--text-muted)' }}>{r.sub}</div></div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--primary)', fontFamily: 'monospace' }}>{r.val}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Mining History */}
+        {(detailData.mining_logs || []).length > 0 && (
+          <div style={{ marginBottom: 10 }}>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 6, fontWeight: 600 }}>⛏️ МАЙНИНГ ({detailData.mining_logs.length})</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {detailData.mining_logs.slice(0, 10).map(m => (
+                <div key={m.id} className="card" style={{ padding: '8px 12px', display: 'flex', justifyContent: 'space-between' }}>
+                  <div><div style={{ fontSize: 12, fontWeight: 600, fontFamily: 'monospace' }}>+{fmt(m.hashes_earned, 8)} H</div><div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{new Date(m.created_at).toLocaleString()}</div></div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--green)', fontFamily: 'monospace' }}>+{fmt(m.ton_converted, 8)} TON</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Tasks Completed */}
+        {(detailData.tasks_completed || []).length > 0 && (
+          <div style={{ marginBottom: 10 }}>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 6, fontWeight: 600 }}>📋 ЗАДАНИЯ ({detailData.tasks_completed.length})</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {detailData.tasks_completed.map((t, i) => (
+                <div key={i} className="card" style={{ padding: '8px 12px', display: 'flex', justifyContent: 'space-between' }}>
+                  <div><div style={{ fontSize: 12, fontWeight: 600 }}>{t.title || t.type}</div><div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{new Date(t.completed_at).toLocaleString()}</div></div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--green)' }}>+{fmtK(t.reward_power)} PW</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Purchases */}
         {detailData.purchases.length > 0 && (
@@ -854,6 +914,36 @@ function UsersPanel() {
                   <div style={{ fontSize: 11, fontWeight: 600, color: w.status === 'completed' ? 'var(--green)' : w.status === 'rejected' ? 'var(--red)' : 'var(--orange)' }}>
                     {w.status === 'completed' ? '✅' : w.status === 'rejected' ? '❌' : '⏳'} {w.status}
                   </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Promo Uses */}
+        {(detailData.promo_uses || []).length > 0 && (
+          <div style={{ marginBottom: 10 }}>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 6, fontWeight: 600 }}>🎟️ ПРОМОКОДЫ ({detailData.promo_uses.length})</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {detailData.promo_uses.map((p, i) => (
+                <div key={i} className="card" style={{ padding: '8px 12px', display: 'flex', justifyContent: 'space-between' }}>
+                  <div><div style={{ fontSize: 12, fontWeight: 700, fontFamily: 'monospace' }}>{p.code}</div><div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{new Date(p.used_at).toLocaleString()}</div></div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--green)' }}>-{p.discount_pct}%</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* IP History */}
+        {(detailData.ip_history || []).length > 0 && (
+          <div style={{ marginBottom: 10 }}>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 6, fontWeight: 600 }}>🌐 IP АДРЕСА ({detailData.ip_history.length})</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {detailData.ip_history.map((ip, i) => (
+                <div key={i} className="card" style={{ padding: '6px 12px', display: 'flex', justifyContent: 'space-between' }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, fontFamily: 'monospace' }}>{ip.ip}</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{new Date(ip.created_at).toLocaleString()}</div>
                 </div>
               ))}
             </div>

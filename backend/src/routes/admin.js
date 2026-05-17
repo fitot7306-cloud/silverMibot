@@ -530,17 +530,20 @@ router.get('/users/:id/details', async (req, res) => {
        WHERE p.user_id = $1 ORDER BY p.created_at DESC`, [uid]
     ),
     pool.query(
-      `SELECT r.id, r.is_confirmed, r.created_at, u.tg_id, u.username, u.first_name
+      `SELECT r.id, r.is_confirmed, r.created_at, u.tg_id, u.username, u.first_name, u.power, u.ton_balance, u.is_premium
        FROM referrals r JOIN users u ON u.id = r.referee_id
        WHERE r.referrer_id = $1 ORDER BY r.created_at DESC`, [uid]
     ),
     pool.query(
       `SELECT COALESCE(SUM(power_amount), 0) as total_power,
-              COALESCE(SUM(ton_amount), 0) as total_ton
+              COALESCE(SUM(ton_amount), 0) as total_ton,
+              COALESCE(SUM(CASE WHEN reward_type = 'power' OR reward_type = 'signup' THEN power_amount ELSE 0 END), 0) as signup_power,
+              COALESCE(SUM(CASE WHEN reward_type = 'commission' THEN ton_amount ELSE 0 END), 0) as commission_ton,
+              COUNT(*) as reward_count
        FROM referral_rewards WHERE referrer_id = $1`, [uid]
     ),
     pool.query(
-      `SELECT id, ton_amount, status, wallet_address, created_at
+      `SELECT id, ton_amount, fee_amount, status, wallet_address, tx_hash, created_at
        FROM withdrawals WHERE user_id = $1 ORDER BY created_at DESC`, [uid]
     ),
     pool.query(
@@ -550,27 +553,60 @@ router.get('/users/:id/details', async (req, res) => {
   ]);
   if (!user.rows.length) return res.status(404).json({ error: 'User not found' });
 
-  // Referrer info
+  const [miningLogs, tasksDone, rewardsList, ipHistory, promoUses, miningTotals] = await Promise.all([
+    pool.query(`SELECT id, hashes_earned, ton_converted, created_at FROM mining_log WHERE user_id = $1 ORDER BY created_at DESC LIMIT 20`, [uid]),
+    pool.query(`SELECT ut.completed_at, t.title, t.reward_power, t.type FROM user_tasks ut JOIN tasks t ON t.id = ut.task_id WHERE ut.user_id = $1 ORDER BY ut.completed_at DESC`, [uid]),
+    pool.query(`SELECT rr.reward_type, rr.power_amount, rr.ton_amount, rr.created_at, u.tg_id as from_tg_id, u.username as from_username, u.first_name as from_name FROM referral_rewards rr LEFT JOIN users u ON u.id = rr.referee_id WHERE rr.referrer_id = $1 ORDER BY rr.created_at DESC LIMIT 50`, [uid]),
+    pool.query(`SELECT ip, created_at FROM user_ips WHERE user_id = $1 ORDER BY created_at DESC LIMIT 20`, [uid]),
+    pool.query(`SELECT pcu.source, pcu.used_at, pc.code, pc.discount_pct FROM promo_code_uses pcu JOIN promo_codes pc ON pc.id = pcu.promo_id WHERE pcu.user_id = $1 ORDER BY pcu.used_at DESC`, [uid]),
+    pool.query(`SELECT COUNT(*) as collections, COALESCE(SUM(hashes_earned), 0) as total_hashes, COALESCE(SUM(ton_converted), 0) as total_ton_mined FROM mining_log WHERE user_id = $1`, [uid]),
+  ]);
+
   let referrer = null;
   if (user.rows[0].ref_id) {
-    const { rows } = await pool.query(
-      `SELECT id, tg_id, username, first_name FROM users WHERE id = $1`, [user.rows[0].ref_id]
-    );
+    const { rows } = await pool.query(`SELECT id, tg_id, username, first_name FROM users WHERE id = $1`, [user.rows[0].ref_id]);
     if (rows.length) referrer = rows[0];
   }
+
+  const purchasesTotal = purchases.rows.reduce((s, p) => s + parseFloat(p.ton_paid || 0), 0);
+  const wCompleted = withdrawals.rows.filter(w => w.status === 'completed');
+  const withdrawalsTotal = wCompleted.reduce((s, w) => s + parseFloat(w.ton_amount || 0), 0);
+  const withdrawalsFees = wCompleted.reduce((s, w) => s + parseFloat(w.fee_amount || 0), 0);
+  const taskPower = tasksDone.rows.reduce((s, t) => s + parseFloat(t.reward_power || 0), 0);
 
   res.json({
     user: user.rows[0],
     referrer,
     purchases: purchases.rows,
-    purchases_total: purchases.rows.reduce((s, p) => s + parseFloat(p.ton_paid || 0), 0),
+    purchases_total: purchasesTotal,
     referrals: referrals.rows,
     referral_rewards: rewards.rows[0],
+    referral_rewards_list: rewardsList.rows,
     withdrawals: withdrawals.rows,
-    withdrawals_total: withdrawals.rows
-      .filter(w => w.status === 'completed')
-      .reduce((s, w) => s + parseFloat(w.ton_amount || 0), 0),
+    withdrawals_total: withdrawalsTotal,
+    withdrawals_fees: withdrawalsFees,
     pending_orders: pendingOrders.rows,
+    mining_logs: miningLogs.rows,
+    mining_totals: miningTotals.rows[0],
+    tasks_completed: tasksDone.rows,
+    ip_history: ipHistory.rows,
+    promo_uses: promoUses.rows,
+    summary: {
+      total_deposited: purchasesTotal,
+      total_withdrawn: withdrawalsTotal,
+      total_fees: withdrawalsFees,
+      mined_hashes: parseFloat(miningTotals.rows[0].total_hashes),
+      mined_ton: parseFloat(miningTotals.rows[0].total_ton_mined),
+      collections: parseInt(miningTotals.rows[0].collections),
+      ref_power: parseFloat(rewards.rows[0].signup_power),
+      ref_ton: parseFloat(rewards.rows[0].commission_ton),
+      tasks_done: tasksDone.rows.length,
+      task_power: taskPower,
+      ads_watched: parseInt(user.rows[0].ads_watched || 0),
+      power: parseFloat(user.rows[0].power),
+      ton: parseFloat(user.rows[0].ton_balance),
+      hashes: parseFloat(user.rows[0].hashes),
+    }
   });
 });
 
