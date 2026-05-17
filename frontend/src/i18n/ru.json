@@ -41,6 +41,10 @@
     "promo_placeholder": "Введите код",
     "promo_applied": "скидка применена",
     "promo_invalid": "Неверный код",
+    "promo_err_promo_not_found": "Промокод не найден",
+    "promo_err_promo_expired": "Промокод истёк",
+    "promo_err_promo_limit_reached": "Лимит использований исчерпан",
+    "promo_err_promo_already_used": "Вы уже использовали этот промокод",
     "badge_hit": "🔥 Хит",
     "badge_top": "👑 Топ"
   },

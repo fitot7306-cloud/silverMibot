@@ -10,6 +10,14 @@ const router = Router();
 const adCooldowns = new Map();
 const adDailyCounts = new Map(); // userId -> { date, count }
 
+// Cleanup stale entries every 10 minutes
+setInterval(() => {
+  const now = Date.now();
+  const today = new Date().toISOString().slice(0, 10);
+  for (const [k, v] of adCooldowns) { if (now - v > 300000) adCooldowns.delete(k); }
+  for (const [k, v] of adDailyCounts) { if (v.date !== today) adDailyCounts.delete(k); }
+}, 10 * 60 * 1000);
+
 // Public: get ad config (block IDs from DB)
 router.get('/ad-config', async (req, res) => {
   try {
@@ -293,6 +301,14 @@ router.get('/ad-status', authMiddleware, async (req, res) => {
 // ── Monetag: separate cooldown/daily tracking ──
 const monetagCooldowns = new Map();
 const monetagDailyCounts = new Map();
+
+// Cleanup monetag maps every 10 minutes
+setInterval(() => {
+  const now = Date.now();
+  const today = new Date().toISOString().slice(0, 10);
+  for (const [k, v] of monetagCooldowns) { if (now - v > 300000) monetagCooldowns.delete(k); }
+  for (const [k, v] of monetagDailyCounts) { if (v.date !== today) monetagDailyCounts.delete(k); }
+}, 10 * 60 * 1000);
 
 router.post('/monetag-reward', authMiddleware, async (req, res) => {
   const userId = req.user.id;

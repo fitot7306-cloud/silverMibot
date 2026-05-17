@@ -24,18 +24,21 @@ router.get('/status', authMiddleware, async (req, res) => {
 
 router.post('/collect', authMiddleware, async (req, res) => {
   const user = req.user;
-  const hashes = parseFloat(user.hashes);
-  if (hashes <= 0) return res.status(400).json({ error: 'No hashes to collect' });
 
-  const tonEarned = hashes * TON_PER_HASH;
-
-  await pool.query(
+  // Atomic: zero hashes and return previous value in one query
+  const { rows } = await pool.query(
     `UPDATE users SET 
-      ton_balance = ton_balance + $1,
+      ton_balance = ton_balance + (hashes * $1),
       hashes = 0
-     WHERE id = $2`,
-    [tonEarned, user.id]
+     WHERE id = $2 AND hashes > 0
+     RETURNING (hashes * $1) as ton_earned`,
+    [TON_PER_HASH, user.id]
   );
+
+  if (!rows.length) return res.status(400).json({ error: 'No hashes to collect' });
+
+  const tonEarned = parseFloat(rows[0].ton_earned);
+  const hashes = tonEarned / TON_PER_HASH;
 
   await pool.query(
     `INSERT INTO mining_log (user_id, hashes_earned, ton_converted) VALUES ($1, $2, $3)`,

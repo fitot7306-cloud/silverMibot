@@ -41,6 +41,10 @@
     "promo_placeholder": "أدخل الرمز",
     "promo_applied": "تم تطبيق الخصم",
     "promo_invalid": "رمز غير صالح",
+    "promo_err_promo_not_found": "الرمز الترويجي غير موجود",
+    "promo_err_promo_expired": "انتهت صلاحية الرمز",
+    "promo_err_promo_limit_reached": "تم الوصول لحد الاستخدام",
+    "promo_err_promo_already_used": "لقد استخدمت هذا الرمز بالفعل",
     "badge_hit": "🔥 رائج",
     "badge_top": "👑 الأفضل"
   },

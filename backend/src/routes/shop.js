@@ -11,6 +11,12 @@ const generateMemo = () => crypto.randomBytes(6).toString('hex').toUpperCase(); 
 // Per-user cooldown map for manual check (30s)
 const checkCooldowns = new Map();
 
+// Cleanup expired cooldowns every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [k, v] of checkCooldowns) { if (now - v > 60000) checkCooldowns.delete(k); }
+}, 5 * 60 * 1000);
+
 router.get('/packages', authMiddleware, async (req, res) => {
   const { rows } = await pool.query(
     `SELECT * FROM power_packages WHERE is_active = TRUE ORDER BY power_amount ASC`
@@ -27,21 +33,21 @@ router.post('/validate-promo', authMiddleware, async (req, res) => {
   const { rows } = await pool.query(
     `SELECT * FROM promo_codes WHERE UPPER(code) = $1 AND is_active = TRUE`, [clean]
   );
-  if (!rows.length) return res.json({ valid: false, error: 'Промокод не найден' });
+  if (!rows.length) return res.json({ valid: false, error: 'promo_not_found' });
 
   const promo = rows[0];
   if (promo.expires_at && new Date(promo.expires_at) < new Date()) {
-    return res.json({ valid: false, error: 'Промокод истёк' });
+    return res.json({ valid: false, error: 'promo_expired' });
   }
   if (promo.max_uses > 0 && promo.used_count >= promo.max_uses) {
-    return res.json({ valid: false, error: 'Лимит использований исчерпан' });
+    return res.json({ valid: false, error: 'promo_limit_reached' });
   }
   // Check if user already used this promo (only actual purchases, not broadcast distributions)
   const { rows: uses } = await pool.query(
     `SELECT id FROM promo_code_uses WHERE promo_id = $1 AND user_id = $2 AND source = 'purchase'`,
     [promo.id, req.user.id]
   );
-  if (uses.length) return res.json({ valid: false, error: 'Вы уже использовали этот промокод' });
+  if (uses.length) return res.json({ valid: false, error: 'promo_already_used' });
 
   res.json({ valid: true, discount_pct: promo.discount_pct, code: promo.code });
 });
@@ -157,7 +163,6 @@ router.post('/check-payment', authMiddleware, async (req, res) => {
     await checkPendingPayments();
 
     // Return updated order status for this user
-    const { data: hist } = { data: null };
     const { rows } = await pool.query(
       `SELECT pp.status, pp.memo, pp.ton_amount, pkg.power_amount
        FROM pending_purchases pp

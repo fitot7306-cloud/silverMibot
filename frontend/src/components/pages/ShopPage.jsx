@@ -107,7 +107,7 @@ export default function ShopPage() {
           }}>
             {promoResult.valid
               ? `✅ -${promoResult.discount_pct}% ${t('shop.promo_applied', 'скидка применена')}`
-              : `❌ ${promoResult.error || t('shop.promo_invalid', 'Неверный код')}`
+              : `❌ ${t('shop.promo_err_' + promoResult.error, t('shop.promo_invalid', 'Invalid code'))}`
             }
           </div>
         )}

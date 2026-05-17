@@ -136,10 +136,15 @@ router.post('/', authMiddleware, async (req, res) => {
   try {
     await client.query('BEGIN');
 
-    await client.query(
-      `UPDATE users SET ton_balance = ton_balance - $1 WHERE id = $2`,
+    const { rowCount } = await client.query(
+      `UPDATE users SET ton_balance = ton_balance - $1 WHERE id = $2 AND ton_balance >= $1`,
       [amount, user.id]
     );
+
+    if (rowCount === 0) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ error: 'Insufficient balance' });
+    }
 
     const { rows } = await client.query(
       `INSERT INTO withdrawals (user_id, ton_amount, wallet_address, fee_amount)

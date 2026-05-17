@@ -41,6 +41,10 @@
     "promo_placeholder": "Введіть код",
     "promo_applied": "знижка застосована",
     "promo_invalid": "Невірний код",
+    "promo_err_promo_not_found": "Промокод не знайдено",
+    "promo_err_promo_expired": "Промокод закінчився",
+    "promo_err_promo_limit_reached": "Ліміт використань вичерпано",
+    "promo_err_promo_already_used": "Ви вже використали цей промокод",
     "badge_hit": "🔥 Хіт",
     "badge_top": "👑 Топ"
   },

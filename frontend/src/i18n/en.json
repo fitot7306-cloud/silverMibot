@@ -41,6 +41,10 @@
     "promo_placeholder": "Enter code",
     "promo_applied": "discount applied",
     "promo_invalid": "Invalid code",
+    "promo_err_promo_not_found": "Promo code not found",
+    "promo_err_promo_expired": "Promo code expired",
+    "promo_err_promo_limit_reached": "Usage limit reached",
+    "promo_err_promo_already_used": "You already used this code",
     "badge_hit": "🔥 Hot",
     "badge_top": "👑 Top"
   },
