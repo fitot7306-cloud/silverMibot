@@ -1,38 +1,13 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useStore } from '../../store/index.js';
-import { fmt, fmtK } from '../../utils/format.js';
+import { fmt } from '../../utils/format.js';
 import { useTranslation } from 'react-i18next';
 import { useInterstitialAd } from '../../hooks/useInterstitialAd.js';
-import api from '../../utils/api.js';
 
 export default function PowerPage() {
   const { user, mining, fetchMining, collect, setTab, isAdmin } = useStore();
   const { t, i18n } = useTranslation();
   const { showAdThen: monetagShowAd } = useInterstitialAd();
-  const adsgramIntRef = useRef(null);
-
-  useEffect(() => {
-    api.get('/tasks/ad-config').then(r => {
-      const blockId = r.data?.adsgram_interstitial_block_id;
-      if (!blockId) return;
-      const tryInit = () => {
-        if (window.Adsgram) {
-          try { adsgramIntRef.current = window.Adsgram.init({ blockId }); } catch (e) {}
-          return true;
-        }
-        return false;
-      };
-      if (!tryInit()) {
-        const iv = setInterval(() => { if (tryInit()) clearInterval(iv); }, 500);
-        setTimeout(() => clearInterval(iv), 5000);
-      }
-    }).catch(() => {});
-  }, []);
-
-  const showAdThen = useCallback(async (cb) => {
-    if (adsgramIntRef.current) { try { await adsgramIntRef.current.show(); } catch (e) {} }
-    cb();
-  }, []);
 
   const [collecting, setCollecting] = useState(false);
   const [liveHashes, setLiveHashes] = useState(0);
@@ -67,8 +42,6 @@ export default function PowerPage() {
   const tonPerMonth = mining?.ton_per_month || 0;
   const tonPerYear = tonPerDay * 365;
   const liveTon = liveHashes * (mining?.ton_per_hash || 0);
-  const minedToday = mining?.mined_today || 0;
-  const minedTotal = mining?.mined_total || 0;
 
   return (
     <div className="page" style={{ position: 'relative' }}>
@@ -114,7 +87,7 @@ export default function PowerPage() {
       </div>
 
       {/* ── Balance Card ── */}
-      <div className="card" onClick={() => showAdThen(() => setTab('withdraw'))} style={{
+      <div className="card" onClick={() => setTab('withdraw')} style={{
         marginBottom: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '20px 22px'
       }}>

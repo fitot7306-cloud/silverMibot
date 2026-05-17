@@ -372,70 +372,70 @@ router.post('/monetag-reward', authMiddleware, async (req, res) => {
     const cooldownSec = settings.ad_cooldown_seconds || 60;
     const dailyLimit = settings.ad_daily_limit || 50;
 
-  // Check cooldown
-  const lastWatch = monetagCooldowns.get(userId);
-  const now = Date.now();
-  if (lastWatch && (now - lastWatch) < cooldownSec * 1000) {
-    const remaining = Math.ceil((cooldownSec * 1000 - (now - lastWatch)) / 1000);
-    return res.status(429).json({ error: 'Cooldown', cooldown: remaining });
-  }
+    // Check cooldown
+    const lastWatch = monetagCooldowns.get(userId);
+    const now = Date.now();
+    if (lastWatch && (now - lastWatch) < cooldownSec * 1000) {
+      const remaining = Math.ceil((cooldownSec * 1000 - (now - lastWatch)) / 1000);
+      return res.status(429).json({ error: 'Cooldown', cooldown: remaining });
+    }
 
-  // Check daily limit
-  const today = new Date().toISOString().slice(0, 10);
-  const daily = monetagDailyCounts.get(userId);
-  if (daily && daily.date === today && daily.count >= dailyLimit) {
-    return res.status(429).json({ error: 'Daily limit reached', daily_limit: dailyLimit });
-  }
+    // Check daily limit
+    const today = new Date().toISOString().slice(0, 10);
+    const daily = monetagDailyCounts.get(userId);
+    if (daily && daily.date === today && daily.count >= dailyLimit) {
+      return res.status(429).json({ error: 'Daily limit reached', daily_limit: dailyLimit });
+    }
 
-  // Give reward + increment ads_watched
-  await pool.query(
-    `UPDATE users SET power = power + $1, ads_watched = COALESCE(ads_watched, 0) + 1 WHERE id = $2`,
-    [rewardPower, userId]
-  );
-
-  // ── Activate referral on first monetag watch ──
-  const { rows: pendingRef } = await pool.query(
-    `SELECT r.id, r.referrer_id FROM referrals r WHERE r.referee_id = $1 AND r.is_confirmed = FALSE`,
-    [userId]
-  );
-
-  let refActivated = false;
-  if (pendingRef.length > 0) {
-    const ref = pendingRef[0];
-    const referrerId = ref.referrer_id;
-
-    const { rows: referrerRows } = await pool.query(
-      `SELECT is_premium FROM users WHERE id = $1`, [referrerId]
-    );
-    const isPremium = referrerRows[0]?.is_premium;
-    const refReward = isPremium
-      ? (settings.ref_power_premium || 6000)
-      : (settings.ref_power_normal || 3000);
-
-    await pool.query(`UPDATE referrals SET is_confirmed = TRUE WHERE id = $1`, [ref.id]);
-    await pool.query(`UPDATE users SET power = power + $1 WHERE id = $2`, [refReward, referrerId]);
+    // Give reward + increment ads_watched
     await pool.query(
-      `INSERT INTO referral_rewards (referrer_id, referee_id, reward_type, power_amount) VALUES ($1, $2, 'signup', $3)`,
-      [referrerId, userId, refReward]
+      `UPDATE users SET power = power + $1, ads_watched = COALESCE(ads_watched, 0) + 1 WHERE id = $2`,
+      [rewardPower, userId]
     );
 
-    refActivated = true;
-    console.log(`✅ Referral activated via Monetag: referrer=${referrerId} +${refReward} POWER (user ${userId})`);
-  }
+    // ── Activate referral on first monetag watch ──
+    const { rows: pendingRef } = await pool.query(
+      `SELECT r.id, r.referrer_id FROM referrals r WHERE r.referee_id = $1 AND r.is_confirmed = FALSE`,
+      [userId]
+    );
 
-  // Set cooldown
-  monetagCooldowns.set(userId, now);
+    let refActivated = false;
+    if (pendingRef.length > 0) {
+      const ref = pendingRef[0];
+      const referrerId = ref.referrer_id;
 
-  // Update daily count
-  if (daily && daily.date === today) {
-    daily.count++;
-  } else {
-    monetagDailyCounts.set(userId, { date: today, count: 1 });
-  }
+      const { rows: referrerRows } = await pool.query(
+        `SELECT is_premium FROM users WHERE id = $1`, [referrerId]
+      );
+      const isPremium = referrerRows[0]?.is_premium;
+      const refReward = isPremium
+        ? (settings.ref_power_premium || 6000)
+        : (settings.ref_power_normal || 3000);
 
-  const dailyCurrent = monetagDailyCounts.get(userId);
-  console.log(`[Monetag] User ${userId} watched ad, +${rewardPower} POWER (${dailyCurrent.count}/${dailyLimit} today)`);
-  res.json({ success: true, reward: rewardPower, cooldown: cooldownSec, ref_activated: refActivated, daily_count: dailyCurrent.count, daily_limit: dailyLimit });
+      await pool.query(`UPDATE referrals SET is_confirmed = TRUE WHERE id = $1`, [ref.id]);
+      await pool.query(`UPDATE users SET power = power + $1 WHERE id = $2`, [refReward, referrerId]);
+      await pool.query(
+        `INSERT INTO referral_rewards (referrer_id, referee_id, reward_type, power_amount) VALUES ($1, $2, 'signup', $3)`,
+        [referrerId, userId, refReward]
+      );
+
+      refActivated = true;
+      console.log(`✅ Referral activated via Monetag: referrer=${referrerId} +${refReward} POWER (user ${userId})`);
+    }
+
+    // Set cooldown
+    monetagCooldowns.set(userId, now);
+
+    // Update daily count
+    if (daily && daily.date === today) {
+      daily.count++;
+    } else {
+      monetagDailyCounts.set(userId, { date: today, count: 1 });
+    }
+
+    const dailyCurrent = monetagDailyCounts.get(userId);
+    console.log(`[Monetag] User ${userId} watched ad, +${rewardPower} POWER (${dailyCurrent.count}/${dailyLimit} today)`);
+    res.json({ success: true, reward: rewardPower, cooldown: cooldownSec, ref_activated: refActivated, daily_count: dailyCurrent.count, daily_limit: dailyLimit });
   } finally {
     adLocks.delete(userId);
   }
