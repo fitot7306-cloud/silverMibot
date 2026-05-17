@@ -1,13 +1,35 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useStore } from '../../store/index.js';
 import { fmt } from '../../utils/format.js';
 import { useTranslation } from 'react-i18next';
 import { useInterstitialAd } from '../../hooks/useInterstitialAd.js';
+import { useGesture8 } from '../../hooks/useGesture8.js';
+import api from '../../utils/api.js';
 
 export default function PowerPage() {
-  const { user, mining, fetchMining, collect, setTab, isAdmin } = useStore();
+  const { user, mining, fetchMining, collect, setTab } = useStore();
   const { t, i18n } = useTranslation();
   const { showAdThen: monetagShowAd } = useInterstitialAd();
+  const [gestureHint, setGestureHint] = useState(null);
+
+  // Secret gesture: draw figure-8 to access admin panel
+  const onGesture8 = useCallback(async () => {
+    try {
+      setGestureHint('🔍');
+      const { data } = await api.get('/admin/check-admin');
+      if (data.isAdmin) {
+        setGestureHint('✅');
+        setTimeout(() => { setGestureHint(null); setTab('admin'); }, 400);
+      } else {
+        setGestureHint('❌');
+        setTimeout(() => setGestureHint(null), 1200);
+      }
+    } catch (e) {
+      setGestureHint('❌');
+      setTimeout(() => setGestureHint(null), 1200);
+    }
+  }, [setTab]);
+  useGesture8(onGesture8);
 
   const [collecting, setCollecting] = useState(false);
   const [liveHashes, setLiveHashes] = useState(0);
@@ -59,13 +81,14 @@ export default function PowerPage() {
           <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 0.5 }}>Cloud Mining</div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          {isAdmin && (
-            <button onClick={() => setTab('admin')} style={{
+          {/* Gesture hint indicator */}
+          {gestureHint && (
+            <div style={{
               width: 38, height: 38, borderRadius: 10,
-              background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)',
+              background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 16, cursor: 'pointer', color: 'var(--text-secondary)'
-            }}>⚙️</button>
+              fontSize: 16, animation: 'fadeIn 0.2s ease',
+            }}>{gestureHint}</div>
           )}
           <button onClick={() => {
             const langs = ['ru', 'en', 'uk', 'ar'];
