@@ -146,13 +146,14 @@ export default function PowerPage() {
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6, fontWeight: 600 }}>ДОБЫТО СЕГОДНЯ</div>
-          <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.5 }}>{liveTon.toFixed(8)} <span style={{ fontSize: 13, color: 'var(--text-secondary)', fontWeight: 500 }}>TON</span></div>
+          <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.5, fontFamily: 'monospace' }}>{liveHashes.toFixed(8)}</div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>HASHES</div>
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 8,
             background: 'rgba(255,255,255,0.04)', padding: '5px 12px', borderRadius: 20, fontSize: 11
           }}>
-            <span style={{ color: 'var(--green)', fontWeight: 600 }}>+0.00%</span>
-            <span style={{ color: 'var(--text-muted)', fontSize: 10 }}>= {(liveTon).toFixed(8)} TON</span>
+            <span style={{ color: 'var(--green)', fontWeight: 600 }}>≈</span>
+            <span style={{ color: 'var(--text-secondary)', fontSize: 10, fontWeight: 600 }}>{liveTon.toFixed(8)} TON</span>
           </div>
         </div>
       </div>
