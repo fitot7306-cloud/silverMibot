@@ -188,7 +188,19 @@
     "status_approved": "✅ تمت الموافقة",
     "status_rejected": "❌ مرفوض",
     "empty_title": "كن سفيراً!",
-    "empty_desc": "قدّم طلباً بقناتك على Telegram ({{min}}+ مشترك) وكن شريكنا"
+    "empty_desc": "قدّم طلباً بقناتك على Telegram ({{min}}+ مشترك) وكن شريكنا",
+    "tab_list": "السفراء",
+    "tab_partner": "كن شريكاً",
+    "empty_list": "لا يوجد سفراء بعد",
+    "empty_list_desc": "كن أول شريك!",
+    "promo_hint": "رمز ترويجي للخصم",
+    "promo_in_channel": "في القناة",
+    "open_channel": "فتح القناة",
+    "cancel_success": "✅ تم إلغاء الشراكة",
+    "cancel_error": "❌ خطأ",
+    "cancel_confirm": "هل أنت متأكد أنك تريد إلغاء الشراكة؟",
+    "cancelling": "جارٍ الإلغاء...",
+    "cancel_partnership": "إلغاء الشراكة"
   },
   "withdraw": {
     "title": "💎 سحب TON",

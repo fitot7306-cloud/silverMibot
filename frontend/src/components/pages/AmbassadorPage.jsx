@@ -56,10 +56,10 @@ export default function AmbassadorPage() {
     setCancelling(true);
     try {
       await api.post('/ambassador/cancel');
-      setMsg('✅ Партнёрство отменено');
+      setMsg(t('ambassador.cancel_success', '✅ Партнёрство отменено'));
       load();
     } catch (e) {
-      setMsg('❌ Ошибка');
+      setMsg(t('ambassador.cancel_error', '❌ Ошибка'));
     }
     setCancelling(false);
     setTimeout(() => setMsg(null), 4000);
@@ -101,8 +101,8 @@ export default function AmbassadorPage() {
       {/* Sub-tabs */}
       <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
         {[
-          { id: 'list', label: '📢 Амбассадоры', icon: '' },
-          { id: 'partner', label: '🤝 Стать партнёром', icon: '' },
+          { id: 'list', label: '📢 ' + t('ambassador.tab_list', 'Амбассадоры'), icon: '' },
+          { id: 'partner', label: '🤝 ' + t('ambassador.tab_partner', 'Стать партнёром'), icon: '' },
         ].map(tab => (
           <button key={tab.id} onClick={() => setSubTab(tab.id)} style={{
             flex: 1, padding: '10px 8px', borderRadius: 12, border: 'none',
@@ -140,8 +140,8 @@ export default function AmbassadorPage() {
           {ambassadors.length === 0 ? (
             <div className="card" style={{ textAlign: 'center', padding: 30 }}>
               <div style={{ fontSize: 40, marginBottom: 10 }}>📢</div>
-              <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 6 }}>Амбассадоров пока нет</div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Стань первым партнёром!</div>
+              <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 6 }}>{t('ambassador.empty_list', 'Амбассадоров пока нет')}</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t('ambassador.empty_list_desc', 'Стань первым партнёром!')}</div>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -181,7 +181,7 @@ export default function AmbassadorPage() {
                     }}>
                       <span style={{ fontSize: 16 }}>🎟</span>
                       <div style={{ fontSize: 11, color: 'var(--primary)', fontWeight: 600 }}>
-                        Промокод на скидку <span style={{ fontWeight: 900 }}>-{amb.discount_pct}%</span> в канале 👇
+                        {t('ambassador.promo_hint', 'Промокод на скидку')} <span style={{ fontWeight: 900 }}>-{amb.discount_pct}%</span> {t('ambassador.promo_in_channel', 'в канале')} 👇
                       </div>
                     </div>
                   )}
@@ -197,7 +197,7 @@ export default function AmbassadorPage() {
                       textAlign: 'center', textDecoration: 'none',
                     }}
                   >
-                    📱 Открыть канал
+                    📱 {t('ambassador.open_channel', 'Открыть канал')}
                   </a>
                 </div>
               ))}
@@ -405,7 +405,7 @@ export default function AmbassadorPage() {
                   color: 'var(--red)', fontWeight: 700, fontSize: 13, cursor: 'pointer',
                   opacity: cancelling ? 0.5 : 1,
                 }}>
-                  {cancelling ? '⏳ Отмена...' : '🚫 Отказаться от партнёрства'}
+                  {cancelling ? '⏳ ' + t('ambassador.cancelling', 'Отмена...') : '🚫 ' + t('ambassador.cancel_partnership', 'Отказаться от партнёрства')}
                 </button>
               )}
             </div>

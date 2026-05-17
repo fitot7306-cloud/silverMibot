@@ -188,7 +188,19 @@
     "status_approved": "✅ Approved",
     "status_rejected": "❌ Rejected",
     "empty_title": "Become an ambassador!",
-    "empty_desc": "Submit an application with your Telegram channel ({{min}}+ subscribers) and become our partner"
+    "empty_desc": "Apply with your Telegram channel ({{min}}+ subscribers) and become our partner",
+    "tab_list": "Ambassadors",
+    "tab_partner": "Become Partner",
+    "empty_list": "No ambassadors yet",
+    "empty_list_desc": "Be the first partner!",
+    "promo_hint": "Promo code for discount",
+    "promo_in_channel": "in channel",
+    "open_channel": "Open channel",
+    "cancel_success": "✅ Partnership cancelled",
+    "cancel_error": "❌ Error",
+    "cancel_confirm": "Are you sure you want to cancel the partnership?",
+    "cancelling": "Cancelling...",
+    "cancel_partnership": "Cancel partnership"
   },
   "withdraw": {
     "title": "💎 Withdraw TON",
