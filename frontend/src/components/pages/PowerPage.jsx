@@ -3,7 +3,6 @@ import { useStore } from '../../store/index.js';
 import { fmt } from '../../utils/format.js';
 import { useTranslation } from 'react-i18next';
 import { useInterstitialAd } from '../../hooks/useInterstitialAd.js';
-import { useGesture8 } from '../../hooks/useGesture8.js';
 import api from '../../utils/api.js';
 
 export default function PowerPage() {
@@ -12,24 +11,43 @@ export default function PowerPage() {
   const { showAdThen: monetagShowAd } = useInterstitialAd();
   const [gestureHint, setGestureHint] = useState(null);
 
-  // Secret gesture: draw figure-8 to access admin panel
-  const onGesture8 = useCallback(async () => {
-    try {
+  // Secret admin access: tap logo 5 times quickly (like Android dev mode)
+  const tapCountRef = React.useRef(0);
+  const tapTimerRef = React.useRef(null);
+  const checkingRef = React.useRef(false);
+
+  const handleLogoTap = useCallback(async () => {
+    if (checkingRef.current) return;
+    tapCountRef.current++;
+
+    if (tapTimerRef.current) clearTimeout(tapTimerRef.current);
+    tapTimerRef.current = setTimeout(() => { tapCountRef.current = 0; }, 2500);
+
+    if (tapCountRef.current >= 5) {
+      tapCountRef.current = 0;
+      checkingRef.current = true;
       setGestureHint('🔍');
-      const { data } = await api.get('/admin/check-admin');
-      if (data.isAdmin) {
-        setGestureHint('✅');
-        setTimeout(() => { setGestureHint(null); setTab('admin'); }, 400);
-      } else {
+      try {
+        const { data } = await api.get('/admin/check-admin');
+        if (data.isAdmin) {
+          setGestureHint('✅');
+          setTimeout(() => { setGestureHint(null); setTab('admin'); }, 400);
+        } else {
+          setGestureHint('❌');
+          setTimeout(() => setGestureHint(null), 1200);
+        }
+      } catch (e) {
         setGestureHint('❌');
         setTimeout(() => setGestureHint(null), 1200);
+      } finally {
+        checkingRef.current = false;
       }
-    } catch (e) {
-      setGestureHint('❌');
-      setTimeout(() => setGestureHint(null), 1200);
+    } else if (tapCountRef.current >= 3) {
+      // Subtle hint after 3 taps
+      setGestureHint(`${5 - tapCountRef.current}`);
+      setTimeout(() => setGestureHint(null), 800);
     }
   }, [setTab]);
-  useGesture8(onGesture8);
 
   const [collecting, setCollecting] = useState(false);
   const [liveHashes, setLiveHashes] = useState(0);
@@ -73,7 +91,7 @@ export default function PowerPage() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         marginBottom: 24
       }}>
-        <div>
+        <div onClick={handleLogoTap} style={{ cursor: 'default', userSelect: 'none', WebkitTapHighlightColor: 'transparent' }}>
           <div className="text-silver" style={{
             fontSize: 24, fontWeight: 900, letterSpacing: 1,
             textTransform: 'uppercase'
