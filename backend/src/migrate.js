@@ -389,6 +389,11 @@ const migrate = async () => {
       ALTER TABLE power_packages ADD COLUMN IF NOT EXISTS is_popular BOOLEAN DEFAULT FALSE;
     `);
 
+    // ── Bonus Power (temporary, decays daily) ──
+    await client.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS bonus_power NUMERIC(20,2) DEFAULT 0;
+    `);
+
     console.log('Migration complete');
   } catch (e) {
     console.error('Migration error:', e);

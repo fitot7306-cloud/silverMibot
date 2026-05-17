@@ -15,7 +15,7 @@ import tasksRoutes from './routes/tasks.js';
 import leaderboardRoutes from './routes/leaderboard.js';
 import adminRoutes, { getAllAdminIds } from './routes/admin.js';
 import ambassadorRoutes from './routes/ambassador.js';
-import { accrueHashes } from './services/mining.js';
+import { accrueHashes, decayBonusPower } from './services/mining.js';
 import { checkPendingPayments } from './services/payment.js';
 import './bot.js'; // Start Telegram bot
 
@@ -81,6 +81,15 @@ cron.schedule('*/2 * * * *', async () => {
     await checkPendingPayments();
   } catch (e) {
     console.error('Payment cron error:', e.message);
+  }
+});
+
+// Cron: decay bonus_power by 15% daily (3:00 AM)
+cron.schedule('0 3 * * *', async () => {
+  try {
+    await decayBonusPower();
+  } catch (e) {
+    console.error('Bonus decay cron error:', e.message);
   }
 });
 

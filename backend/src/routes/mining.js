@@ -7,11 +7,14 @@ const router = Router();
 
 router.get('/status', authMiddleware, async (req, res) => {
   const user = req.user;
-  const hashesPerDay = getHashesPerMinute(parseFloat(user.power)) * 1440;
+  const totalPower = parseFloat(user.power) + parseFloat(user.bonus_power || 0);
+  const hashesPerDay = getHashesPerMinute(totalPower) * 1440;
   const tonPerDay = hashesPerDay * TON_PER_HASH;
 
   res.json({
     power: parseFloat(user.power),
+    bonus_power: parseFloat(user.bonus_power || 0),
+    total_power: totalPower,
     hashes: parseFloat(user.hashes),
     ton_balance: parseFloat(user.ton_balance),
     hashes_per_day: hashesPerDay,

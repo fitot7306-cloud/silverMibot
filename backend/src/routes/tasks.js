@@ -155,7 +155,7 @@ router.post('/:id/complete', authMiddleware, async (req, res) => {
     );
 
     await client.query(
-      `UPDATE users SET power = power + $1 WHERE id = $2`,
+      `UPDATE users SET bonus_power = COALESCE(bonus_power, 0) + $1 WHERE id = $2`,
       [task.reward_power, user.id]
     );
 
@@ -256,7 +256,7 @@ router.post('/ad-reward', authMiddleware, async (req, res) => {
 
     // Give ad reward to user + increment ads_watched
     await pool.query(
-      `UPDATE users SET power = power + $1, ads_watched = COALESCE(ads_watched, 0) + 1 WHERE id = $2`,
+      `UPDATE users SET bonus_power = COALESCE(bonus_power, 0) + $1, ads_watched = COALESCE(ads_watched, 0) + 1 WHERE id = $2`,
       [rewardPower, userId]
     );
 
@@ -284,7 +284,7 @@ router.post('/ad-reward', authMiddleware, async (req, res) => {
       await pool.query(`UPDATE referrals SET is_confirmed = TRUE WHERE id = $1`, [ref.id]);
 
       // Give referrer their reward
-      await pool.query(`UPDATE users SET power = power + $1 WHERE id = $2`, [refReward, referrerId]);
+      await pool.query(`UPDATE users SET bonus_power = COALESCE(bonus_power, 0) + $1 WHERE id = $2`, [refReward, referrerId]);
 
       // Log reward
       await pool.query(
@@ -389,7 +389,7 @@ router.post('/monetag-reward', authMiddleware, async (req, res) => {
 
     // Give reward + increment ads_watched
     await pool.query(
-      `UPDATE users SET power = power + $1, ads_watched = COALESCE(ads_watched, 0) + 1 WHERE id = $2`,
+      `UPDATE users SET bonus_power = COALESCE(bonus_power, 0) + $1, ads_watched = COALESCE(ads_watched, 0) + 1 WHERE id = $2`,
       [rewardPower, userId]
     );
 
@@ -414,7 +414,7 @@ router.post('/monetag-reward', authMiddleware, async (req, res) => {
         : (settings.ref_power_normal || 3000);
 
       await pool.query(`UPDATE referrals SET is_confirmed = TRUE WHERE id = $1`, [ref.id]);
-      await pool.query(`UPDATE users SET power = power + $1 WHERE id = $2`, [refReward, referrerId]);
+      await pool.query(`UPDATE users SET bonus_power = COALESCE(bonus_power, 0) + $1 WHERE id = $2`, [refReward, referrerId]);
       await pool.query(
         `INSERT INTO referral_rewards (referrer_id, referee_id, reward_type, power_amount) VALUES ($1, $2, 'signup', $3)`,
         [referrerId, userId, refReward]
