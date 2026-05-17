@@ -64,6 +64,8 @@ export default function PowerPage() {
   };
 
   const power = parseFloat(user?.power || 0);
+  const bonusPower = parseFloat(mining?.bonus_power || 0);
+  const totalPower = power + bonusPower;
   const tonBalance = parseFloat(user?.ton_balance || 0);
   const hashesPerDay = mining?.hashes_per_day || 0;
   const tonPerDay = mining?.ton_per_day || 0;
@@ -162,9 +164,14 @@ export default function PowerPage() {
           <div>
             <div style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6, fontWeight: 600 }}>POWER</div>
             <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.5 }}>
-              {fmt(power, 4)} <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 600 }}>GH/s</span>
+              {fmt(totalPower, 4)} <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 600 }}>GH/s</span>
             </div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>≈ {(liveTon).toFixed(8)} TON</div>
+            {bonusPower > 0 && (
+              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
+                ⚡ {fmtK(power)} + 🎁 {fmtK(bonusPower)}
+              </div>
+            )}
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>≈ {(liveTon).toFixed(8)} TON</div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
             {/* Mini chart */}
