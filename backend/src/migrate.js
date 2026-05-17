@@ -378,6 +378,17 @@ const migrate = async () => {
       CREATE INDEX IF NOT EXISTS idx_admin_activity_tg ON admin_activity_log(admin_tg_id);
     `);
 
+    // ── Enhanced Package fields ──
+    await client.query(`
+      ALTER TABLE power_packages ADD COLUMN IF NOT EXISTS description TEXT;
+      ALTER TABLE power_packages ADD COLUMN IF NOT EXISTS badge VARCHAR(50);
+      ALTER TABLE power_packages ADD COLUMN IF NOT EXISTS sale_price NUMERIC(10,4);
+      ALTER TABLE power_packages ADD COLUMN IF NOT EXISTS sale_until TIMESTAMP;
+      ALTER TABLE power_packages ADD COLUMN IF NOT EXISTS sort_order INTEGER DEFAULT 0;
+      ALTER TABLE power_packages ADD COLUMN IF NOT EXISTS duration_days INTEGER DEFAULT 28;
+      ALTER TABLE power_packages ADD COLUMN IF NOT EXISTS is_popular BOOLEAN DEFAULT FALSE;
+    `);
+
     console.log('Migration complete');
   } catch (e) {
     console.error('Migration error:', e);

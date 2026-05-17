@@ -1816,7 +1816,7 @@ function PackagesPanel() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
-  const [form, setForm] = useState({ name: '', power_amount: '', price_ton: '' });
+  const [form, setForm] = useState({ name: '', power_amount: '', price_ton: '', description: '', badge: '', sale_price: '', sale_until: '', sort_order: '0', duration_days: '28', is_popular: false });
   const [msg, setMsg] = useState(null);
 
   const load = async () => {
@@ -1830,7 +1830,7 @@ function PackagesPanel() {
   useEffect(() => { load(); }, []);
 
   const resetForm = () => {
-    setForm({ name: '', power_amount: '', price_ton: '' });
+    setForm({ name: '', power_amount: '', price_ton: '', description: '', badge: '', sale_price: '', sale_until: '', sort_order: '0', duration_days: '28', is_popular: false });
     setShowForm(false);
     setEditingId(null);
   };
@@ -1838,7 +1838,10 @@ function PackagesPanel() {
   const create = async () => {
     if (!form.name || !form.power_amount || !form.price_ton) return;
     await api.post('/admin/packages', {
-      name: form.name, power_amount: parseFloat(form.power_amount), price_ton: parseFloat(form.price_ton)
+      name: form.name, power_amount: parseFloat(form.power_amount), price_ton: parseFloat(form.price_ton),
+      description: form.description, badge: form.badge, sale_price: form.sale_price ? parseFloat(form.sale_price) : null,
+      sale_until: form.sale_until || null, sort_order: parseInt(form.sort_order) || 0,
+      duration_days: parseInt(form.duration_days) || 28, is_popular: form.is_popular
     });
     resetForm();
     load();
@@ -1846,14 +1849,22 @@ function PackagesPanel() {
 
   const startEdit = (pkg) => {
     setEditingId(pkg.id);
-    setForm({ name: pkg.name, power_amount: String(pkg.power_amount), price_ton: String(pkg.price_ton) });
+    setForm({
+      name: pkg.name, power_amount: String(pkg.power_amount), price_ton: String(pkg.price_ton),
+      description: pkg.description || '', badge: pkg.badge || '',
+      sale_price: pkg.sale_price ? String(pkg.sale_price) : '', sale_until: pkg.sale_until ? pkg.sale_until.slice(0, 16) : '',
+      sort_order: String(pkg.sort_order || 0), duration_days: String(pkg.duration_days || 28), is_popular: !!pkg.is_popular
+    });
     setShowForm(false);
   };
 
   const saveEdit = async () => {
     if (!form.name || !form.power_amount || !form.price_ton) return;
     await api.put(`/admin/packages/${editingId}`, {
-      name: form.name, power_amount: parseFloat(form.power_amount), price_ton: parseFloat(form.price_ton)
+      name: form.name, power_amount: parseFloat(form.power_amount), price_ton: parseFloat(form.price_ton),
+      description: form.description, badge: form.badge, sale_price: form.sale_price ? parseFloat(form.sale_price) : null,
+      sale_until: form.sale_until || null, sort_order: parseInt(form.sort_order) || 0,
+      duration_days: parseInt(form.duration_days) || 28, is_popular: form.is_popular
     });
     resetForm();
     load();
@@ -1904,11 +1915,56 @@ function PackagesPanel() {
         <div className="card" style={{ marginBottom: 14 }}>
           <input type="text" value={form.name} onChange={e => setForm({...form, name: e.target.value})}
             placeholder="Название" style={{ marginBottom: 8, fontSize: 13 }} />
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
+          <input type="text" value={form.description} onChange={e => setForm({...form, description: e.target.value})}
+            placeholder="Описание (необяз.)" style={{ marginBottom: 8, fontSize: 12 }} />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
             <input type="number" value={form.power_amount} onChange={e => setForm({...form, power_amount: e.target.value})}
               placeholder="Power" style={{ fontSize: 13 }} />
             <input type="number" value={form.price_ton} onChange={e => setForm({...form, price_ton: e.target.value})}
               placeholder="Цена TON" step="0.01" style={{ fontSize: 13 }} />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
+            <div>
+              <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 3 }}>🏷️ Бейдж</div>
+              <select value={form.badge} onChange={e => setForm({...form, badge: e.target.value})}
+                style={{ width: '100%', padding: 8, borderRadius: 8, background: 'var(--bg-card)', border: '1px solid var(--border)', color: '#fff', fontSize: 12 }}>
+                <option value="">Нет</option>
+                <option value="HOT">🔥 HOT</option>
+                <option value="BEST">⭐ BEST</option>
+                <option value="NEW">🆕 NEW</option>
+                <option value="SALE">💰 SALE</option>
+                <option value="VIP">👑 VIP</option>
+              </select>
+            </div>
+            <div>
+              <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 3 }}>📅 Дней</div>
+              <input type="number" value={form.duration_days} onChange={e => setForm({...form, duration_days: e.target.value})}
+                style={{ fontSize: 13 }} />
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
+            <div>
+              <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 3 }}>🏷️ Акция цена</div>
+              <input type="number" value={form.sale_price} onChange={e => setForm({...form, sale_price: e.target.value})}
+                placeholder="Без акции" step="0.01" style={{ fontSize: 12 }} />
+            </div>
+            <div>
+              <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 3 }}>⏰ Акция до</div>
+              <input type="datetime-local" value={form.sale_until} onChange={e => setForm({...form, sale_until: e.target.value})}
+                style={{ fontSize: 11, padding: 7, borderRadius: 8, background: 'var(--bg-card)', border: '1px solid var(--border)', color: '#fff', width: '100%' }} />
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
+            <div>
+              <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 3 }}>📊 Порядок</div>
+              <input type="number" value={form.sort_order} onChange={e => setForm({...form, sort_order: e.target.value})}
+                style={{ fontSize: 13 }} />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 14 }}>
+              <input type="checkbox" checked={form.is_popular} onChange={e => setForm({...form, is_popular: e.target.checked})}
+                style={{ width: 18, height: 18, accentColor: 'var(--primary)' }} />
+              <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>⭐ Популярный</span>
+            </div>
           </div>
           <button className="btn-gold" onClick={create} style={{ padding: 10, fontSize: 13 }}>💾 Создать</button>
         </div>
@@ -1956,16 +2012,56 @@ function PackagesPanel() {
                 </div>
                 <input type="text" value={form.name} onChange={e => setForm({...form, name: e.target.value})}
                   placeholder="Название" style={{ marginBottom: 8, fontSize: 13 }} />
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
+                <input type="text" value={form.description} onChange={e => setForm({...form, description: e.target.value})}
+                  placeholder="Описание" style={{ marginBottom: 8, fontSize: 12 }} />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
                   <div>
-                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>POWER</div>
-                    <input type="number" value={form.power_amount} onChange={e => setForm({...form, power_amount: e.target.value})}
-                      style={{ fontSize: 13 }} />
+                    <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 3 }}>POWER</div>
+                    <input type="number" value={form.power_amount} onChange={e => setForm({...form, power_amount: e.target.value})} style={{ fontSize: 13 }} />
                   </div>
                   <div>
-                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>ЦЕНА TON</div>
-                    <input type="number" value={form.price_ton} onChange={e => setForm({...form, price_ton: e.target.value})}
-                      step="0.01" style={{ fontSize: 13 }} />
+                    <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 3 }}>ЦЕНА TON</div>
+                    <input type="number" value={form.price_ton} onChange={e => setForm({...form, price_ton: e.target.value})} step="0.01" style={{ fontSize: 13 }} />
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
+                  <div>
+                    <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 3 }}>🏷️ Бейдж</div>
+                    <select value={form.badge} onChange={e => setForm({...form, badge: e.target.value})}
+                      style={{ width: '100%', padding: 8, borderRadius: 8, background: 'var(--bg-card)', border: '1px solid var(--border)', color: '#fff', fontSize: 12 }}>
+                      <option value="">Нет</option>
+                      <option value="HOT">🔥 HOT</option>
+                      <option value="BEST">⭐ BEST</option>
+                      <option value="NEW">🆕 NEW</option>
+                      <option value="SALE">💰 SALE</option>
+                      <option value="VIP">👑 VIP</option>
+                    </select>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 3 }}>📅 Дней</div>
+                    <input type="number" value={form.duration_days} onChange={e => setForm({...form, duration_days: e.target.value})} style={{ fontSize: 13 }} />
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
+                  <div>
+                    <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 3 }}>🏷️ Акция цена</div>
+                    <input type="number" value={form.sale_price} onChange={e => setForm({...form, sale_price: e.target.value})} placeholder="—" step="0.01" style={{ fontSize: 12 }} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 3 }}>⏰ Акция до</div>
+                    <input type="datetime-local" value={form.sale_until} onChange={e => setForm({...form, sale_until: e.target.value})}
+                      style={{ fontSize: 11, padding: 7, borderRadius: 8, background: 'var(--bg-card)', border: '1px solid var(--border)', color: '#fff', width: '100%' }} />
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
+                  <div>
+                    <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 3 }}>📊 Порядок</div>
+                    <input type="number" value={form.sort_order} onChange={e => setForm({...form, sort_order: e.target.value})} style={{ fontSize: 13 }} />
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 14 }}>
+                    <input type="checkbox" checked={form.is_popular} onChange={e => setForm({...form, is_popular: e.target.checked})}
+                      style={{ width: 18, height: 18, accentColor: 'var(--primary)' }} />
+                    <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>⭐ Популярный</span>
                   </div>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
@@ -1981,29 +2077,40 @@ function PackagesPanel() {
               </div>
             ) : (
               /* View mode */
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700 }}>{p.name}</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                    {fmtK(p.power_amount)} POWER • {p.price_ton} TON
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: 14, fontWeight: 700 }}>{p.name}</span>
+                      {p.badge && <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 4, background: p.badge === 'HOT' ? 'rgba(239,68,68,0.2)' : p.badge === 'SALE' ? 'rgba(251,191,36,0.2)' : 'rgba(192,192,192,0.15)', color: p.badge === 'HOT' ? '#ef4444' : p.badge === 'SALE' ? '#fbbf24' : 'var(--primary)' }}>{p.badge}</span>}
+                      {p.is_popular && <span style={{ fontSize: 10 }}>⭐</span>}
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                      {fmtK(p.power_amount)} PW • {p.sale_price && new Date(p.sale_until) > new Date() ? (<><span style={{ textDecoration: 'line-through', opacity: 0.5 }}>{p.price_ton}</span> <span style={{ color: 'var(--green)', fontWeight: 700 }}>{p.sale_price} TON</span></>) : <>{p.price_ton} TON</>}
+                      {' '}• {p.duration_days || 28}д
+                    </div>
+                    {p.description && <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{p.description}</div>}
+                    {p.sale_price && p.sale_until && <div style={{ fontSize: 9, color: new Date(p.sale_until) > new Date() ? 'var(--green)' : 'var(--red)', marginTop: 2 }}>
+                      🏷️ Акция до {new Date(p.sale_until).toLocaleString()}{new Date(p.sale_until) <= new Date() ? ' (истекла)' : ''}
+                    </div>}
                   </div>
+                  <button onClick={() => startEdit(p)} style={{
+                    background: 'rgba(255,255,255,0.04)', border: 'none', borderRadius: 8,
+                    padding: '6px 10px', color: 'var(--text-muted)',
+                    fontSize: 12, cursor: 'pointer'
+                  }}>✏️</button>
+                  <button onClick={() => toggle(p.id)} style={{
+                    background: p.is_active ? 'var(--green-bg)' : 'var(--red-bg)',
+                    border: 'none', borderRadius: 8, padding: '6px 12px',
+                    color: p.is_active ? 'var(--green)' : 'var(--red)',
+                    fontSize: 12, fontWeight: 600, cursor: 'pointer'
+                  }}>{p.is_active ? '✅' : '❌'}</button>
+                  <button onClick={() => setConfirmDelete(p.id)} style={{
+                    background: 'var(--red-bg)', border: 'none', borderRadius: 8,
+                    padding: '6px 8px', color: 'var(--red)',
+                    fontSize: 12, cursor: 'pointer'
+                  }}>🗑</button>
                 </div>
-                <button onClick={() => startEdit(p)} style={{
-                  background: 'rgba(255,255,255,0.04)', border: 'none', borderRadius: 8,
-                  padding: '6px 10px', color: 'var(--text-muted)',
-                  fontSize: 12, cursor: 'pointer'
-                }}>✏️</button>
-                <button onClick={() => toggle(p.id)} style={{
-                  background: p.is_active ? 'var(--green-bg)' : 'var(--red-bg)',
-                  border: 'none', borderRadius: 8, padding: '6px 12px',
-                  color: p.is_active ? 'var(--green)' : 'var(--red)',
-                  fontSize: 12, fontWeight: 600, cursor: 'pointer'
-                }}>{p.is_active ? '✅' : '❌'}</button>
-                <button onClick={() => setConfirmDelete(p.id)} style={{
-                  background: 'var(--red-bg)', border: 'none', borderRadius: 8,
-                  padding: '6px 8px', color: 'var(--red)',
-                  fontSize: 12, cursor: 'pointer'
-                }}>🗑</button>
               </div>
             )}
           </div>

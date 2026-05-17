@@ -44,7 +44,9 @@ export default function ShopPage() {
 
   const handleBuy = async (pkg) => {
     const tg = window.Telegram?.WebApp;
-    const confirmText = t('shop.confirm_buy', { power: fmtK(pkg.power_amount), price: pkg.price_ton });
+    const isSale = pkg.sale_price && pkg.sale_until && new Date(pkg.sale_until) > new Date();
+    const price = isSale ? pkg.sale_price : pkg.price_ton;
+    const confirmText = t('shop.confirm_buy', { power: fmtK(pkg.power_amount), price });
     const confirmed = await new Promise(resolve => {
       if (tg) tg.showConfirm(confirmText, resolve);
       else resolve(window.confirm(confirmText));
@@ -115,32 +117,61 @@ export default function ShopPage() {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         {packages.map((pkg, i) => {
+          const isSaleActive = pkg.sale_price && pkg.sale_until && new Date(pkg.sale_until) > new Date();
+          const effectivePrice = isSaleActive ? parseFloat(pkg.sale_price) : parseFloat(pkg.price_ton);
           const perDay = tonPerDay(pkg.power_amount);
-          const pb = payback(pkg.power_amount, pkg.price_ton);
+          const pb = payback(pkg.power_amount, effectivePrice);
+          const days = pkg.duration_days || 28;
           
           return (
             <div key={pkg.id} className="card" style={{
-              padding: '22px', animation: `fadeIn 0.35s ease ${i * 0.08}s both`
+              padding: '22px', animation: `fadeIn 0.35s ease ${i * 0.08}s both`,
+              border: pkg.is_popular ? '1px solid rgba(192,192,192,0.3)' : undefined,
+              position: 'relative', overflow: 'hidden'
             }}>
+              {/* Badge */}
+              {pkg.badge && (
+                <div style={{
+                  position: 'absolute', top: 10, right: -24, background: pkg.badge === 'HOT' ? '#ef4444' : pkg.badge === 'SALE' ? '#fbbf24' : pkg.badge === 'VIP' ? 'var(--primary)' : '#4ade80',
+                  color: pkg.badge === 'SALE' ? '#000' : '#fff', fontSize: 9, fontWeight: 900, padding: '3px 28px',
+                  transform: 'rotate(45deg)', letterSpacing: 1
+                }}>{pkg.badge}</div>
+              )}
+
               {/* Header: name + price */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
                 <div>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6, fontWeight: 600, letterSpacing: 0.5 }}>{pkg.name}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6, fontWeight: 600, letterSpacing: 0.5 }}>
+                    {pkg.name} {pkg.is_popular && '⭐'}
+                  </div>
                   <div style={{ fontSize: 34, fontWeight: 800, color: '#fff', lineHeight: 1, letterSpacing: -1 }}>
                     {fmtK(pkg.power_amount)}
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--text-secondary)', letterSpacing: 1.5, marginTop: 4, fontWeight: 600 }}>POWER</div>
                 </div>
-                <div style={{
-                  background: 'var(--silver-gradient)',
-                  borderRadius: 12, padding: '10px 16px',
-                  fontSize: 15, fontWeight: 800, color: '#0a0c10',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-                  letterSpacing: 0.5
-                }}>
-                  {pkg.price_ton} TON
+                <div style={{ textAlign: 'right' }}>
+                  {isSaleActive && (
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', textDecoration: 'line-through', marginBottom: 2 }}>
+                      {pkg.price_ton} TON
+                    </div>
+                  )}
+                  <div style={{
+                    background: isSaleActive ? 'linear-gradient(135deg, #4ade80, #22c55e)' : 'var(--silver-gradient)',
+                    borderRadius: 12, padding: '10px 16px',
+                    fontSize: 15, fontWeight: 800, color: isSaleActive ? '#fff' : '#0a0c10',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.3)', letterSpacing: 0.5
+                  }}>
+                    {effectivePrice} TON
+                  </div>
                 </div>
               </div>
+
+              {/* Description */}
+              {pkg.description && (
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 12, lineHeight: 1.4 }}>
+                  {pkg.description}
+                </div>
+              )}
 
               {/* Stats row */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 18 }}>
@@ -150,8 +181,8 @@ export default function ShopPage() {
                   <div className="sub">TON</div>
                 </div>
                 <div className="stat-pill">
-                  <div className="label">{t('shop.thirty_days')}</div>
-                  <div className="value">{(perDay * 30).toFixed(3)}</div>
+                  <div className="label">{days} {t('shop.days_unit', 'ДНЕЙ')}</div>
+                  <div className="value">{(perDay * days).toFixed(3)}</div>
                   <div className="sub">TON</div>
                 </div>
                 <div className="stat-pill">
@@ -162,7 +193,7 @@ export default function ShopPage() {
               </div>
 
               <button className="btn-primary" onClick={() => handleBuy(pkg)} disabled={loading}>
-                {loading ? t('shop.wait', '⏳ ПОДОЖДИТЕ...') : t('shop.buy_for', { price: pkg.price_ton })}
+                {loading ? t('shop.wait', '⏳ ПОДОЖДИТЕ...') : t('shop.buy_for', { price: effectivePrice })}
               </button>
             </div>
           );
