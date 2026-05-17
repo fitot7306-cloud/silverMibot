@@ -348,13 +348,21 @@ export default function TasksPage() {
                 return (
                   <div style={{ marginTop: 16, borderTop: '1px solid var(--border)', paddingTop: 16 }}>
                     <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
-                      {orderConfig.types.map(tp => (
+                      {orderConfig.types.map(tp => {
+                        const typeLabels = {
+                          link: t('tasks.type_link', 'Link'),
+                          bot: t('tasks.type_bot', 'Bot'),
+                          subscribe: t('tasks.type_subscribe', 'Subscribe'),
+                        };
+                        const label = typeLabels[tp.type] || tp.label;
+                        return (
                         <button key={tp.type} onClick={() => setOrderForm({ ...orderForm, type: tp.type })} style={{
                           flex: 1, padding: '10px 6px', borderRadius: 10, border: 'none', fontWeight: 700, fontSize: 11, cursor: 'pointer',
                           background: orderForm.type === tp.type ? 'rgba(255,255,255,0.1)' : 'transparent',
                           color: orderForm.type === tp.type ? '#fff' : 'var(--text-muted)',
-                        }}>{tp.label}</button>
-                      ))}
+                        }}>{label}</button>
+                        );
+                      })}
                     </div>
 
                     <input type="text" value={orderForm.title} onChange={e => setOrderForm({ ...orderForm, title: e.target.value })}

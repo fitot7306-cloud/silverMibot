@@ -121,7 +121,10 @@
     "check_payment": "Проверить оплату",
     "payment_found": "Оплата найдена! Заказ создан.",
     "payment_not_found": "Оплата пока не найдена. Попробуйте позже.",
-    "cancel_order": "Отменить заказ"
+    "cancel_order": "Отменить заказ",
+    "type_link": "Переход",
+    "type_bot": "Бот",
+    "type_subscribe": "Подписка"
   },
   "team": {
     "title": "КОМАНДА",

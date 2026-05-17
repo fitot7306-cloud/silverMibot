@@ -122,7 +122,10 @@
     "check_payment": "تحقق من الدفع",
     "payment_found": "تم العثور على الدفع! تم إنشاء الطلب.",
     "payment_not_found": "لم يتم العثور على الدفع بعد. حاول لاحقاً.",
-    "cancel_order": "إلغاء الطلب"
+    "cancel_order": "إلغاء الطلب",
+    "type_link": "رابط",
+    "type_bot": "بوت",
+    "type_subscribe": "اشتراك"
   },
   "team": {
     "title": "الفريق",

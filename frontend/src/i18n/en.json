@@ -122,7 +122,10 @@
     "check_payment": "Check payment",
     "payment_found": "Payment found! Order created.",
     "payment_not_found": "Payment not found yet. Try again later.",
-    "cancel_order": "Cancel order"
+    "cancel_order": "Cancel order",
+    "type_link": "Link",
+    "type_bot": "Bot",
+    "type_subscribe": "Subscribe"
   },
   "team": {
     "title": "TEAM",
