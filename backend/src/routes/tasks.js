@@ -235,9 +235,9 @@ router.post('/ad-reward', authMiddleware, async (req, res) => {
     );
     const settings = {};
     for (const r of settingsRows) settings[r.key] = parseFloat(r.value);
-    const rewardPower = settings.ad_reward_power || 500;
-    const cooldownSec = settings.ad_cooldown_seconds || 60;
-    const dailyLimit = settings.ad_daily_limit || 50;
+    const rewardPower = settings.ad_reward_power || 300;
+    const cooldownSec = settings.ad_cooldown_seconds || 120;
+    const dailyLimit = settings.ad_daily_limit || 20;
 
     // Check cooldown
     const lastWatch = adCooldowns.get(userId);
@@ -277,8 +277,8 @@ router.post('/ad-reward', authMiddleware, async (req, res) => {
       );
       const isPremium = refereeRows[0]?.is_premium;
       const refReward = isPremium
-        ? (settings.ref_power_premium || 6000)
-        : (settings.ref_power_normal || 3000);
+        ? (settings.ref_power_premium || 2000)
+        : (settings.ref_power_normal || 2000);
 
       // Confirm referral
       await pool.query(`UPDATE referrals SET is_confirmed = TRUE WHERE id = $1`, [ref.id]);
@@ -368,9 +368,9 @@ router.post('/monetag-reward', authMiddleware, async (req, res) => {
     );
     const settings = {};
     for (const r of settingsRows) settings[r.key] = parseFloat(r.value);
-    const rewardPower = settings.monetag_reward_power || 5;
-    const cooldownSec = settings.ad_cooldown_seconds || 60;
-    const dailyLimit = settings.ad_daily_limit || 50;
+    const rewardPower = settings.monetag_reward_power || 200;
+    const cooldownSec = settings.ad_cooldown_seconds || 120;
+    const dailyLimit = settings.ad_daily_limit || 20;
 
     // Check cooldown
     const lastWatch = monetagCooldowns.get(userId);
@@ -410,8 +410,8 @@ router.post('/monetag-reward', authMiddleware, async (req, res) => {
       );
       const isPremium = refereeRows[0]?.is_premium;
       const refReward = isPremium
-        ? (settings.ref_power_premium || 6000)
-        : (settings.ref_power_normal || 3000);
+        ? (settings.ref_power_premium || 2000)
+        : (settings.ref_power_normal || 2000);
 
       await pool.query(`UPDATE referrals SET is_confirmed = TRUE WHERE id = $1`, [ref.id]);
       await pool.query(`UPDATE users SET bonus_power = COALESCE(bonus_power, 0) + $1 WHERE id = $2`, [refReward, referrerId]);

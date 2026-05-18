@@ -264,7 +264,7 @@ const completePurchase = async (client, purchase, txHash) => {
       if (!prevReward.length) {
         const powerBonus = cfg.ref_power_normal ?? 2000;
         await client.query(
-          `UPDATE users SET power = power + $1 WHERE id = $2`,
+          `UPDATE users SET bonus_power = COALESCE(bonus_power, 0) + $1 WHERE id = $2`,
           [powerBonus, refRows[0].referrer_id]
         );
         await client.query(

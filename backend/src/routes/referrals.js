@@ -50,7 +50,7 @@ router.get('/', authMiddleware, async (req, res) => {
   );
   const isAmbassador = ambRows.length > 0;
   const ambassadorPct = settings.ambassador_commission_pct ?? 25;
-  const standardPct = settings.ref_commission_pct ?? 15;
+  const standardPct = settings.ref_commission_pct ?? 10;
 
   res.json({
     stats: stats[0],
@@ -60,8 +60,8 @@ router.get('/', authMiddleware, async (req, res) => {
     has_more: team.length === limit,
     ref_link: `https://t.me/${process.env.BOT_USERNAME}/${process.env.WEBAPP_SHORT_NAME || 'app'}?startapp=${user.tg_id}`,
     settings: {
-      power_premium: settings.ref_power_premium ?? 6000,
-      power_normal: settings.ref_power_normal ?? 3000,
+      power_premium: settings.ref_power_premium ?? 2000,
+      power_normal: settings.ref_power_normal ?? 2000,
       commission_pct: isAmbassador ? ambassadorPct : standardPct,
       is_ambassador: isAmbassador,
       ambassador_commission_pct: ambassadorPct,

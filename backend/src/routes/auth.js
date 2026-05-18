@@ -14,7 +14,7 @@ const SETTINGS_KEYS = [
 
 router.post('/init', authMiddleware, async (req, res) => {
   const user = req.user;
-  const power = parseFloat(user.power || 0);
+  const power = parseFloat(user.power || 0) + parseFloat(user.bonus_power || 0);
   const hashesPerDay = getHashesPerMinute(power) * 1440;
   const tonPerDay = hashesPerDay * TON_PER_HASH;
 
