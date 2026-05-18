@@ -154,8 +154,8 @@ export default function InfoPage() {
         }}>
           <div style={{ fontSize: 10, color: 'var(--text-muted)', lineHeight: 1.8, fontFamily: 'monospace' }}>
             100K Power → 2,500 H/day<br/>
-            1 HASH = 0.000008 TON<br/>
-            100K Power ≈ 0.020 TON/day
+            1 HASH = 0.000006 TON<br/>
+            100K Power ≈ 0.015 TON/day
           </div>
         </div>
       </Section>

@@ -66,7 +66,7 @@ export default function ShopPage() {
     return <PaymentPage {...paymentData} onCancel={() => setPaymentData(null)} onSuccess={async () => { await refreshUser(); setPaymentData(null); }} />;
   }
 
-  const tonPerDay = (power) => ((power / 100000) * 0.020).toFixed(4);
+  const tonPerDay = (power) => ((power / 100000) * 0.015).toFixed(4);
   const payback = (power, price) => Math.ceil(price / tonPerDay(power));
 
   return (
@@ -121,7 +121,7 @@ export default function ShopPage() {
           const effectivePrice = isSaleActive ? parseFloat(pkg.sale_price) : parseFloat(pkg.price_ton);
           const perDay = tonPerDay(pkg.power_amount);
           const pb = payback(pkg.power_amount, effectivePrice);
-          const days = pkg.duration_days || 28;
+          const days = pkg.duration_days || 21;
           
           return (
             <div key={pkg.id} className="card" style={{

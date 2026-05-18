@@ -1816,7 +1816,7 @@ function PackagesPanel() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
-  const [form, setForm] = useState({ name: '', power_amount: '', price_ton: '', description: '', badge: '', sale_price: '', sale_until: '', sort_order: '0', duration_days: '28', is_popular: false });
+  const [form, setForm] = useState({ name: '', power_amount: '', price_ton: '', description: '', badge: '', sale_price: '', sale_until: '', sort_order: '0', duration_days: '21', is_popular: false });
   const [msg, setMsg] = useState(null);
 
   const load = async () => {
@@ -1830,7 +1830,7 @@ function PackagesPanel() {
   useEffect(() => { load(); }, []);
 
   const resetForm = () => {
-    setForm({ name: '', power_amount: '', price_ton: '', description: '', badge: '', sale_price: '', sale_until: '', sort_order: '0', duration_days: '28', is_popular: false });
+    setForm({ name: '', power_amount: '', price_ton: '', description: '', badge: '', sale_price: '', sale_until: '', sort_order: '0', duration_days: '21', is_popular: false });
     setShowForm(false);
     setEditingId(null);
   };
