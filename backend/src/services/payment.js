@@ -200,7 +200,7 @@ const completePurchase = async (client, purchase, txHash) => {
     const { rows: pkgInfo } = await client.query(
       `SELECT duration_days FROM power_packages WHERE id = $1`, [purchase.package_id]
     );
-    const durationDays = pkgInfo[0]?.duration_days || 21;
+    const durationDays = pkgInfo[0]?.duration_days || 62;
 
     await client.query(
       `INSERT INTO purchases (user_id, package_id, power_amount, ton_paid, tx_hash, payback_at)

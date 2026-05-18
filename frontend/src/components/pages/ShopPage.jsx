@@ -126,7 +126,7 @@ export default function ShopPage() {
           const isSaleActive = pkg.sale_price && pkg.sale_until && new Date(pkg.sale_until) > new Date();
           const effectivePrice = isSaleActive ? parseFloat(pkg.sale_price) : parseFloat(pkg.price_ton);
           const daily = tonPerDay(pkg.power_amount);
-          const days = pkg.duration_days || 21;
+          const days = pkg.duration_days || 62;
           const total = totalEarnings(pkg.power_amount, days);
           const roi = Math.round((total / effectivePrice) * 100);
           
