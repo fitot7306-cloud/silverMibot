@@ -66,8 +66,14 @@ export default function ShopPage() {
     return <PaymentPage {...paymentData} onCancel={() => setPaymentData(null)} onSuccess={async () => { await refreshUser(); setPaymentData(null); }} />;
   }
 
-  const tonPerDay = (power) => ((power / 100000) * 0.015).toFixed(4);
-  const payback = (power, price) => Math.ceil(price / tonPerDay(power));
+  const tonPerDay = (power) => ((power / 100000) * 0.015);
+  // Honest earnings: Phase1 (21d full rate) + bonus tail (decay 15%/day ≈ 6.67x daily)
+  const totalEarnings = (power, days) => {
+    const daily = tonPerDay(power);
+    const phase1 = daily * days;
+    const bonusTail = daily * (1 / (1 - 0.85)); // geometric series sum
+    return phase1 + bonusTail;
+  };
 
   return (
     <div className="page">
@@ -119,9 +125,10 @@ export default function ShopPage() {
         {packages.map((pkg, i) => {
           const isSaleActive = pkg.sale_price && pkg.sale_until && new Date(pkg.sale_until) > new Date();
           const effectivePrice = isSaleActive ? parseFloat(pkg.sale_price) : parseFloat(pkg.price_ton);
-          const perDay = tonPerDay(pkg.power_amount);
-          const pb = payback(pkg.power_amount, effectivePrice);
+          const daily = tonPerDay(pkg.power_amount);
           const days = pkg.duration_days || 21;
+          const total = totalEarnings(pkg.power_amount, days);
+          const roi = Math.round((total / effectivePrice) * 100);
           
           return (
             <div key={pkg.id} className="card" style={{
@@ -177,18 +184,18 @@ export default function ShopPage() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 18 }}>
                 <div className="stat-pill">
                   <div className="label">{t('shop.daily')}</div>
-                  <div className="value">{perDay}</div>
+                  <div className="value">{daily.toFixed(4)}</div>
                   <div className="sub">TON</div>
                 </div>
                 <div className="stat-pill">
-                  <div className="label">{days} {t('shop.days_unit', 'ДНЕЙ')}</div>
-                  <div className="value">{(perDay * days).toFixed(3)}</div>
-                  <div className="sub">TON</div>
-                </div>
-                <div className="stat-pill">
-                  <div className="label">{t('shop.payback')}</div>
-                  <div className="value">{pb}</div>
+                  <div className="label">{t('shop.period', 'ПЕРИОД')}</div>
+                  <div className="value">{days}</div>
                   <div className="sub">{t('shop.days_unit', 'ДНЕЙ')}</div>
+                </div>
+                <div className="stat-pill">
+                  <div className="label">{t('shop.total_earn', 'ДОХОД')}</div>
+                  <div className="value">{total.toFixed(3)}</div>
+                  <div className="sub">TON</div>
                 </div>
               </div>
 

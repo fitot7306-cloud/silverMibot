@@ -32,6 +32,8 @@
     "thirty_days": "30 ДНІВ",
     "payback": "ОКУПНІСТЬ",
     "payback_days": "{{days}} дн",
+    "period": "ПЕРІОД",
+    "total_earn": "ДОХІД",
     "days_unit": "ДНІВ",
     "buy_for": "КУПИТИ ЗА {{price}} TON",
     "wait": "⏳ ЗАЧЕКАЙТЕ...",
