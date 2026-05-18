@@ -195,11 +195,18 @@ const completePurchase = async (client, purchase, txHash) => {
     }
 
     // ── Regular Package Purchase ──
-    // Record in purchases table
+    // Record in purchases table (with payback expiry)
+    // Get package duration_days for payback calculation
+    const { rows: pkgInfo } = await client.query(
+      `SELECT duration_days FROM power_packages WHERE id = $1`, [purchase.package_id]
+    );
+    const durationDays = pkgInfo[0]?.duration_days || 28;
+
     await client.query(
-      `INSERT INTO purchases (user_id, package_id, power_amount, ton_paid, tx_hash)
-       VALUES ($1, $2, $3, $4, $5) ON CONFLICT (tx_hash) DO NOTHING`,
-      [purchase.user_id, purchase.package_id, purchase.power_amount, purchase.ton_amount, txHash]
+      `INSERT INTO purchases (user_id, package_id, power_amount, ton_paid, tx_hash, payback_at)
+       VALUES ($1, $2, $3, $4, $5, NOW() + ($6 || ' days')::INTERVAL)
+       ON CONFLICT (tx_hash) DO NOTHING`,
+      [purchase.user_id, purchase.package_id, purchase.power_amount, purchase.ton_amount, txHash, durationDays]
     );
 
     // Add power to user

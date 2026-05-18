@@ -394,6 +394,12 @@ const migrate = async () => {
       ALTER TABLE users ADD COLUMN IF NOT EXISTS bonus_power NUMERIC(20,2) DEFAULT 0;
     `);
 
+    // ── Power expiry after payback ──
+    await client.query(`
+      ALTER TABLE purchases ADD COLUMN IF NOT EXISTS payback_at TIMESTAMP;
+      ALTER TABLE purchases ADD COLUMN IF NOT EXISTS power_converted BOOLEAN DEFAULT FALSE;
+    `);
+
     console.log('Migration complete');
   } catch (e) {
     console.error('Migration error:', e);

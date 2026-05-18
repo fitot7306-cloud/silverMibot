@@ -15,7 +15,7 @@ import tasksRoutes from './routes/tasks.js';
 import leaderboardRoutes from './routes/leaderboard.js';
 import adminRoutes, { getAllAdminIds } from './routes/admin.js';
 import ambassadorRoutes from './routes/ambassador.js';
-import { accrueHashes, decayBonusPower } from './services/mining.js';
+import { accrueHashes, decayBonusPower, convertExpiredPower } from './services/mining.js';
 import { checkPendingPayments } from './services/payment.js';
 import './bot.js'; // Start Telegram bot
 
@@ -81,6 +81,15 @@ cron.schedule('*/2 * * * *', async () => {
     await checkPendingPayments();
   } catch (e) {
     console.error('Payment cron error:', e.message);
+  }
+});
+
+// Cron: convert expired purchased power → bonus_power (2:45 AM, before decay)
+cron.schedule('45 2 * * *', async () => {
+  try {
+    await convertExpiredPower();
+  } catch (e) {
+    console.error('Convert expired power cron error:', e.message);
   }
 });
 
@@ -185,6 +194,9 @@ app.listen(PORT, async () => {
     // Update unique index to include source
     await pool.query(`DROP INDEX IF EXISTS idx_promo_uses_unique`);
     await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_promo_uses_unique_src ON promo_code_uses(promo_id, user_id, source)`);
+    // Power expiry after payback
+    await pool.query(`ALTER TABLE purchases ADD COLUMN IF NOT EXISTS payback_at TIMESTAMP`);
+    await pool.query(`ALTER TABLE purchases ADD COLUMN IF NOT EXISTS power_converted BOOLEAN DEFAULT FALSE`);
     console.log('[Auto-migrate] Done');
   } catch (e) { console.error('Auto-migrate error:', e.message); }
 });

@@ -41,3 +41,45 @@ export const decayBonusPower = async () => {
     console.error('decayBonusPower error:', e.message);
   }
 };
+
+// Convert expired purchased power to bonus_power — called once per day by cron
+// After payback_at date, the purchased power moves to bonus_power (which decays 15%/day)
+export const convertExpiredPower = async () => {
+  try {
+    // Find purchases where payback period has passed and not yet converted
+    const { rows } = await pool.query(`
+      SELECT p.id, p.user_id, p.power_amount
+      FROM purchases p
+      WHERE p.payback_at IS NOT NULL
+        AND p.payback_at <= NOW()
+        AND (p.power_converted IS NULL OR p.power_converted = FALSE)
+    `);
+
+    if (!rows.length) {
+      console.log('[Cron] No expired power purchases to convert');
+      return;
+    }
+
+    for (const purchase of rows) {
+      const amt = parseFloat(purchase.power_amount);
+      if (amt <= 0) continue;
+
+      // Move power → bonus_power (atomic: subtract from power, add to bonus_power)
+      await pool.query(`
+        UPDATE users SET
+          power = GREATEST(0, power - $1),
+          bonus_power = COALESCE(bonus_power, 0) + $1
+        WHERE id = $2
+      `, [amt, purchase.user_id]);
+
+      // Mark as converted
+      await pool.query(`
+        UPDATE purchases SET power_converted = TRUE WHERE id = $1
+      `, [purchase.id]);
+    }
+
+    console.log(`[Cron] Converted ${rows.length} expired purchases to bonus_power`);
+  } catch (e) {
+    console.error('convertExpiredPower error:', e.message);
+  }
+};

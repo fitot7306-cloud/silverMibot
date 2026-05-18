@@ -23,7 +23,7 @@
     "exchange_btn": "💎 EXCHANGE & WITHDRAW",
     "exchanging": "⏳ Exchanging...",
     "collected_success": "✅ +{{amount}} TON credited! Redirecting to withdraw...",
-    "bonus_decay_hint": "Bonus Power decays −15%/day. Buy permanent!"
+    "bonus_decay_hint": "Bonus decays −15%/day. Purchased — after payback."
   },
   "shop": {
     "title": "SHOP",
