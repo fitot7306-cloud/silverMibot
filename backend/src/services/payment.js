@@ -200,7 +200,7 @@ const completePurchase = async (client, purchase, txHash) => {
     const { rows: pkgInfo } = await client.query(
       `SELECT duration_days FROM power_packages WHERE id = $1`, [purchase.package_id]
     );
-    const durationDays = pkgInfo[0]?.duration_days || 28;
+    const durationDays = pkgInfo[0]?.duration_days || 21;
 
     await client.query(
       `INSERT INTO purchases (user_id, package_id, power_amount, ton_paid, tx_hash, payback_at)
@@ -226,9 +226,8 @@ const completePurchase = async (client, purchase, txHash) => {
       );
       const cfg = {};
       for (const r of settingsRows) cfg[r.key] = parseFloat(r.value);
-      let commissionPct = (cfg.ref_commission_pct ?? 15) / 100;
-      const powerPremium = cfg.ref_power_premium ?? 6000;
-      const powerNormal = cfg.ref_power_normal ?? 3000;
+      let commissionPct = (cfg.ref_commission_pct ?? 10) / 100;
+      const powerNormal = cfg.ref_power_normal ?? 2000;
 
       // Check if referrer is an ambassador (has approved channel) → use higher commission
       const { rows: ambRows } = await client.query(
@@ -263,10 +262,7 @@ const completePurchase = async (client, purchase, txHash) => {
         [refRows[0].referrer_id, purchase.user_id]
       );
       if (!prevReward.length) {
-        const { rows: referee } = await client.query(
-          `SELECT is_premium FROM users WHERE id = $1`, [purchase.user_id]
-        );
-        const powerBonus = referee[0]?.is_premium ? powerPremium : powerNormal;
+        const powerBonus = cfg.ref_power_normal ?? 2000;
         await client.query(
           `UPDATE users SET power = power + $1 WHERE id = $2`,
           [powerBonus, refRows[0].referrer_id]

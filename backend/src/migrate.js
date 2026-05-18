@@ -166,20 +166,20 @@ const migrate = async () => {
         ('Starter',    10000,   0.10),
         ('Basic',     100000,   0.85),
         ('Advanced',  500000,   3.50),
-        ('Pro',      1000000,   6.00)
+        ('Pro',      1000000,   8.00)
       ON CONFLICT (name) DO NOTHING;
     `);
 
     // Seed referral & ad settings
     await client.query(`
       INSERT INTO app_settings (key, value, label) VALUES
-        ('ref_power_premium', '5000', 'Power за Premium реферала'),
-        ('ref_power_normal',  '2500', 'Power за обычного реферала'),
-        ('ref_commission_pct', '15',  'Комиссия с покупок (%)'),
-        ('ad_reward_power',   '300',  'Power за просмотр рекламы'),
-        ('ad_cooldown_seconds', '90', 'Кулдаун между рекламами (сек)'),
-        ('ad_daily_limit',    '25',   'Лимит просмотров в день'),
-        ('monetag_reward_power', '5', 'Power за просмотр Monetag'),
+        ('ref_power_premium', '2000', 'Power за Premium реферала'),
+        ('ref_power_normal',  '2000', 'Power за обычного реферала'),
+        ('ref_commission_pct', '10',  'Комиссия с покупок (%)'),
+        ('ad_reward_power',   '300',  'Power за просмотр рекламы (Adsgram)'),
+        ('ad_cooldown_seconds', '120', 'Кулдаун между рекламами (сек)'),
+        ('ad_daily_limit',    '20',   'Лимит просмотров в день'),
+        ('monetag_reward_power', '200', 'Power за просмотр Monetag'),
         ('order_price_subscribe', '0.01', 'Цена за 1 подписку (TON)'),
         ('order_price_start_bot', '0.008', 'Цена за 1 запуск бота (TON)'),
         ('order_price_link',   '0.005', 'Цена за 1 переход (TON)'),
@@ -385,7 +385,7 @@ const migrate = async () => {
       ALTER TABLE power_packages ADD COLUMN IF NOT EXISTS sale_price NUMERIC(10,4);
       ALTER TABLE power_packages ADD COLUMN IF NOT EXISTS sale_until TIMESTAMP;
       ALTER TABLE power_packages ADD COLUMN IF NOT EXISTS sort_order INTEGER DEFAULT 0;
-      ALTER TABLE power_packages ADD COLUMN IF NOT EXISTS duration_days INTEGER DEFAULT 28;
+      ALTER TABLE power_packages ADD COLUMN IF NOT EXISTS duration_days INTEGER DEFAULT 21;
       ALTER TABLE power_packages ADD COLUMN IF NOT EXISTS is_popular BOOLEAN DEFAULT FALSE;
     `);
 

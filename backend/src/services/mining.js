@@ -2,7 +2,7 @@ import { pool } from '../db.js';
 
 // Constants
 export const HASHES_PER_DAY_PER_100K = 2500;
-export const TON_PER_HASH = 0.020 / 2500; // = 0.000008 (маржа ~35%)
+export const TON_PER_HASH = 0.015 / 2500; // = 0.000006
 export const MIN_WITHDRAW = 0.05; // TON
 export const BONUS_DECAY_RATE = 0.85; // 15% decay per day
 
