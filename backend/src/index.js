@@ -15,6 +15,7 @@ import tasksRoutes from './routes/tasks.js';
 import leaderboardRoutes from './routes/leaderboard.js';
 import adminRoutes, { getAllAdminIds } from './routes/admin.js';
 import ambassadorRoutes from './routes/ambassador.js';
+import analyticsRoutes from './routes/analytics.js';
 import { accrueHashes, decayBonusPower, convertExpiredPower } from './services/mining.js';
 import { checkPendingPayments } from './services/payment.js';
 import './bot.js'; // Start Telegram bot
@@ -56,6 +57,7 @@ app.use('/api/tasks', generalLimit, tasksRoutes);
 app.use('/api/leaderboard', generalLimit, leaderboardRoutes);
 app.use('/api/admin', adminLimit, adminRoutes);
 app.use('/api/ambassador', generalLimit, ambassadorRoutes);
+app.use('/api/analytics', adminLimit, analyticsRoutes);
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
