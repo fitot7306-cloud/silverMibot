@@ -969,7 +969,7 @@ router.post('/packages', async (req, res) => {
   const { rows } = await pool.query(
     `INSERT INTO power_packages (name, power_amount, price_ton, description, badge, sale_price, sale_until, sort_order, duration_days, is_popular)
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
-    [name, power_amount, price_ton, description || null, badge || null, sale_price || null, sale_until || null, sort_order || 0, duration_days || 28, is_popular || false]
+    [name, power_amount, price_ton, description || null, badge || null, sale_price || null, sale_until || null, sort_order || 0, duration_days || 62, is_popular || false]
   );
   await logAdminAction(req, 'create_package', `${name} — ${power_amount} PW / ${price_ton} TON`);
   res.json(rows[0]);
@@ -986,7 +986,7 @@ router.put('/packages/:id', async (req, res) => {
   const { rows } = await pool.query(
     `UPDATE power_packages SET name=$1, power_amount=$2, price_ton=$3, description=$4, badge=$5, sale_price=$6, sale_until=$7, sort_order=$8, duration_days=$9, is_popular=$10
      WHERE id=$11 RETURNING *`,
-    [name, power_amount, price_ton, description || null, badge || null, sale_price || null, sale_until || null, sort_order || 0, duration_days || 28, is_popular || false, req.params.id]
+    [name, power_amount, price_ton, description || null, badge || null, sale_price || null, sale_until || null, sort_order || 0, duration_days || 62, is_popular || false, req.params.id]
   );
   if (!rows.length) return res.status(404).json({ error: 'Package not found' });
   await logAdminAction(req, 'update_package', `${name} #${req.params.id}`);

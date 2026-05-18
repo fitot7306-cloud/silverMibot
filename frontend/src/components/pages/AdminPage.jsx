@@ -1816,7 +1816,7 @@ function PackagesPanel() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
-  const [form, setForm] = useState({ name: '', power_amount: '', price_ton: '', description: '', badge: '', sale_price: '', sale_until: '', sort_order: '0', duration_days: '21', is_popular: false });
+  const [form, setForm] = useState({ name: '', power_amount: '', price_ton: '', description: '', badge: '', sale_price: '', sale_until: '', sort_order: '0', duration_days: '62', is_popular: false });
   const [msg, setMsg] = useState(null);
 
   const load = async () => {
@@ -1830,7 +1830,7 @@ function PackagesPanel() {
   useEffect(() => { load(); }, []);
 
   const resetForm = () => {
-    setForm({ name: '', power_amount: '', price_ton: '', description: '', badge: '', sale_price: '', sale_until: '', sort_order: '0', duration_days: '21', is_popular: false });
+    setForm({ name: '', power_amount: '', price_ton: '', description: '', badge: '', sale_price: '', sale_until: '', sort_order: '0', duration_days: '62', is_popular: false });
     setShowForm(false);
     setEditingId(null);
   };
@@ -1841,7 +1841,7 @@ function PackagesPanel() {
       name: form.name, power_amount: parseFloat(form.power_amount), price_ton: parseFloat(form.price_ton),
       description: form.description, badge: form.badge, sale_price: form.sale_price ? parseFloat(form.sale_price) : null,
       sale_until: form.sale_until || null, sort_order: parseInt(form.sort_order) || 0,
-      duration_days: parseInt(form.duration_days) || 28, is_popular: form.is_popular
+      duration_days: parseInt(form.duration_days) || 62, is_popular: form.is_popular
     });
     resetForm();
     load();
@@ -1853,7 +1853,7 @@ function PackagesPanel() {
       name: pkg.name, power_amount: String(pkg.power_amount), price_ton: String(pkg.price_ton),
       description: pkg.description || '', badge: pkg.badge || '',
       sale_price: pkg.sale_price ? String(pkg.sale_price) : '', sale_until: pkg.sale_until ? pkg.sale_until.slice(0, 16) : '',
-      sort_order: String(pkg.sort_order || 0), duration_days: String(pkg.duration_days || 28), is_popular: !!pkg.is_popular
+      sort_order: String(pkg.sort_order || 0), duration_days: String(pkg.duration_days || 62), is_popular: !!pkg.is_popular
     });
     setShowForm(false);
   };
@@ -1864,7 +1864,7 @@ function PackagesPanel() {
       name: form.name, power_amount: parseFloat(form.power_amount), price_ton: parseFloat(form.price_ton),
       description: form.description, badge: form.badge, sale_price: form.sale_price ? parseFloat(form.sale_price) : null,
       sale_until: form.sale_until || null, sort_order: parseInt(form.sort_order) || 0,
-      duration_days: parseInt(form.duration_days) || 28, is_popular: form.is_popular
+      duration_days: parseInt(form.duration_days) || 62, is_popular: form.is_popular
     });
     resetForm();
     load();
@@ -2087,7 +2087,7 @@ function PackagesPanel() {
                     </div>
                     <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
                       {fmtK(p.power_amount)} PW • {p.sale_price && new Date(p.sale_until) > new Date() ? (<><span style={{ textDecoration: 'line-through', opacity: 0.5 }}>{p.price_ton}</span> <span style={{ color: 'var(--green)', fontWeight: 700 }}>{p.sale_price} TON</span></>) : <>{p.price_ton} TON</>}
-                      {' '}• {p.duration_days || 28}д
+                      {' '}• {p.duration_days || 62}д
                     </div>
                     {p.description && <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{p.description}</div>}
                     {p.sale_price && p.sale_until && <div style={{ fontSize: 9, color: new Date(p.sale_until) > new Date() ? 'var(--green)' : 'var(--red)', marginTop: 2 }}>
