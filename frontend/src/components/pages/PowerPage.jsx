@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useStore } from '../../store/index.js';
-import { fmt } from '../../utils/format.js';
+import { fmt, fmtK } from '../../utils/format.js';
 import { useTranslation } from 'react-i18next';
 import { useInterstitialAd } from '../../hooks/useInterstitialAd.js';
 import api from '../../utils/api.js';

@@ -33,7 +33,7 @@ export default class ErrorBoundary extends React.Component {
           </div>
           <button
             onClick={() => window.location.reload()}
-            className="btn-gold"
+            className="btn-primary"
             style={{ maxWidth: 240, marginTop: 8 }}
           >
             🔄 {t('common.reload')}
