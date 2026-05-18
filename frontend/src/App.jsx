@@ -10,6 +10,7 @@ import TasksPage from './components/pages/TasksPage.jsx';
 import WithdrawPage from './components/pages/WithdrawPage.jsx';
 import AdminPage from './components/pages/AdminPage.jsx';
 import AmbassadorPage from './components/pages/AmbassadorPage.jsx';
+import InfoPage from './components/pages/InfoPage.jsx';
 import ErrorBoundary from './components/ui/ErrorBoundary.jsx';
 import Loader from './components/ui/Loader.jsx';
 
@@ -112,6 +113,7 @@ export default function App() {
         {activeTab === 'withdraw' && <WithdrawPage />}
         {activeTab === 'admin' && <AdminPage />}
         {activeTab === 'ambassador' && <AmbassadorPage />}
+        {activeTab === 'info' && <InfoPage />}
         <BottomNav />
       </div>
     </ErrorBoundary>

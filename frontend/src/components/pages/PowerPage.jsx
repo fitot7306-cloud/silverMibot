@@ -88,7 +88,14 @@ export default function PowerPage() {
           }}>SILVERMIBOT</div>
           <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 0.5 }}>Cloud Mining</div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <button onClick={() => setTab('info')} style={{
+            width: 38, height: 38, borderRadius: 10,
+            background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', color: 'var(--text-secondary)', fontSize: 16,
+            transition: 'var(--transition)', fontFamily: 'inherit'
+          }}>ℹ️</button>
           <button onClick={() => {
             const langs = ['ru', 'en', 'uk', 'ar'];
             const flags = { ru: '🇷🇺', en: '🇬🇧', uk: '🇺🇦', ar: '🇸🇦' };
