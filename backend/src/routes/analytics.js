@@ -348,4 +348,174 @@ router.get('/risks', async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════
+//  WRITE ENDPOINTS (Management)
+// ═══════════════════════════════════════════
+
+// ─────────────── UPDATE SETTINGS ───────────────
+// POST /api/analytics/settings { key: "ref_commission_pct", value: "10" }
+router.post('/settings', async (req, res) => {
+  try {
+    const { key, value } = req.body;
+    if (!key || value === undefined) return res.status(400).json({ error: 'key and value required' });
+
+    const { rowCount } = await pool.query(
+      `UPDATE app_settings SET value = $1 WHERE key = $2`, [String(value), key]
+    );
+    if (!rowCount) {
+      await pool.query(
+        `INSERT INTO app_settings (key, value) VALUES ($1, $2)`, [key, String(value)]
+      );
+    }
+    res.json({ success: true, key, value: String(value) });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Bulk update settings: POST /api/analytics/settings/bulk { settings: { key1: val1, key2: val2 } }
+router.post('/settings/bulk', async (req, res) => {
+  try {
+    const { settings } = req.body;
+    if (!settings || typeof settings !== 'object') return res.status(400).json({ error: 'settings object required' });
+
+    const results = [];
+    for (const [key, value] of Object.entries(settings)) {
+      const { rowCount } = await pool.query(
+        `UPDATE app_settings SET value = $1 WHERE key = $2`, [String(value), key]
+      );
+      if (!rowCount) {
+        await pool.query(`INSERT INTO app_settings (key, value) VALUES ($1, $2)`, [key, String(value)]);
+      }
+      results.push({ key, value: String(value) });
+    }
+    res.json({ success: true, updated: results });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ─────────────── EDIT USER ───────────────
+// POST /api/analytics/users/:id/edit { power: 5000, bonus_power: 0, ton_balance: 0, is_blocked: true }
+router.post('/users/:id/edit', async (req, res) => {
+  try {
+    const { rows: [user] } = await pool.query(
+      `SELECT id FROM users WHERE id = $1 OR tg_id = $1::TEXT::BIGINT`, [req.params.id]
+    );
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const allowed = ['power', 'bonus_power', 'ton_balance', 'hashes', 'is_blocked', 'is_premium'];
+    const updates = [];
+    const values = [];
+    let idx = 1;
+
+    for (const [key, val] of Object.entries(req.body)) {
+      if (allowed.includes(key)) {
+        updates.push(`${key} = $${idx}`);
+        values.push(val);
+        idx++;
+      }
+    }
+
+    if (!updates.length) return res.status(400).json({ error: 'No valid fields to update' });
+
+    values.push(user.id);
+    await pool.query(
+      `UPDATE users SET ${updates.join(', ')} WHERE id = $${idx}`, values
+    );
+
+    const { rows: [updated] } = await pool.query(`SELECT * FROM users WHERE id = $1`, [user.id]);
+    res.json({ success: true, user: updated });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ─────────────── EDIT PACKAGE ───────────────
+// POST /api/analytics/packages/:name/edit { price_ton: 8.00, duration_days: 21, is_active: true }
+router.post('/packages/:name/edit', async (req, res) => {
+  try {
+    const allowed = ['price_ton', 'power_amount', 'duration_days', 'is_active', 'description', 'badge', 'sale_price', 'is_popular'];
+    const updates = [];
+    const values = [];
+    let idx = 1;
+
+    for (const [key, val] of Object.entries(req.body)) {
+      if (allowed.includes(key)) {
+        updates.push(`${key} = $${idx}`);
+        values.push(val);
+        idx++;
+      }
+    }
+
+    if (!updates.length) return res.status(400).json({ error: 'No valid fields' });
+
+    values.push(req.params.name);
+    const { rowCount } = await pool.query(
+      `UPDATE power_packages SET ${updates.join(', ')} WHERE LOWER(name) = LOWER($${idx})`, values
+    );
+
+    if (!rowCount) return res.status(404).json({ error: 'Package not found' });
+
+    const { rows: [pkg] } = await pool.query(
+      `SELECT * FROM power_packages WHERE LOWER(name) = LOWER($1)`, [req.params.name]
+    );
+    res.json({ success: true, package: pkg });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ─────────────── RAW SQL (read-only) ───────────────
+// POST /api/analytics/query { sql: "SELECT ..." }
+router.post('/query', async (req, res) => {
+  try {
+    const { sql } = req.body;
+    if (!sql) return res.status(400).json({ error: 'sql required' });
+
+    // Block dangerous operations
+    const upper = sql.toUpperCase().trim();
+    const blocked = ['DROP', 'TRUNCATE', 'DELETE', 'ALTER', 'CREATE', 'GRANT', 'REVOKE'];
+    for (const kw of blocked) {
+      if (upper.startsWith(kw)) {
+        return res.status(403).json({ error: `${kw} operations not allowed. Use UPDATE/INSERT only for data changes.` });
+      }
+    }
+
+    const { rows, rowCount } = await pool.query(sql);
+    res.json({ rows, rowCount });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ─────────────── APPROVE/REJECT WITHDRAWAL ───────────────
+// POST /api/analytics/withdrawals/:id/status { status: "completed" | "rejected" }
+router.post('/withdrawals/:id/status', async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!['completed', 'rejected', 'pending'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
+
+    const { rowCount } = await pool.query(
+      `UPDATE withdrawals SET status = $1 WHERE id = $2`, [status, req.params.id]
+    );
+    if (!rowCount) return res.status(404).json({ error: 'Withdrawal not found' });
+
+    // If rejecting — refund ton_balance
+    if (status === 'rejected') {
+      const { rows: [w] } = await pool.query(`SELECT user_id, ton_amount FROM withdrawals WHERE id = $1`, [req.params.id]);
+      if (w) {
+        await pool.query(`UPDATE users SET ton_balance = ton_balance + $1 WHERE id = $2`, [w.ton_amount, w.user_id]);
+      }
+    }
+
+    res.json({ success: true, id: req.params.id, status });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 export default router;
+
