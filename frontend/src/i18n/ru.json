@@ -22,7 +22,8 @@
     "h_per_day": "H/день",
     "exchange_btn": "💎 ОБМЕНЯТЬ И ВЫВЕСТИ",
     "exchanging": "⏳ Обмен...",
-    "collected_success": "✅ +{{amount}} TON зачислено! Переход к выводу..."
+    "collected_success": "✅ +{{amount}} TON зачислено! Переход к выводу...",
+    "bonus_decay_hint": "Бонусный Power тает −15% в день. Покупай постоянный!"
   },
   "shop": {
     "title": "МАГАЗИН",

@@ -167,9 +167,14 @@ export default function PowerPage() {
               {fmt(totalPower, 4)} <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 600 }}>GH/s</span>
             </div>
             {bonusPower > 0 && (
-              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
-                ⚡ {fmtK(power)} + 🎁 {fmtK(bonusPower)}
-              </div>
+              <>
+                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
+                  ⚡ {fmtK(power)} + 🎁 {fmtK(bonusPower)}
+                </div>
+                <div style={{ fontSize: 9, color: 'rgba(255,180,80,0.6)', marginTop: 2, fontStyle: 'italic' }}>
+                  ⏳ {t('power.bonus_decay_hint')}
+                </div>
+              </>
             )}
             <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>≈ {(liveTon).toFixed(8)} TON</div>
           </div>

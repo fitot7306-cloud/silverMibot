@@ -22,7 +22,8 @@
     "h_per_day": "H/يوم",
     "exchange_btn": "💎 استبدال وسحب",
     "exchanging": "⏳ جارٍ الاستبدال...",
-    "collected_success": "✅ +{{amount}} TON تمت الإضافة! جارٍ التحويل للسحب..."
+    "collected_success": "✅ +{{amount}} TON تمت الإضافة! جارٍ التحويل للسحب...",
+    "bonus_decay_hint": "القوة الإضافية تتناقص −15% يومياً. اشترِ الدائمة!"
   },
   "shop": {
     "title": "المتجر",
